@@ -14,26 +14,26 @@ let nameTag = vscode.window.createTextEditorDecorationType({after:{		// label ka
   }});
 
 let marker = vscode.window.createTextEditorDecorationType({
-	backgroundColor: 'solid yellow',
+	//backgroundColor: 'solid yellow',		funktioniert nicht
 	border: '1px solid yellow',
 });
 
-  // need some kind of storage for all init colours of users
+  // speicher um verschiedene farben abzulegen ?
 
 export function activate(context: vscode.ExtensionContext) {
 	console.log("init");
 
-	vscode.window.onDidChangeTextEditorSelection(()=>{ // calls function if a textcursor gets moved
+	vscode.window.onDidChangeTextEditorSelection(()=>{ // wird aufgerufen wenn cursorposition sich ändert
 		console.log("cursor moved");
 		let editor = vscode.window.activeTextEditor;
 		if(editor){
 			let lineNumber = editor.selection.active.line;
 			let position = editor.selection.active.character;
-			markLine(lineNumber,position,"Pascal");	//marks line for myself atm
+			markLine(lineNumber,position,"Pascal");	// markiert aktuell den cursor und taggt "Pascal" | wird später für syncro benötigt
 		}
 	});
 
-	vscode.workspace.onDidChangeTextDocument(() =>{ // calls function if text gets edited
+	vscode.workspace.onDidChangeTextDocument(() =>{ // wird aufgerufen wenn der Text geändert wird | muss sperre reinmachen wenn andere tippen timeout ?
 		console.log("changed text");
 		let editor = vscode.window.activeTextEditor;
 		if(editor){
@@ -57,12 +57,12 @@ export function markLine(lineNumber: number,position:number, name: string): void
 	const editor = vscode.window.activeTextEditor;
 	if (editor) {
 	  	let line = editor.document.lineAt(lineNumber);
-	  	editor.setDecorations(nameTag,[line.range]);
-		let currrentPosition = new vscode.Position(lineNumber, position)
+	  	editor.setDecorations(nameTag,[line.range]);    // markiert ganze line damit NameTag am ende ist
+		let currrentPosition = new vscode.Position(lineNumber, position);
 		let markerPosition = {
 			range: new vscode.Range(currrentPosition, currrentPosition),
 		};
-		editor.setDecorations(marker, [markerPosition]);
+		editor.setDecorations(marker, [markerPosition]); // markiert Cursorposition in Gelb
 	}
   }
 
