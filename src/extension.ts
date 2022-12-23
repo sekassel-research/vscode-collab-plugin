@@ -13,9 +13,12 @@ let nameTag = vscode.window.createTextEditorDecorationType({after:{		// label ka
 	contentText: 'Pascal',
   }});
 
-const selections=[new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0)),new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0))];
+let marker = vscode.window.createTextEditorDecorationType({
+	backgroundColor: 'solid yellow',
+	border: '1px solid yellow',
+});
 
-// need some kind of storage for all init colours of users
+  // need some kind of storage for all init colours of users
 
 export function activate(context: vscode.ExtensionContext) {
 	console.log("init");
@@ -55,9 +58,11 @@ export function markLine(lineNumber: number,position:number, name: string): void
 	if (editor) {
 	  	let line = editor.document.lineAt(lineNumber);
 	  	editor.setDecorations(nameTag,[line.range]);
-		let currentPosition= new vscode.Position(lineNumber, position);
-		selections[0]= new vscode.Selection(currentPosition, currentPosition);
-		editor.selections.concat(selections);
+		let currrentPosition = new vscode.Position(lineNumber, position)
+		let markerPosition = {
+			range: new vscode.Range(currrentPosition, currrentPosition),
+		};
+		editor.setDecorations(marker, [markerPosition]);
 	}
   }
 
