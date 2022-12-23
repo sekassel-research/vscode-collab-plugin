@@ -10,7 +10,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:vscode-collab-plugin.helloWorld"
+    "*"
   ],
   "main": "./out/extension.js",
   "contributes": {
