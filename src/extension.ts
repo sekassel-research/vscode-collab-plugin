@@ -8,24 +8,25 @@ import * as vscode from 'vscode';
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 
-let color = vscode.window.createTextEditorDecorationType({after:{		// label kann ich nur davor oder danach platzieren :( vielleicht popup ?
-    contentText: 'Pascal	',
-    backgroundColor: "#FDFD9666"
-  },backgroundColor: "#FDFD9666"});
+let nameTag = vscode.window.createTextEditorDecorationType({after:{		// label kann ich nur davor oder danach platzieren :( vielleicht popup ?
+    margin:"0 0 0 3em",
+	contentText: 'Pascal',
+  }});
 
-
+const selections=[new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0)),new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0))];
 
 // need some kind of storage for all init colours of users
 
 export function activate(context: vscode.ExtensionContext) {
 	console.log("init");
 
-	vscode.window.onDidChangeTextEditorSelection(()=>{ // calls function if textcursor gets moved
+	vscode.window.onDidChangeTextEditorSelection(()=>{ // calls function if a textcursor gets moved
 		console.log("cursor moved");
 		let editor = vscode.window.activeTextEditor;
 		if(editor){
 			let lineNumber = editor.selection.active.line;
-			markLine(lineNumber,"Pascal");	//marks line for myself atm
+			let position = editor.selection.active.character;
+			markLine(lineNumber,position,"Pascal");	//marks line for myself atm
 		}
 	});
 
@@ -49,12 +50,14 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable);
 }
 
-export function markLine(lineNumber: number, name: string): void {
-	let editor = vscode.window.activeTextEditor;
+export function markLine(lineNumber: number,position:number, name: string): void {
+	const editor = vscode.window.activeTextEditor;
 	if (editor) {
 	  	let line = editor.document.lineAt(lineNumber);
-	  	let decoration = {range: line.range,hoverMessage: name};
-	  	editor.setDecorations(color,[decoration]);	// fragen ob hover oder label; farbe sollte ja eindeutig genug sein.
+	  	editor.setDecorations(nameTag,[line.range]);
+		let currentPosition= new vscode.Position(lineNumber, position);
+		selections[0]= new vscode.Selection(currentPosition, currentPosition);
+		editor.selections.concat(selections);
 	}
   }
 
