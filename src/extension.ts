@@ -15,7 +15,7 @@ let nameTag = vscode.window.createTextEditorDecorationType({after:{		// label ka
 
 let marker = vscode.window.createTextEditorDecorationType({
 	//backgroundColor: 'solid yellow',		funktioniert nicht
-	border: '1px solid yellow',
+	border: '1px solid crimson',
 });
 
   // speicher um verschiedene farben abzulegen ?
