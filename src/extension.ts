@@ -1,6 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { openWS } from './ws';
 
 // to get current line: 	vscode.window.activeTextEditor?.selection.active.line
 // to get current char pos: vscode.window.activeTextEditor?.selection.active.character
@@ -27,6 +28,7 @@ let marker = vscode.window.createTextEditorDecorationType({
 
 export function activate(context: vscode.ExtensionContext) {
 	console.log("init");
+	openWS();
 
 	vscode.window.onDidChangeTextEditorSelection(()=>{ // wird aufgerufen wenn cursorposition sich ändert
 		console.log("cursor moved");
