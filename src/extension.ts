@@ -5,8 +5,13 @@ import * as vscode from 'vscode';
 // to get current line: 	vscode.window.activeTextEditor?.selection.active.line
 // to get current char pos: vscode.window.activeTextEditor?.selection.active.character
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+//let nameTags = new Map<string,any>();
+
+//let markers = new Map<string,any>();
+
+//let selections = new Map<string,any>();
+
+//map.get()
 
 let nameTag = vscode.window.createTextEditorDecorationType({after:{		// label kann ich nur davor oder danach platzieren :( vielleicht popup ?
     margin:"0 0 0 3em",
