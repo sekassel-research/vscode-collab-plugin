@@ -13,8 +13,9 @@ export function openWS(name:string,project:string){
       });
 }
 
-export function closeWS(name:string,project:string){ 
-    ws.close(1000, `{"operation":"userLeft","name":"${name}","project":"${project}"}`);
+export function closeWS(name:string,project:string){
+    ws.send(`{"operation":"userLeft","name":"${name}","project":"${project}"}`); 
+    ws.close(1000, 'connection was closed by the user');
 }
 
 export function cursorMoved(pathName:string,lineNumber:any,position:any,name:string,project:string){

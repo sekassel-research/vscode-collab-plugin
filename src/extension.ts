@@ -3,11 +3,7 @@
 import * as vscode from 'vscode';
 import { closeWS, cursorMoved, openWS, textChanged } from './ws';
 
-//let nameTags = new Map<string,any>();
-
-//let markers = new Map<string,any>();
-
-//let selections = new Map<string,any>();
+//const users = new Map<string,Set<any>>();
 
 //map.get()
 
