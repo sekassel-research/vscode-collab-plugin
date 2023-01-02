@@ -13,9 +13,7 @@ export function openWS(name:string,project:string){
 }
 
 export function closeWS(name:string,project:string){
-  ws.on('close', () => {  // wenn client die Verbidung schließt
-    ws.send(`{"operation":"joined","name":"${name}","project":"${project}"}`);
-  });
+    ws.close(1000, `{"operation":"closed","name":"${name}","project":"${project}"}`);
 }
 
 export function cursorMoved(fileName:string,lineNumber:any,position:any,name:string,project:string){

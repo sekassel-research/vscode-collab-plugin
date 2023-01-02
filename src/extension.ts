@@ -78,5 +78,7 @@ export function markLine(lineNumber: number,position:number, name: string): void
 
 // This method is called when your extension is deactivated
 export function deactivate() {
-	closeWS("Pascal","Test");
+	return new Promise(resolve => {
+		closeWS("Pascal","Test");
+	});
 }
