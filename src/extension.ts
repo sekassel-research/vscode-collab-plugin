@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { closeWS, cursorMoved, openWS } from './ws';
+import { closeWS, cursorMoved, openWS, textChanged } from './ws';
 
 //let nameTags = new Map<string,any>();
 
@@ -27,14 +27,13 @@ export function activate(context: vscode.ExtensionContext) {
 
 	vscode.window.onDidChangeTextEditorSelection(()=>{ // wird aufgerufen wenn cursorposition sich ändert
 		console.log("cursor moved");
-		let editor = vscode.window.activeTextEditor;
+		const editor = vscode.window.activeTextEditor;
 		if(editor){
-			editor.document.fileName
 			const lineNumber = editor.selection.active.line;
 			const position = editor.selection.active.character;
-			const fileName = editor.document.fileName.replace(/\\/g, '\\\\'); // umbau auf // weil sonnst das JSON nicht akzeptiert
+			const pathName = pathToString(editor.document.fileName);
 			markLine(lineNumber,position,"Pascal");	// markiert aktuell den cursor und taggt "Pascal" | wird später für syncro benötigt
-			cursorMoved(fileName,lineNumber,position,"Pascal","Test");
+			cursorMoved(pathName,lineNumber,position,"Pascal","Test");
 		}
 	});
 
@@ -42,10 +41,15 @@ export function activate(context: vscode.ExtensionContext) {
 		console.log("changed text");
 		let editor = vscode.window.activeTextEditor;
 		if(editor){
-			let lineNumber = editor.selection.active.line;
-			let lineText = editor.document.lineAt(lineNumber).text;
-			console.log(`Zeile: "${lineNumber} | Inhalt der aktuellen Zeile: "${lineText}"`);}
+			const lineNumber = editor.selection.active.line;
+			const lineText = editor.document.lineAt(lineNumber).text;
+			const pathName = pathToString(editor.document.fileName);
+			console.log(`Zeile: "${lineNumber} | Inhalt der aktuellen Zeile: "${lineText}"`);
+			textChanged(pathName,lineNumber,lineText,"Pascal","Test");
+		}
 	});
+
+
 
 
 	let disposable = vscode.commands.registerCommand('firstextention.testCommand', () => {
@@ -67,6 +71,30 @@ export function markLine(lineNumber: number,position:number, name: string): void
 		editor.setDecorations(marker, [markerPosition]); // markiert Cursorposition in crimson
 	}
   }
+
+  // cursor position | ersetzt aktuell ganze zeile / zwar sicherer als zeichen löschen aber halt cursor
+export function changeLine(pathName:string,lineNumber: number, name:string,content:string){
+	const editor = vscode.window.activeTextEditor;
+	if (!editor || pathName!= pathToString(editor.document.fileName)) {
+		return
+	}
+	const edit = new vscode.WorkspaceEdit();
+	const line = editor.document.lineAt(lineNumber);
+	const cursorPosition = editor.selection.active;
+
+	edit.replace(editor.document.uri, new vscode.Range(line.range.start, line.range.end), content);
+	vscode.workspace.applyEdit(edit);
+
+	if (cursorPosition.character <= content.length) {
+		editor.selection = new vscode.Selection(cursorPosition, cursorPosition);
+	} else {
+		editor.selection = new vscode.Selection(line.range.start.line, content.length, line.range.start.line, content.length);
+	}
+}
+
+function pathToString(path:string){
+	return path.replace(/\\/g, '\\\\');
+}
 
 export function deactivate() {
 	return new Promise(resolve => {

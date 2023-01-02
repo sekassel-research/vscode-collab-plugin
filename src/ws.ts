@@ -27,7 +27,18 @@ export function cursorMoved(pathName:string,lineNumber:any,position:any,name:str
   } catch(Error){
     console.log(Error);
   }
-  
+}
+
+export function textChanged(pathName:string,lineNumber:any,content:string,name:string,project:string){
+  console.log("textChanged");
+  console.log(pathName);
+  try{
+    const jsonString = `{"operation":"textChanged","pathName":"${pathName}","lineNumber":"${lineNumber}",
+                          "content":"${content}","name":"${name}", "project":"${project}"}`;
+    ws.send(jsonString);
+  } catch(Error){
+    console.log(Error);
+  }
 }
   
 ws.on('error', (error:Error) => {
