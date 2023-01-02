@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { openWS } from './ws';
+import { closeWS, cursorMoved, openWS } from './ws';
 
 // to get current line: 	vscode.window.activeTextEditor?.selection.active.line
 // to get current char pos: vscode.window.activeTextEditor?.selection.active.character
@@ -28,15 +28,18 @@ let marker = vscode.window.createTextEditorDecorationType({
 
 export function activate(context: vscode.ExtensionContext) {
 	console.log("init");
-	openWS();
+	openWS("Pascal","Test");
 
 	vscode.window.onDidChangeTextEditorSelection(()=>{ // wird aufgerufen wenn cursorposition sich ändert
 		console.log("cursor moved");
 		let editor = vscode.window.activeTextEditor;
 		if(editor){
-			let lineNumber = editor.selection.active.line;
-			let position = editor.selection.active.character;
+			editor.document.fileName
+			const lineNumber = editor.selection.active.line;
+			const position = editor.selection.active.character;
+			const fileName = editor.document.fileName.replace(/\\/g, '\\\\');
 			markLine(lineNumber,position,"Pascal");	// markiert aktuell den cursor und taggt "Pascal" | wird später für syncro benötigt
+			cursorMoved(fileName,lineNumber,position,"Pascal","Test");
 		}
 	});
 
@@ -74,4 +77,6 @@ export function markLine(lineNumber: number,position:number, name: string): void
   }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {
+	closeWS("Pascal","Test");
+}
