@@ -27,7 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
 			const lineNumber = editor.selection.active.line;
 			const position = editor.selection.active.character;
 			const pathName = pathToString(editor.document.fileName);
-			markLine(lineNumber,position,"Pascal");	// markiert aktuell den cursor und taggt "Pascal" | wird später für syncro benötigt
+			//markLine(lineNumber,position,"Pascal");	// markiert aktuell den cursor und taggt "Pascal" | wird später für syncro benötigt
 			cursorMoved(pathName,lineNumber,position,"Pascal","Test");
 		}
 	});
@@ -53,16 +53,20 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable);
 }
 
-export function markLine(lineNumber: number,position:number, name: string): void {
+export function markLine(pathName:string,lineNumber: number,position:number, name: string): void {
+	console.log("markLine called")
 	const editor = vscode.window.activeTextEditor;
 	if (editor) {
-	  	let line = editor.document.lineAt(lineNumber);
-	  	editor.setDecorations(nameTag,[line.range]);    // markiert ganze line damit NameTag am ende ist
-		let currrentPosition = new vscode.Position(lineNumber, position);
-		let markerPosition = {
-			range: new vscode.Range(currrentPosition, currrentPosition),
-		};
-		editor.setDecorations(marker, [markerPosition]); // markiert Cursorposition in crimson
+		const pathString = editor.document.fileName;
+		if(pathString == pathName){
+	  		const line = editor.document.lineAt(lineNumber);
+	  		editor.setDecorations(nameTag,[line.range]);    // markiert ganze line damit NameTag am ende ist
+			let currrentPosition = new vscode.Position(lineNumber, position);
+			let markerPosition = {
+				range: new vscode.Range(currrentPosition, currrentPosition),
+			};
+			editor.setDecorations(marker, [markerPosition]); // markiert Cursorposition in crimson
+	}
 	}
   }
 
