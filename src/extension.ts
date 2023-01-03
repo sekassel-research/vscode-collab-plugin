@@ -22,7 +22,6 @@ export function activate(context: vscode.ExtensionContext) {
 	openWS("Pascal","Test");
 
 	vscode.window.onDidChangeTextEditorSelection(()=>{ // wird aufgerufen wenn cursorposition sich ändert
-		console.log("cursor moved");
 		const editor = vscode.window.activeTextEditor;
 		if(editor){
 			const lineNumber = editor.selection.active.line;
@@ -34,7 +33,6 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	vscode.workspace.onDidChangeTextDocument(() =>{ // wird aufgerufen wenn der Text geändert wird | muss sperre reinmachen wenn andere tippen | timeout ?
-		console.log("changed text");
 		let editor = vscode.window.activeTextEditor;
 		if(editor){
 			const lineNumber = editor.selection.active.line;

@@ -1,4 +1,4 @@
-interface message{
+export interface message{
     operation: string;
     data: JSON
 }

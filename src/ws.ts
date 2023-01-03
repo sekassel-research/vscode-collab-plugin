@@ -1,3 +1,4 @@
+import { message } from "./interface/message";
 import { buildCursorMovedMessage, buildTextChangedMessage, buildUserMessage } from "./util/jsonUtils";
 
 const WebSocket = require('ws');
