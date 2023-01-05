@@ -10,9 +10,7 @@ let wsClose = false;
 
 
 export function openWS(name: string, project: string) {
-    if (ws.readyState === 3) {
-        ws = new WebSocket('ws://localhost:8080');
-    }
+    ws = new WebSocket('ws://localhost:8080');
     ws.on('open', function open() {
         console.log("connected");
         ws.send(buildUserMessage("userJoined", name, project));

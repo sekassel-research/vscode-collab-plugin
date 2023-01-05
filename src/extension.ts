@@ -91,6 +91,10 @@ export function changeLine(pathName: string, lineNumber: number, name: string, c
 }
 
 function pathToString(path: string) {
+    const projectRoot = vscode.workspace.rootPath;
+    if(projectRoot){
+        path = path.replace(projectRoot,'')
+    }
     return path.replace(/\\/g, '\\\\');
 }
 
