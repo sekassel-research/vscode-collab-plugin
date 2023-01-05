@@ -1,5 +1,5 @@
-import { markLine } from "./extension";
-import { cursorMovedData } from "./interface/data";
+import { markLine,changeLine } from "./extension";
+import { cursorMovedData, textChangedData } from "./interface/data";
 import { message } from "./interface/message";
 import { buildCursorMovedMessage, buildTextChangedMessage, buildUserMessage } from "./util/jsonUtils";
 
@@ -47,9 +47,15 @@ export function textChanged(pathName:string,lineNumber:any,content:string,name:s
 
 function handleMessage(msg: message) {
   console.log("handleMessage called");
+  
   if(msg.operation === "cursorMoved"){
     let data:cursorMovedData = msg.data;
     markLine(data.pathName,data.lineNumber,data.position,data.name);
+    return;
+  }
+  if(msg.operation === "textChanged"){
+    let data:textChangedData = msg.data;
+    changeLine(data.pathName,data.lineNumber,data.name,data.content);
     return;
   }
 }

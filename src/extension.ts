@@ -73,7 +73,7 @@ export function markLine(pathName:string,lineNumber: number,position:number, nam
   // cursor position | ersetzt aktuell ganze zeile / zwar sicherer als zeichen löschen aber halt cursor
 export function changeLine(pathName:string,lineNumber: number, name:string,content:string){
 	const editor = vscode.window.activeTextEditor;
-	if (!editor || pathName!== pathToString(editor.document.fileName)) {
+	if (!editor || pathName!== editor.document.fileName){
 		return ;
 	}
 	const edit = new vscode.WorkspaceEdit();
