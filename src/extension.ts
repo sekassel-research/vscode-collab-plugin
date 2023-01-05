@@ -56,24 +56,22 @@ export function activate(context: vscode.ExtensionContext) {
 export function markLine(pathName: string, lineNumber: number, position: number, name: string): void {
     console.log("markLine called");
     const editor = vscode.window.activeTextEditor;
-    if (editor) {
-        if (editor.document.fileName !== pathName) {
-            return;
-        }
-        const line = editor.document.lineAt(lineNumber);
-        editor.setDecorations(nameTag, [line.range]);    // markiert ganze line damit NameTag am ende ist
-        let currrentPosition = new vscode.Position(lineNumber, position);
-        let markerPosition = {
-            range: new vscode.Range(currrentPosition, currrentPosition),
-        };
-        editor.setDecorations(marker, [markerPosition]); // markiert Cursorposition in crimson
+    if (!editor || relPath(editor.document.fileName) !== pathName) {
+        return;
     }
+    const line = editor.document.lineAt(lineNumber);
+    editor.setDecorations(nameTag, [line.range]);    // markiert ganze line damit NameTag am ende ist
+    let currrentPosition = new vscode.Position(lineNumber, position);
+    let markerPosition = {
+        range: new vscode.Range(currrentPosition, currrentPosition),
+    };
+    editor.setDecorations(marker, [markerPosition]); // markiert Cursorposition in crimson
 }
 
 // cursor position | ersetzt aktuell ganze zeile / zwar sicherer als zeichen löschen aber halt cursor
 export function changeLine(pathName: string, lineNumber: number, name: string, content: string) {
     const editor = vscode.window.activeTextEditor;
-    if (!editor || pathName !== editor.document.fileName) {
+    if (!editor || pathName !== relPath(editor.document.fileName)) {
         return;
     }
     const edit = new vscode.WorkspaceEdit();
@@ -91,11 +89,16 @@ export function changeLine(pathName: string, lineNumber: number, name: string, c
 }
 
 function pathToString(path: string) {
-    const projectRoot = vscode.workspace.rootPath;
-    if(projectRoot){
-        path = path.replace(projectRoot,'')
-    }
+    path = relPath(path);
     return path.replace(/\\/g, '\\\\');
+}
+
+function relPath(path: string) {
+    const projectRoot = vscode.workspace.rootPath;
+    if (projectRoot) {
+        path = path.replace(projectRoot, '');
+    }
+    return path;
 }
 
 export function deactivate() {
