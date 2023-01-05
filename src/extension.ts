@@ -1,14 +1,13 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { closeWS, cursorMoved, openWS, textChanged } from './ws';
 
-// to get current line: 	vscode.window.activeTextEditor?.selection.active.line
-// to get current char pos: vscode.window.activeTextEditor?.selection.active.character
+//const users = new Map<string,Set<any>>();
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+//map.get()
 
-let nameTag = vscode.window.createTextEditorDecorationType({after:{		// label kann ich nur davor oder danach platzieren :( vielleicht popup ?
+let nameTag = vscode.window.createTextEditorDecorationType({after:{
     margin:"0 0 0 3em",
 	contentText: 'Pascal',
   }});
@@ -18,53 +17,85 @@ let marker = vscode.window.createTextEditorDecorationType({
 	border: '1px solid crimson',
 });
 
-  // speicher um verschiedene farben abzulegen ?
-
 export function activate(context: vscode.ExtensionContext) {
 	console.log("init");
+	openWS("Pascal","Test");
 
 	vscode.window.onDidChangeTextEditorSelection(()=>{ // wird aufgerufen wenn cursorposition sich ändert
-		console.log("cursor moved");
-		let editor = vscode.window.activeTextEditor;
+		const editor = vscode.window.activeTextEditor;
 		if(editor){
-			let lineNumber = editor.selection.active.line;
-			let position = editor.selection.active.character;
-			markLine(lineNumber,position,"Pascal");	// markiert aktuell den cursor und taggt "Pascal" | wird später für syncro benötigt
+			const lineNumber = editor.selection.active.line;
+			const position = editor.selection.active.character;
+			const pathName = pathToString(editor.document.fileName);
+			//markLine(lineNumber,position,"Pascal");	// markiert aktuell den cursor und taggt "Pascal" | wird später für syncro benötigt
+			cursorMoved(pathName,lineNumber,position,"Pascal","Test");
 		}
 	});
 
-	vscode.workspace.onDidChangeTextDocument(() =>{ // wird aufgerufen wenn der Text geändert wird | muss sperre reinmachen wenn andere tippen timeout ?
-		console.log("changed text");
+	vscode.workspace.onDidChangeTextDocument(() =>{ // wird aufgerufen wenn der Text geändert wird | muss sperre reinmachen wenn andere tippen | timeout ?
 		let editor = vscode.window.activeTextEditor;
 		if(editor){
-			let lineNumber = editor.selection.active.line;
-			let lineText = editor.document.lineAt(lineNumber).text;
-			console.log(`Zeile: "${lineNumber} | Inhalt der aktuellen Zeile: "${lineText}"`);}
+			const lineNumber = editor.selection.active.line;
+			const lineText = editor.document.lineAt(lineNumber).text;
+			const pathName = pathToString(editor.document.fileName);
+			console.log(`Zeile: "${lineNumber} | Inhalt der aktuellen Zeile: "${lineText}"`);
+			textChanged(pathName,lineNumber,lineText,"Pascal","Test");
+		}
 	});
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('firstextention.testCommand', () => { //infobox for otheruser joined/leaved ?
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
+
+
+
+
+	let disposable = vscode.commands.registerCommand('firstextention.testCommand', () => {
 		vscode.window.showInformationMessage('Line: '+ vscode.window.activeTextEditor?.selection.active.line+ " | Position: "+ vscode.window.activeTextEditor?.selection.active.character );
 	});
 
 	context.subscriptions.push(disposable);
 }
 
-export function markLine(lineNumber: number,position:number, name: string): void {
+export function markLine(pathName:string,lineNumber: number,position:number, name: string): void {
+	console.log("markLine called");
 	const editor = vscode.window.activeTextEditor;
 	if (editor) {
-	  	let line = editor.document.lineAt(lineNumber);
-	  	editor.setDecorations(nameTag,[line.range]);    // markiert ganze line damit NameTag am ende ist
-		let currrentPosition = new vscode.Position(lineNumber, position);
-		let markerPosition = {
-			range: new vscode.Range(currrentPosition, currrentPosition),
+		const pathString = editor.document.fileName;
+		if(pathString === pathName){
+			const line = editor.document.lineAt(lineNumber);
+			editor.setDecorations(nameTag,[line.range]);    // markiert ganze line damit NameTag am ende ist
+			let currrentPosition = new vscode.Position(lineNumber, position);
+			let markerPosition = {
+				range: new vscode.Range(currrentPosition, currrentPosition),
+			};
+			editor.setDecorations(marker, [markerPosition]); // markiert Cursorposition in crimson
 		};
-		editor.setDecorations(marker, [markerPosition]); // markiert Cursorposition in Gelb
-	}
+	};
   }
 
-// This method is called when your extension is deactivated
-export function deactivate() {}
+  // cursor position | ersetzt aktuell ganze zeile / zwar sicherer als zeichen löschen aber halt cursor
+export function changeLine(pathName:string,lineNumber: number, name:string,content:string){
+	const editor = vscode.window.activeTextEditor;
+	if (!editor || pathName!== editor.document.fileName){
+		return ;
+	}
+	const edit = new vscode.WorkspaceEdit();
+	const line = editor.document.lineAt(lineNumber);
+	const cursorPosition = editor.selection.active;
+
+	edit.replace(editor.document.uri, new vscode.Range(line.range.start, line.range.end), content);
+	vscode.workspace.applyEdit(edit);
+
+	if (cursorPosition.character <= content.length) {
+		editor.selection = new vscode.Selection(cursorPosition, cursorPosition);
+	} else {
+		editor.selection = new vscode.Selection(line.range.start.line, content.length, line.range.start.line, content.length);
+	}
+}
+
+function pathToString(path:string){
+	return path.replace(/\\/g, '\\\\');
+}
+
+export function deactivate() {
+	return new Promise(resolve => {
+		closeWS("Pascal","Test");
+	});
+}
