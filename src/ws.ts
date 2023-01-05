@@ -13,6 +13,13 @@ export function openWS(name: string, project: string) {
     ws = new WebSocket('ws://localhost:8080');
     ws.on('open', function open() {
         console.log("connected");
+
+        ws.on('message', function incoming(data: any) {
+            const msg: message = JSON.parse(Buffer.from(data).toString());
+            console.log(JSON.stringify(msg));
+            handleMessage(msg);
+        });
+
         ws.send(buildUserMessage("userJoined", name, project));
     });
 
@@ -33,11 +40,7 @@ export function openWS(name: string, project: string) {
     });
 }
 
-ws.on('message', function incoming(data: any) {
-    const msg: message = JSON.parse(Buffer.from(data).toString());
-    console.log(JSON.stringify(msg));
-    handleMessage(msg);
-});
+
 
 export function closeWS(name: string, project: string) {
     wsClose = true;
