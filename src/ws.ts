@@ -5,12 +5,30 @@ import { buildCursorMovedMessage, buildTextChangedMessage, buildUserMessage } fr
 
 const WebSocket = require('ws');
 
-const ws = new WebSocket('ws://localhost:8080');
+let ws = new WebSocket('ws://localhost:8080');
 
 
 export function openWS(name:string,project:string){
+    if(ws.readyState===3){
+      ws = new WebSocket('ws://localhost:8080');
+    }
     ws.on('open', function open() {
+        console.log("connected");
         ws.send(buildUserMessage("userJoined",name,project));
+      });
+
+      ws.on('close', function close() {
+        console.log('Verbindung geschlossen. retry in 10s');
+        // Starte den Wiederverbindungsprozess nach 10 Sekunden
+        setTimeout(()=>{
+          openWS(name,project);
+        }, 10000);
+      });
+
+      ws.on('error', (error:Error) => {
+        setTimeout(()=>{
+          console.log(error);
+        }, 2000);
       });
 }
 
@@ -18,10 +36,6 @@ ws.on('message', function incoming(data:any) {
   const msg:message = JSON.parse(Buffer.from(data).toString());
   console.log(JSON.stringify(msg));
   handleMessage(msg);
-});
-
-ws.on('error', (error:Error) => {
-  console.log(`Fehler: ${error}`);
 });
 
 export function closeWS(name:string,project:string){
