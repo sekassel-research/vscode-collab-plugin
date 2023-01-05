@@ -57,16 +57,16 @@ export function markLine(pathName:string,lineNumber: number,position:number, nam
 	console.log("markLine called");
 	const editor = vscode.window.activeTextEditor;
 	if (editor) {
-		const pathString = editor.document.fileName;
-		if(pathString === pathName){
-			const line = editor.document.lineAt(lineNumber);
-			editor.setDecorations(nameTag,[line.range]);    // markiert ganze line damit NameTag am ende ist
-			let currrentPosition = new vscode.Position(lineNumber, position);
-			let markerPosition = {
-				range: new vscode.Range(currrentPosition, currrentPosition),
-			};
-			editor.setDecorations(marker, [markerPosition]); // markiert Cursorposition in crimson
+		if(editor.document.fileName !== pathName){
+			return ;
 		};
+		const line = editor.document.lineAt(lineNumber);
+		editor.setDecorations(nameTag,[line.range]);    // markiert ganze line damit NameTag am ende ist
+		let currrentPosition = new vscode.Position(lineNumber, position);
+		let markerPosition = {
+			range: new vscode.Range(currrentPosition, currrentPosition),
+		};
+		editor.setDecorations(marker, [markerPosition]); // markiert Cursorposition in crimson
 	};
   }
 
