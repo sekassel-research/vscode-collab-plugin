@@ -41,16 +41,15 @@ export function openWS(name: string, project: string) {
 }
 
 
-
 export function closeWS(name: string, project: string) {
     wsClose = true;
     ws.send(buildUserMessage("userLeft", name, project));
     ws.close(1000, 'connection was closed by the user');
 }
 
-export function cursorMoved(pathName: string, lineNumber: any, position: any, name: string, project: string) {
+export function cursorMoved(pathName: string, lineNumber: number, position: number, selectionStart: number, selectionEnd: number, name: string, project: string) {
     try {
-        ws.send(buildCursorMovedMessage(pathName, lineNumber, position, name, project));
+        ws.send(buildCursorMovedMessage(pathName, lineNumber, position, selectionStart, selectionEnd, name, project));
     } catch (Error) {
         console.log(Error);
     }
@@ -69,7 +68,7 @@ function handleMessage(msg: message) {
 
     if (msg.operation === "cursorMoved") {
         let data: cursorMovedData = msg.data;
-        markLine(data.pathName, data.lineNumber, data.position, data.name);
+        markLine(data.pathName, data.lineNumber, data.position, data.selectionStart, data.selectionEnd, data.name);
         return;
     }
     if (msg.operation === "textChanged") {
