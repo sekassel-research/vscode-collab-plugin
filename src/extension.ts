@@ -28,7 +28,7 @@ export function activate(context: vscode.ExtensionContext) {
     console.log("init");
     openWS("Pascal", "Test");
 
-    vscode.window.onDidChangeTextEditorSelection(() => { // wird aufgerufen wenn cursorposition sich ändert
+    vscode.window.onDidChangeTextEditorSelection(() => { // wird aufgerufen, wenn cursorposition sich ändert
         const editor = vscode.window.activeTextEditor;
         if (editor) {
             const lineNumber = editor.selection.active.line;
@@ -41,7 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    vscode.workspace.onDidChangeTextDocument(() => { // wird aufgerufen wenn der Text geändert wird | muss sperre reinmachen wenn andere tippen | timeout ?
+    vscode.workspace.onDidChangeTextDocument(() => { // wird aufgerufen, wenn der Text geändert wird | muss Sperre reinmachen, wenn andere tippen | timeout?
         let editor = vscode.window.activeTextEditor;
         if (editor) {
             const lineNumber = editor.selection.active.line;
@@ -67,10 +67,10 @@ export function markLine(pathName: string, lineNumber: number, position: number,
         return;
     }
     const line = editor.document.lineAt(lineNumber);
-    editor.setDecorations(nameTag, [line.range]);    // markiert ganze line damit NameTag am ende ist
+    editor.setDecorations(nameTag, [line.range]);    // markiert ganze line damit NameTag am Ende ist
 
     let selectionPosition = new vscode.Range(new vscode.Position(lineNumber, selectionStart), new vscode.Position(lineNumber, selectionEnd));
-    editor.setDecorations(selection, [selectionPosition]);   // markiert textauswahl
+    editor.setDecorations(selection, [selectionPosition]);   // markiert textauswahl in 66% crimson
 
     let currrentPosition = new vscode.Position(lineNumber, position);
     let markerPosition = {
@@ -79,7 +79,7 @@ export function markLine(pathName: string, lineNumber: number, position: number,
     editor.setDecorations(marker, [markerPosition]); // markiert Cursorposition in crimson
 }
 
-// cursor position | ersetzt aktuell ganze zeile / zwar sicherer als zeichen löschen aber halt cursor
+// cursor position | ersetzt aktuell ganze Zeile / zwar sicherer als Zeichen löschen aber halt Cursor
 export function changeLine(pathName: string, lineNumber: number, name: string, content: string) {
     const editor = vscode.window.activeTextEditor;
     if (!editor || pathName !== relPath(editor.document.fileName)) {

@@ -1,4 +1,3 @@
-import {Position} from "vscode";
 import {markLine, changeLine} from "./extension";
 import {cursorMovedData, textChangedData} from "./interface/data";
 import {message} from "./interface/message";
