@@ -33,11 +33,11 @@ export function activate(context: vscode.ExtensionContext) {
         if (editor) {
             const lineNumber = editor.selection.active.line;
             const position = editor.selection.active.character;
-            const pathName = jsonString(editor.document.fileName);
+            const pathName = pathString(editor.document.fileName);
             let selectionLine = editor.selection.end.line;
             let selectionPosition = editor.selection.end.character;
 
-            if (editor.selection.active === editor.selection.end) {
+            if (editor.selection.active === editor.selection.end) { // flippt wenn cursor ist am ende der Markierung
                 selectionLine = editor.selection.start.line;
                 selectionPosition = editor.selection.start.character;
             }
@@ -46,17 +46,16 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    // kompett umbau...
     vscode.workspace.onDidChangeTextDocument(changes => { // wird aufgerufen, wenn der Text geändert wird | muss Sperre reinmachen, wenn andere tippen | timeout?
         const editor = vscode.window.activeTextEditor;
         if (editor) {
             for (const change of changes.contentChanges) {
-                const pathName = jsonString(editor.document.fileName);
+                const pathName = pathString(editor.document.fileName);
                 const fromLine = change.range.start.line;
                 const fromPos = change.range.start.character;
 
                 if (change.range.isEmpty) {
-                    const content = jsonString(change.text).replace(/\n/g, "\\n");
+                    const content = jsonString(change.text);
                     console.log(`Text added at ${fromLine + 1}:${fromPos} Text:`, content);
                     textAdded(pathName, fromLine, fromPos, content, "Pascal", "Test");
                 } else {
@@ -124,7 +123,11 @@ export function changeLine(pathName: string, lineNumber: number, name: string, c
     }
 }
 
-function jsonString(path: string) {
+function jsonString(content: string) {
+    return content.replace(/\\/g, '\\\\').replace(/\n/g, "\\n").replace(/"/g, '\\"');
+}
+
+function pathString(path: string) {
     path = relPath(path);
     return path.replace(/\\/g, '\\\\');
 }
