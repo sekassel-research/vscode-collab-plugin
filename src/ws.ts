@@ -1,7 +1,12 @@
 import {markLine, changeLine} from "./extension";
 import {cursorMovedData, textChangedData} from "./interface/data";
 import {message} from "./interface/message";
-import {buildCursorMovedMessage, buildTextChangedMessage, buildUserMessage} from "./util/jsonUtils";
+import {
+    buildCursorMovedMessage,
+    buildTextAddedMessage,
+    buildTextRemovedMessage,
+    buildUserMessage
+} from "./util/jsonUtils";
 
 const WebSocket = require('ws');
 
@@ -47,17 +52,25 @@ export function closeWS(name: string, project: string) {
     ws.close(1000, 'connection was closed by the user');
 }
 
-export function cursorMoved(pathName: string, lineNumber: number, position: number, selectionStart: number, selectionEnd: number, name: string, project: string) {
+export function cursorMoved(pathName: string, lineNumber: number, position: number, selectionLine: number, selectionPosition: number, name: string, project: string) {
     try {
-        ws.send(buildCursorMovedMessage(pathName, lineNumber, position, selectionStart, selectionEnd, name, project));
+        ws.send(buildCursorMovedMessage(pathName, lineNumber, position, selectionLine, selectionPosition, name, project));
     } catch (Error) {
         console.log(Error);
     }
 }
 
-export function textChanged(pathName: string, lineNumber: any, content: string, name: string, project: string) {
+export function textAdded(pathName: string, lineNumber: number, position: number, content: string, name: string, project: string) {
     try {
-        ws.send(buildTextChangedMessage(pathName, lineNumber, content, name, project));
+        ws.send(buildTextAddedMessage(pathName, lineNumber, position, content, name, project));
+    } catch (Error) {
+        console.log(Error);
+    }
+}
+
+export function textRemoved(pathName: string, fromLine: number, fromPosition: number, toLine: number, toPosition: number, name: string, project: string) {
+    try {
+        ws.send(buildTextRemovedMessage(pathName, fromLine, fromPosition, toLine, toPosition, name, project));
     } catch (Error) {
         console.log(Error);
     }

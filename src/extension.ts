@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import {closeWS, cursorMoved, openWS, textChanged} from './ws';
+import {closeWS, cursorMoved, openWS, textAdded, textRemoved} from './ws';
 
 //const users = new Map<string,Set<any>>();
 
@@ -33,22 +33,46 @@ export function activate(context: vscode.ExtensionContext) {
         if (editor) {
             const lineNumber = editor.selection.active.line;
             const position = editor.selection.active.character;
-            const selectionStart = editor.selection.start.character;
-            const selectionEnd = editor.selection.end.character;
-            const pathName = pathToString(editor.document.fileName);
+            const pathName = pathString(editor.document.fileName);
+            let selectionLine = editor.selection.end.line;
+            let selectionPosition = editor.selection.end.character;
+
+            if (editor.selection.active === editor.selection.end) { // flippt wenn cursor ist am ende der Markierung
+                selectionLine = editor.selection.start.line;
+                selectionPosition = editor.selection.start.character;
+            }
             //markLine(lineNumber,position,"Pascal");	// markiert aktuell den cursor und taggt "Pascal" | wird später für syncro benötigt
-            cursorMoved(pathName, lineNumber, position, selectionStart, selectionEnd, "Pascal", "Test");
+            cursorMoved(pathName, lineNumber, position, selectionLine, selectionPosition, "Pascal", "Test");
         }
     });
 
-    vscode.workspace.onDidChangeTextDocument(() => { // wird aufgerufen, wenn der Text geändert wird | muss Sperre reinmachen, wenn andere tippen | timeout?
-        let editor = vscode.window.activeTextEditor;
+    vscode.workspace.onDidChangeTextDocument(changes => { // wird aufgerufen, wenn der Text geändert wird | muss Sperre reinmachen, wenn andere tippen | timeout?
+        const editor = vscode.window.activeTextEditor;
         if (editor) {
-            const lineNumber = editor.selection.active.line;
-            const lineText = editor.document.lineAt(lineNumber).text;
-            const pathName = pathToString(editor.document.fileName);
-            console.log(`Zeile: "${lineNumber} | Inhalt der aktuellen Zeile: "${lineText}"`);
-            textChanged(pathName, lineNumber, lineText, "Pascal", "Test");
+            for (const change of changes.contentChanges) {
+                const pathName = pathString(editor.document.fileName);
+                const fromLine = change.range.start.line;
+                const fromPos = change.range.start.character;
+
+                if (change.range.isEmpty) {
+                    const content = jsonString(change.text);
+                    console.log(`Text added at ${fromLine + 1}:${fromPos} Text:`, content);
+                    textAdded(pathName, fromLine, fromPos, content, "Pascal", "Test");
+                } else {
+                    const toLine = change.range.end.line;
+                    const toPos = change.range.end.character;
+
+                    console.log(`Text removed from ${fromLine + 1}:${fromPos} to ${toLine + 1}:${toPos}`);
+
+                    textRemoved(pathName, fromLine, fromPos, toLine, toPos, "Pascal", "Test");
+                }
+            }
+
+            //const lineNumber = editor.selection.active.line;
+            //const lineText = jsonString(editor.document.lineAt(lineNumber).text);
+            //const pathName = jsonString(editor.document.fileName);
+            //console.log(`Zeile: "${lineNumber} | Inhalt der aktuellen Zeile: "${lineText}"`);
+            //textChanged(pathName, lineNumber, lineText, "Pascal", "Test"); //ws function
         }
     });
 
@@ -99,7 +123,11 @@ export function changeLine(pathName: string, lineNumber: number, name: string, c
     }
 }
 
-function pathToString(path: string) {
+function jsonString(content: string) {
+    return content.replace(/\\/g, '\\\\').replace(/\n/g, "\\n").replace(/"/g, '\\"');
+}
+
+function pathString(path: string) {
     path = relPath(path);
     return path.replace(/\\/g, '\\\\');
 }
