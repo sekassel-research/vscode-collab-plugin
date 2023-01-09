@@ -43,16 +43,27 @@ export function activate(context: vscode.ExtensionContext) {
 
     // kompett umbau...
     vscode.workspace.onDidChangeTextDocument(changes => { // wird aufgerufen, wenn der Text geändert wird | muss Sperre reinmachen, wenn andere tippen | timeout?
-        for (const change of changes.contentChanges) {
-              console.log(change.text);
-            }
-        let editor = vscode.window.activeTextEditor;
+        const editor = vscode.window.activeTextEditor;
         if (editor) {
-            const lineNumber = editor.selection.active.line;
-            const lineText = jsonString(editor.document.lineAt(lineNumber).text);
-            const pathName = jsonString(editor.document.fileName);
-            console.log(`Zeile: "${lineNumber} | Inhalt der aktuellen Zeile: "${lineText}"`);
-            textChanged(pathName, lineNumber, lineText, "Pascal", "Test");
+            for (const change of changes.contentChanges) {
+                const fromLine = change.range.start.line;
+                const fromPos = change.range.start.character;
+
+                if (change.range.isEmpty) {
+                    console.log(`Text added at ${fromLine+1}:${fromPos}`);
+                } else {
+                    const toLine = change.range.end.line;
+                    const toPos = change.range.end.character;
+
+                    console.log(`Text removed from ${fromLine+1}:${fromPos} to ${toLine+1}:${toPos}`);
+                }
+                }
+
+            //const lineNumber = editor.selection.active.line;
+            //const lineText = jsonString(editor.document.lineAt(lineNumber).text);
+            //const pathName = jsonString(editor.document.fileName);
+            //console.log(`Zeile: "${lineNumber} | Inhalt der aktuellen Zeile: "${lineText}"`);
+            //textChanged(pathName, lineNumber, lineText, "Pascal", "Test"); //ws function
         }
     });
 
