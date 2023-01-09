@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import {closeWS, cursorMoved, openWS, textChanged} from './ws';
+import {closeWS, cursorMoved, openWS, textAdded, textRemoved} from './ws';
 
 //const users = new Map<string,Set<any>>();
 
@@ -46,18 +46,23 @@ export function activate(context: vscode.ExtensionContext) {
         const editor = vscode.window.activeTextEditor;
         if (editor) {
             for (const change of changes.contentChanges) {
+                const pathName = jsonString(editor.document.fileName);
                 const fromLine = change.range.start.line;
                 const fromPos = change.range.start.character;
 
                 if (change.range.isEmpty) {
-                    console.log(`Text added at ${fromLine+1}:${fromPos}`);
+                    const content = jsonString(change.text).replace(/\n/g, "\\n");
+                    console.log(`Text added at ${fromLine + 1}:${fromPos} Text:`, content);
+                    textAdded(pathName, fromLine, fromPos, content, "Pascal", "Test");
                 } else {
                     const toLine = change.range.end.line;
                     const toPos = change.range.end.character;
 
-                    console.log(`Text removed from ${fromLine+1}:${fromPos} to ${toLine+1}:${toPos}`);
+                    console.log(`Text removed from ${fromLine + 1}:${fromPos} to ${toLine + 1}:${toPos}`);
+
+                    textRemoved(pathName, fromLine, fromPos, toLine, toPos, "Pascal", "Test");
                 }
-                }
+            }
 
             //const lineNumber = editor.selection.active.line;
             //const lineText = jsonString(editor.document.lineAt(lineNumber).text);
