@@ -35,18 +35,22 @@ export function activate(context: vscode.ExtensionContext) {
             const position = editor.selection.active.character;
             const selectionStart = editor.selection.start.character;
             const selectionEnd = editor.selection.end.character;
-            const pathName = pathToString(editor.document.fileName);
+            const pathName = jsonString(editor.document.fileName);
             //markLine(lineNumber,position,"Pascal");	// markiert aktuell den cursor und taggt "Pascal" | wird später für syncro benötigt
             cursorMoved(pathName, lineNumber, position, selectionStart, selectionEnd, "Pascal", "Test");
         }
     });
 
-    vscode.workspace.onDidChangeTextDocument(() => { // wird aufgerufen, wenn der Text geändert wird | muss Sperre reinmachen, wenn andere tippen | timeout?
+    // kompett umbau...
+    vscode.workspace.onDidChangeTextDocument(changes => { // wird aufgerufen, wenn der Text geändert wird | muss Sperre reinmachen, wenn andere tippen | timeout?
+        for (const change of changes.contentChanges) {
+              console.log(change.text);
+            }
         let editor = vscode.window.activeTextEditor;
         if (editor) {
             const lineNumber = editor.selection.active.line;
-            const lineText = editor.document.lineAt(lineNumber).text;
-            const pathName = pathToString(editor.document.fileName);
+            const lineText = jsonString(editor.document.lineAt(lineNumber).text);
+            const pathName = jsonString(editor.document.fileName);
             console.log(`Zeile: "${lineNumber} | Inhalt der aktuellen Zeile: "${lineText}"`);
             textChanged(pathName, lineNumber, lineText, "Pascal", "Test");
         }
@@ -99,7 +103,7 @@ export function changeLine(pathName: string, lineNumber: number, name: string, c
     }
 }
 
-function pathToString(path: string) {
+function jsonString(path: string) {
     path = relPath(path);
     return path.replace(/\\/g, '\\\\');
 }
