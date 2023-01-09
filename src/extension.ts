@@ -14,14 +14,15 @@ let nameTag = vscode.window.createTextEditorDecorationType({
     }
 });
 
+let selection = vscode.window.createTextEditorDecorationType({
+    backgroundColor: '#dc143c66',
+});
+
+
 let marker = vscode.window.createTextEditorDecorationType({
-    //backgroundColor: 'solid yellow',		funktioniert nicht
     border: '1px solid crimson',
 });
 
-let selection = vscode.window.createTextEditorDecorationType({
-    backgroundColor: 'green',
-});
 
 export function activate(context: vscode.ExtensionContext) {
     console.log("init");
