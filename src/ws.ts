@@ -52,9 +52,9 @@ export function closeWS(name: string, project: string) {
     ws.close(1000, 'connection was closed by the user');
 }
 
-export function cursorMoved(pathName: string, lineNumber: number, position: number, selectionStart: number, selectionEnd: number, name: string, project: string) {
+export function cursorMoved(pathName: string, lineNumber: number, position: number, selectionLine: number, selectionPosition: number, name: string, project: string) {
     try {
-        ws.send(buildCursorMovedMessage(pathName, lineNumber, position, selectionStart, selectionEnd, name, project));
+        ws.send(buildCursorMovedMessage(pathName, lineNumber, position, selectionLine, selectionPosition, name, project));
     } catch (Error) {
         console.log(Error);
     }

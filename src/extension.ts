@@ -33,11 +33,16 @@ export function activate(context: vscode.ExtensionContext) {
         if (editor) {
             const lineNumber = editor.selection.active.line;
             const position = editor.selection.active.character;
-            const selectionStart = editor.selection.start.character;
-            const selectionEnd = editor.selection.end.character;
             const pathName = jsonString(editor.document.fileName);
+            let selectionLine = editor.selection.end.line;
+            let selectionPosition = editor.selection.end.character;
+
+            if (editor.selection.active === editor.selection.end) {
+                selectionLine = editor.selection.start.line;
+                selectionPosition = editor.selection.start.character;
+            }
             //markLine(lineNumber,position,"Pascal");	// markiert aktuell den cursor und taggt "Pascal" | wird später für syncro benötigt
-            cursorMoved(pathName, lineNumber, position, selectionStart, selectionEnd, "Pascal", "Test");
+            cursorMoved(pathName, lineNumber, position, selectionLine, selectionPosition, "Pascal", "Test");
         }
     });
 
