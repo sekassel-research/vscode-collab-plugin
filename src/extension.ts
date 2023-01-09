@@ -19,6 +19,10 @@ let marker = vscode.window.createTextEditorDecorationType({
     border: '1px solid crimson',
 });
 
+let selection = vscode.window.createTextEditorDecorationType({
+    backgroundColor: 'green',
+});
+
 export function activate(context: vscode.ExtensionContext) {
     console.log("init");
     openWS("Pascal", "Test");
@@ -28,9 +32,11 @@ export function activate(context: vscode.ExtensionContext) {
         if (editor) {
             const lineNumber = editor.selection.active.line;
             const position = editor.selection.active.character;
+            const selectionStart = editor.selection.start.character;
+            const selectionEnd = editor.selection.end.character;
             const pathName = pathToString(editor.document.fileName);
             //markLine(lineNumber,position,"Pascal");	// markiert aktuell den cursor und taggt "Pascal" | wird später für syncro benötigt
-            cursorMoved(pathName, lineNumber, position, "Pascal", "Test");
+            cursorMoved(pathName, lineNumber, position, selectionStart, selectionEnd, "Pascal", "Test");
         }
     });
 
@@ -53,7 +59,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 }
 
-export function markLine(pathName: string, lineNumber: number, position: number, name: string): void {
+export function markLine(pathName: string, lineNumber: number, position: number, selectionStart: number, selectionEnd: number, name: string): void {
     console.log("markLine called");
     const editor = vscode.window.activeTextEditor;
     if (!editor || relPath(editor.document.fileName) !== pathName) {
@@ -61,6 +67,10 @@ export function markLine(pathName: string, lineNumber: number, position: number,
     }
     const line = editor.document.lineAt(lineNumber);
     editor.setDecorations(nameTag, [line.range]);    // markiert ganze line damit NameTag am ende ist
+
+    let selectionPosition = new vscode.Range(new vscode.Position(lineNumber, selectionStart), new vscode.Position(lineNumber, selectionEnd));
+    editor.setDecorations(selection, [selectionPosition]);   // markiert textauswahl
+
     let currrentPosition = new vscode.Position(lineNumber, position);
     let markerPosition = {
         range: new vscode.Range(currrentPosition, currrentPosition),

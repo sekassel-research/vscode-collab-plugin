@@ -2,9 +2,9 @@ export function buildUserMessage(operation:string,name:string,project:string){
     return `{"operation":"${operation}","data":{"name":"${name}","project":"${project}"}}`
 }
 
-export function buildCursorMovedMessage(pathName:string,lineNumber:any,position:any,name:string,project:string){
+export function buildCursorMovedMessage(pathName:string,lineNumber:number,position:number,selectionStart:number,selectionEnd:number,name:string,project:string){
     return `{"operation":"cursorMoved","data":{"pathName":"${pathName}","lineNumber":${lineNumber},
-            "position":${position},"name":"${name}", "project":"${project}"}}`;
+            "position":${position},"selectionStart":${selectionStart},"selectionEnd":${selectionEnd},"name":"${name}", "project":"${project}"}}`;
 }
 
 export function buildTextChangedMessage(pathName:string,lineNumber:any,content:string,name:string,project:string){
