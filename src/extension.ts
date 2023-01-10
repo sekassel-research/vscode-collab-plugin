@@ -1,35 +1,26 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { user } from './class/user';
+import {user} from './class/user';
 import {closeWS, cursorMoved, openWS, textAdded, textReplaced} from './ws';
 
-const users = new Map<string,Set<user>>();
+const users = new Map<string, Set<user>>();
 
-async function getUserData(): Promise<string | undefined> {
-	return (process.env.userId,process.env.projectId);
-}
-
-let nameTag = vscode.window.createTextEditorDecorationType({
-    after: {
-        margin: "0 0 0 3em",
-        contentText: 'Pascal',
-    }
-});
-
-let selection = vscode.window.createTextEditorDecorationType({
-    backgroundColor: '#dc143c66',
-});
-
-
-let marker = vscode.window.createTextEditorDecorationType({
-    border: '1px solid crimson',
-});
+let username = process.env.username;
+let project = process.env.projectId;
 
 
 export function activate(context: vscode.ExtensionContext) {
     console.log("init");
-    openWS("Pascal", "Test");
+
+    if (username === undefined) {
+        username = "User"
+    }
+    if (project === undefined) {
+        project = "Test"
+    }
+
+    openWS(username, project);
 
     vscode.window.onDidChangeTextEditorSelection(() => { // wird aufgerufen, wenn cursorposition sich ändert
         const editor = vscode.window.activeTextEditor;
@@ -81,6 +72,14 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 }
 
+//function getUserName() {
+//	return process.env.userName;
+//}
+
+//function getProjectId(){
+//	return process.env.projectId;
+//}
+
 export function markLine(pathName: string, lineNumber: number, position: number, selectionStart: number, selectionEnd: number, name: string): void {
     console.log("markLine called");
     const editor = vscode.window.activeTextEditor;
@@ -88,16 +87,16 @@ export function markLine(pathName: string, lineNumber: number, position: number,
         return;
     }
     const line = editor.document.lineAt(lineNumber);
-    editor.setDecorations(nameTag, [line.range]);    // markiert ganze line damit NameTag am Ende ist
+    //editor.setDecorations(nameTag, [line.range]);    // markiert ganze line damit NameTag am Ende ist
 
     let selectionPosition = new vscode.Range(new vscode.Position(lineNumber, selectionStart), new vscode.Position(lineNumber, selectionEnd));
-    editor.setDecorations(selection, [selectionPosition]);   // markiert textauswahl in 66% crimson
+    //editor.setDecorations(selection, [selectionPosition]);   // markiert textauswahl in 66% crimson
 
     let currrentPosition = new vscode.Position(lineNumber, position);
     let markerPosition = {
         range: new vscode.Range(currrentPosition, currrentPosition),
     };
-    editor.setDecorations(marker, [markerPosition]); // markiert Cursorposition in crimson
+    //editor.setDecorations(marker, [markerPosition]); // markiert Cursorposition in crimson
 }
 
 // cursor position | ersetzt aktuell ganze Zeile / zwar sicherer als Zeichen löschen aber halt Cursor
