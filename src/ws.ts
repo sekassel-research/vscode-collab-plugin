@@ -1,5 +1,5 @@
-import {markLine, changeLine} from "./extension";
-import {cursorMovedData, textChangedData} from "./interface/data";
+import {markLine, addText} from "./extension";
+import {cursorMovedData, textAddedData} from "./interface/data";
 import {message} from "./interface/message";
 import {
     buildCursorMovedMessage,
@@ -84,9 +84,9 @@ function handleMessage(msg: message) {
         markLine(data.pathName, data.lineNumber, data.position, data.selectionStart, data.selectionEnd, data.name);
         return;
     }
-    if (msg.operation === "textChanged") {
-        let data: textChangedData = msg.data;
-        changeLine(data.pathName, data.lineNumber, data.name, data.content);
+    if (msg.operation === "textAdded") {
+        let data: textAddedData = msg.data;
+        addText(data.pathName, data.lineNumber, data.position, data.name, data.content);
         return;
     }
 }

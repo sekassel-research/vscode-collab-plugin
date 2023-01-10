@@ -11,8 +11,9 @@ export interface cursorMovedData extends data {
     selectionEnd: number,
 }
 
-export interface textChangedData extends data {
+export interface textAddedData extends data {
     pathName: string,
     lineNumber: number,
+    position: number,
     content: string
 }

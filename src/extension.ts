@@ -57,22 +57,16 @@ export function activate(context: vscode.ExtensionContext) {
                 if (change.range.isEmpty) {
                     const content = jsonString(change.text);
                     console.log(`Text added at ${fromLine + 1}:${fromPos} Text:`, content);
+
                     textAdded(pathName, fromLine, fromPos, content, "Pascal", "Test");
                 } else {
                     const toLine = change.range.end.line;
                     const toPos = change.range.end.character;
-
                     console.log(`Text removed from ${fromLine + 1}:${fromPos} to ${toLine + 1}:${toPos}`);
 
                     textRemoved(pathName, fromLine, fromPos, toLine, toPos, "Pascal", "Test");
                 }
             }
-
-            //const lineNumber = editor.selection.active.line;
-            //const lineText = jsonString(editor.document.lineAt(lineNumber).text);
-            //const pathName = jsonString(editor.document.fileName);
-            //console.log(`Zeile: "${lineNumber} | Inhalt der aktuellen Zeile: "${lineText}"`);
-            //textChanged(pathName, lineNumber, lineText, "Pascal", "Test"); //ws function
         }
     });
 
@@ -104,7 +98,7 @@ export function markLine(pathName: string, lineNumber: number, position: number,
 }
 
 // cursor position | ersetzt aktuell ganze Zeile / zwar sicherer als Zeichen löschen aber halt Cursor
-export function changeLine(pathName: string, lineNumber: number, name: string, content: string) {
+export function addText(pathName: string, lineNumber: number, position: number, name: string, content: string) {
     const editor = vscode.window.activeTextEditor;
     if (!editor || pathName !== relPath(editor.document.fileName)) {
         return;
@@ -113,7 +107,7 @@ export function changeLine(pathName: string, lineNumber: number, name: string, c
     const line = editor.document.lineAt(lineNumber);
     const cursorPosition = editor.selection.active;
 
-    edit.replace(editor.document.uri, new vscode.Range(line.range.start, line.range.end), content);
+    edit.insert(editor.document.uri, new vscode.Position(lineNumber, position), content);
     vscode.workspace.applyEdit(edit);
 
     if (cursorPosition.character <= content.length) {
