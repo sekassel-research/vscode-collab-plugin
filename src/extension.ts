@@ -1,5 +1,6 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
+import {resolve} from 'path';
 import * as vscode from 'vscode';
 import {user} from './class/user';
 import {closeWS, cursorMoved, openWS, textAdded, textReplaced} from './ws';
@@ -82,7 +83,14 @@ export function activate(context: vscode.ExtensionContext) {
 
 export function userJoined(name: string) {
     users.set(name, new user(name));
-    vscode.window.showInformationMessage("User " + name + " joined.")
+    vscode.window.setStatusBarMessage("User: " + name + " joined", 5000);
+}
+
+export function userLeft(name: string) {
+    if (users.has(name)) {
+        users.delete(name);
+        vscode.window.setStatusBarMessage("User: " + name + " left", 5000);
+    }
 }
 
 export function markLine(pathName: string, lineNumber: number, position: number, selectionLine: number, selectionPosition: number, name: string): void {
