@@ -7,8 +7,8 @@ export interface cursorMovedData extends data {
     pathName: string,
     lineNumber: number,
     position: number,
-    selectionStart: number,
-    selectionEnd: number,
+    selectionLine: number,
+    selectionPosition: number,
 }
 
 export interface textAddedData extends data {

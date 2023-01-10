@@ -1,4 +1,4 @@
-import {markLine, addText, replaceText} from "./extension";
+import {markLine, addText, replaceText, userJoined, userLeft} from "./extension";
 import {cursorMovedData, textAddedData, textReplacedData} from "./interface/data";
 import {message} from "./interface/message";
 import {
@@ -79,9 +79,21 @@ export function textReplaced(pathName: string, fromLine: number, fromPosition: n
 function handleMessage(msg: message) {
     console.log("handleMessage called");
 
+    if (msg.operation === "userJoined") {
+        let data: cursorMovedData = msg.data;
+        userJoined(data.name);
+        return;
+    }
+
+    if (msg.operation === "userLeft") {
+        let data: cursorMovedData = msg.data;
+        userLeft(data.name);
+        return;
+    }
+
     if (msg.operation === "cursorMoved") {
         let data: cursorMovedData = msg.data;
-        markLine(data.pathName, data.lineNumber, data.position, data.selectionStart, data.selectionEnd, data.name);
+        markLine(data.pathName, data.lineNumber, data.position, data.selectionLine, data.selectionPosition, data.name);
         return;
     }
     if (msg.operation === "textAdded") {
