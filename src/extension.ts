@@ -1,11 +1,14 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { user } from './class/user';
 import {closeWS, cursorMoved, openWS, textAdded, textReplaced} from './ws';
 
-//const users = new Map<string,Set<any>>();
+const users = new Map<string,Set<user>>();
 
-//map.get()
+async function getUserData(): Promise<string | undefined> {
+	return (process.env.userId,process.env.projectId);
+}
 
 let nameTag = vscode.window.createTextEditorDecorationType({
     after: {
