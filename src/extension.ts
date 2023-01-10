@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import {closeWS, cursorMoved, openWS, textAdded, textRemoved} from './ws';
+import {closeWS, cursorMoved, openWS, textAdded, textReplaced} from './ws';
 
 //const users = new Map<string,Set<any>>();
 
@@ -53,9 +53,9 @@ export function activate(context: vscode.ExtensionContext) {
                 const pathName = pathString(editor.document.fileName);
                 const fromLine = change.range.start.line;
                 const fromPos = change.range.start.character;
+                const content = jsonString(change.text);
 
                 if (change.range.isEmpty) {
-                    const content = jsonString(change.text);
                     console.log(`Text added at ${fromLine + 1}:${fromPos} Text:`, content);
 
                     textAdded(pathName, fromLine, fromPos, content, "Pascal", "Test");
@@ -64,7 +64,7 @@ export function activate(context: vscode.ExtensionContext) {
                     const toPos = change.range.end.character;
                     console.log(`Text removed from ${fromLine + 1}:${fromPos} to ${toLine + 1}:${toPos}`);
 
-                    textRemoved(pathName, fromLine, fromPos, toLine, toPos, "Pascal", "Test");
+                    textReplaced(pathName, fromLine, fromPos, toLine, toPos, content, "Pascal", "Test");
                 }
             }
         }
@@ -104,17 +104,23 @@ export function addText(pathName: string, lineNumber: number, position: number, 
         return;
     }
     const edit = new vscode.WorkspaceEdit();
-    const line = editor.document.lineAt(lineNumber);
-    const cursorPosition = editor.selection.active;
-
     edit.insert(editor.document.uri, new vscode.Position(lineNumber, position), content);
     vscode.workspace.applyEdit(edit);
+}
 
-    if (cursorPosition.character <= content.length) {
-        editor.selection = new vscode.Selection(cursorPosition, cursorPosition);
-    } else {
-        editor.selection = new vscode.Selection(line.range.start.line, content.length, line.range.start.line, content.length);
+export function replaceText(pathName: string, fromLine: number, fromPosition: number, toLine: number, toPosition: number, content: string, name: string) {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor || pathName !== relPath(editor.document.fileName)) {
+        return;
     }
+    const edit = new vscode.WorkspaceEdit();
+    const from = new vscode.Position(fromLine, fromPosition);
+    const to = new vscode.Position(toLine, toPosition);
+
+
+    edit.replace(editor.document.uri, new vscode.Range(from, to), content);
+    vscode.workspace.applyEdit(edit);
+
 }
 
 function jsonString(content: string) {

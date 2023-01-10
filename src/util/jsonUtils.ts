@@ -12,7 +12,7 @@ export function buildTextAddedMessage(pathName: string, lineNumber: number, posi
     "content":"${content}","name":"${name}", "project":"${project}"}}`;
 }
 
-export function buildTextRemovedMessage(pathName: string, fromLine: number, fromPosition: number, toLine: number, toPosition: number, name: string, project: string) {
-    return `{"operation":"textRemoved","data":{"pathName":"${pathName}","fromLine":${fromLine},"fromPosition":${fromPosition},
-    "toLine":${toLine},"toPosition":${toPosition},"name":"${name}", "project":"${project}"}}`;
+export function buildTextReplacedMessage(pathName: string, fromLine: number, fromPosition: number, toLine: number, toPosition: number, content: string, name: string, project: string) {
+    return `{"operation":"textReplaced","data":{"pathName":"${pathName}","fromLine":${fromLine},"fromPosition":${fromPosition},
+    "toLine":${toLine},"toPosition":${toPosition},"content":"${content}","name":"${name}", "project":"${project}"}}`;
 }

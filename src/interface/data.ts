@@ -17,3 +17,12 @@ export interface textAddedData extends data {
     position: number,
     content: string
 }
+
+export interface textReplacedData extends data {
+    pathName: string,
+    fromLine: number,
+    fromPosition: number,
+    toLine: number,
+    toPosition: number,
+    content: string
+}

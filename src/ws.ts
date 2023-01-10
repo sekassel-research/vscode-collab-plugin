@@ -1,10 +1,10 @@
-import {markLine, addText} from "./extension";
-import {cursorMovedData, textAddedData} from "./interface/data";
+import {markLine, addText, replaceText} from "./extension";
+import {cursorMovedData, textAddedData, textReplacedData} from "./interface/data";
 import {message} from "./interface/message";
 import {
     buildCursorMovedMessage,
     buildTextAddedMessage,
-    buildTextRemovedMessage,
+    buildTextReplacedMessage,
     buildUserMessage
 } from "./util/jsonUtils";
 
@@ -68,9 +68,9 @@ export function textAdded(pathName: string, lineNumber: number, position: number
     }
 }
 
-export function textRemoved(pathName: string, fromLine: number, fromPosition: number, toLine: number, toPosition: number, name: string, project: string) {
+export function textReplaced(pathName: string, fromLine: number, fromPosition: number, toLine: number, toPosition: number, content: string, name: string, project: string) {
     try {
-        ws.send(buildTextRemovedMessage(pathName, fromLine, fromPosition, toLine, toPosition, name, project));
+        ws.send(buildTextReplacedMessage(pathName, fromLine, fromPosition, toLine, toPosition, content, name, project));
     } catch (Error) {
         console.log(Error);
     }
@@ -87,6 +87,11 @@ function handleMessage(msg: message) {
     if (msg.operation === "textAdded") {
         let data: textAddedData = msg.data;
         addText(data.pathName, data.lineNumber, data.position, data.name, data.content);
+        return;
+    }
+    if (msg.operation === "textReplaced") {
+        let data: textReplacedData = msg.data;
+        replaceText(data.pathName, data.fromLine, data.fromPosition, data.toLine, data.toPosition, data.content, data.name,);
         return;
     }
 }
