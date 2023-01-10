@@ -1,4 +1,4 @@
-import {markLine, addText, replaceText, userJoined} from "./extension";
+import {markLine, addText, replaceText, userJoined, userLeft} from "./extension";
 import {cursorMovedData, textAddedData, textReplacedData} from "./interface/data";
 import {message} from "./interface/message";
 import {
@@ -82,6 +82,12 @@ function handleMessage(msg: message) {
     if (msg.operation === "userJoined") {
         let data: cursorMovedData = msg.data;
         userJoined(data.name);
+        return;
+    }
+
+    if (msg.operation === "userLeft") {
+        let data: cursorMovedData = msg.data;
+        userLeft(data.name);
         return;
     }
 
