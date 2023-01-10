@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import {user} from './class/user';
 import {closeWS, cursorMoved, openWS, textAdded, textReplaced} from './ws';
 
-const users = new Map<string, Set<user>>();
+const users = new Map<string, user>();
 
 let username = process.env.username;
 let project = process.env.projectId;
@@ -80,29 +80,42 @@ export function activate(context: vscode.ExtensionContext) {
 //	return process.env.projectId;
 //}
 
-export function markLine(pathName: string, lineNumber: number, position: number, selectionStart: number, selectionEnd: number, name: string): void {
+export function userJoined(name: string) {
+    users.set(name, new user(name));
+    vscode.window.showInformationMessage("User " + name + " joined.")
+}
+
+export function markLine(pathName: string, lineNumber: number, position: number, selectionLine: number, selectionPosition: number, name: string): void {
     console.log("markLine called");
     const editor = vscode.window.activeTextEditor;
-    if (!editor || relPath(editor.document.fileName) !== pathName) {
+    if (!editor || relPath(editor.document.fileName) !== pathName || !users.get(name)) {
         return;
     }
-    const line = editor.document.lineAt(lineNumber);
-    //editor.setDecorations(nameTag, [line.range]);    // markiert ganze line damit NameTag am Ende ist
+    const user = users.get(name);
+    if (user) {
+        const line = editor.document.lineAt(lineNumber);
 
-    let selectionPosition = new vscode.Range(new vscode.Position(lineNumber, selectionStart), new vscode.Position(lineNumber, selectionEnd));
-    //editor.setDecorations(selection, [selectionPosition]);   // markiert textauswahl in 66% crimson
+        editor.setDecorations(user.getNameTag(), [line.range]);    // markiert ganze line damit NameTag am Ende ist
 
-    let currrentPosition = new vscode.Position(lineNumber, position);
-    let markerPosition = {
-        range: new vscode.Range(currrentPosition, currrentPosition),
-    };
-    //editor.setDecorations(marker, [markerPosition]); // markiert Cursorposition in crimson
+        console.log(selectionLine, selectionPosition);
+
+        let selection = new vscode.Range(new vscode.Position(lineNumber, position), new vscode.Position(selectionLine, selectionPosition));
+        editor.setDecorations(user.getSelection(), [selection]);   // markiert textauswahl in 66% crimson
+
+        let currrentPosition = new vscode.Position(lineNumber, position);
+        let markerPosition = {
+            range: new vscode.Range(currrentPosition, currrentPosition),
+        };
+        editor.setDecorations(user.getCursor(), [markerPosition]); // markiert Cursorposition in crimson
+    }
 }
 
 // cursor position | ersetzt aktuell ganze Zeile / zwar sicherer als Zeichen löschen aber halt Cursor
 export function addText(pathName: string, lineNumber: number, position: number, name: string, content: string) {
     const editor = vscode.window.activeTextEditor;
-    if (!editor || pathName !== relPath(editor.document.fileName)) {
+
+    if (!editor || pathName !== relPath(editor.document.fileName) || !users.has(name)) {
+        console.log(!editor, !users.has(name));
         return;
     }
     const edit = new vscode.WorkspaceEdit();

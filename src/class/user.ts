@@ -14,15 +14,14 @@ export class user {
                 contentText: name,
             }
         });
-        let color = stringToColor(name)
 
         this.selection = vscode.window.createTextEditorDecorationType({
-            backgroundColor: '#' + color + '66',
+            backgroundColor: '#dc143c66',
         });
 
 
         this.cursor = vscode.window.createTextEditorDecorationType({
-            border: '1px #' + color,
+            border: '1px solid crimson',
         });
     }
 
