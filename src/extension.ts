@@ -1,6 +1,5 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import {resolve} from 'path';
 import * as vscode from 'vscode';
 import {user} from './class/user';
 import {closeWS, cursorMoved, openWS, textAdded, textReplaced} from './ws';
@@ -15,10 +14,10 @@ export function activate(context: vscode.ExtensionContext) {
     console.log("init");
 
     if (username === undefined) {
-        username = "User"
+        username = "User";
     }
     if (project === undefined) {
-        project = "Test"
+        project = "Test";
     }
 
     openWS(username, project);
@@ -88,8 +87,18 @@ export function userJoined(name: string) {
 
 export function userLeft(name: string) {
     if (users.has(name)) {
+        removeMarking(users.get(name));
         users.delete(name);
         vscode.window.setStatusBarMessage("User: " + name + " left", 5000);
+    }
+}
+
+function removeMarking(user: user | undefined) {
+    const editor = vscode.window.activeTextEditor;
+    if (user && editor) {
+        editor.setDecorations(user.getNameTag(), []);
+        editor.setDecorations(user.getSelection(), []);
+        editor.setDecorations(user.getCursor(), []);
     }
 }
 
@@ -133,7 +142,7 @@ export function addText(pathName: string, lineNumber: number, position: number, 
 
 export function replaceText(pathName: string, fromLine: number, fromPosition: number, toLine: number, toPosition: number, content: string, name: string) {
     const editor = vscode.window.activeTextEditor;
-    if (!editor || pathName !== relPath(editor.document.fileName)) {
+    if (!editor || pathName !== relPath(editor.document.fileName) || !users.has(name)) {
         return;
     }
     const edit = new vscode.WorkspaceEdit();
