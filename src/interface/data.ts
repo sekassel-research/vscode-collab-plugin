@@ -1,9 +1,9 @@
-export interface data {
+export interface Data {
     name: string
     project: string
 }
 
-export interface cursorMovedData extends data {
+export interface CursorMovedData extends Data {
     pathName: string,
     lineNumber: number,
     position: number,
@@ -11,14 +11,7 @@ export interface cursorMovedData extends data {
     selectionPosition: number,
 }
 
-export interface textAddedData extends data {
-    pathName: string,
-    lineNumber: number,
-    position: number,
-    content: string
-}
-
-export interface textReplacedData extends data {
+export interface TextReplacedData extends Data {
     pathName: string,
     fromLine: number,
     fromPosition: number,

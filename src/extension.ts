@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import {user} from './class/user';
-import {closeWS, cursorMoved, openWS, textAdded, textReplaced} from './ws';
+import {closeWS, cursorMoved, openWS, textReplaced} from './ws';
 
 const users = new Map<string, user>();
 
@@ -13,10 +13,10 @@ let project = process.env.projectId;
 export function activate(context: vscode.ExtensionContext) {
     console.log("init");
 
-    if (username === undefined) {
+    if (!username) {
         username = "User";
     }
-    if (project === undefined) {
+    if (!project) {
         project = "Test";
     }
 
@@ -52,7 +52,7 @@ export function activate(context: vscode.ExtensionContext) {
                 const toPos = change.range.end.character;
                 console.log(`Text replaced from ${fromLine + 1}:${fromPos} to ${toLine + 1}:${toPos}`);
 
-                textReplaced(pathName, fromLine, fromPos, toLine, toPos, content, "Pascal", "Test"); 
+                textReplaced(pathName, fromLine, fromPos, toLine, toPos, content, "Pascal", "Test");
             }
         }
     });
@@ -106,7 +106,7 @@ export function markLine(pathName: string, lineNumber: number, position: number,
     if (user) {
         const line = editor.document.lineAt(lineNumber);
 
-        editor.setDecorations(user.getColorIndicator(), [line.range]); 
+        editor.setDecorations(user.getColorIndicator(), [line.range]);
         editor.setDecorations(user.getNameTag(), [line.range]);    // markiert ganze line damit NameTag am Ende ist
 
         console.log(selectionLine, selectionPosition);
@@ -122,19 +122,6 @@ export function markLine(pathName: string, lineNumber: number, position: number,
     }
 }
 
-// cursor position | ersetzt aktuell ganze Zeile / zwar sicherer als Zeichen löschen aber halt Cursor
-export function addText(pathName: string, lineNumber: number, position: number, name: string, content: string) {
-    const editor = vscode.window.activeTextEditor;
-
-    if (!editor || pathName !== relPath(editor.document.fileName) || !users.has(name)) {
-        console.log(!editor, !users.has(name));
-        return;
-    }
-    const edit = new vscode.WorkspaceEdit();
-    edit.insert(editor.document.uri, new vscode.Position(lineNumber, position), content);
-    vscode.workspace.applyEdit(edit);
-}
-
 export function replaceText(pathName: string, fromLine: number, fromPosition: number, toLine: number, toPosition: number, content: string, name: string) {
     const editor = vscode.window.activeTextEditor;
     if (!editor || pathName !== relPath(editor.document.fileName) || !users.has(name)) {
@@ -147,7 +134,6 @@ export function replaceText(pathName: string, fromLine: number, fromPosition: nu
 
     edit.replace(editor.document.uri, new vscode.Range(from, to), content);
     vscode.workspace.applyEdit(edit);
-
 }
 
 function jsonString(content: string) {
@@ -160,7 +146,7 @@ function pathString(path: string) {
 }
 
 function relPath(path: string) {
-    const projectRoot = vscode.workspace.rootPath;
+    const projectRoot = vscode.workspace.workspaceFolders?.at(0)?.uri.fsPath;
     if (projectRoot) {
         path = path.replace(projectRoot, '');
     }
@@ -169,6 +155,9 @@ function relPath(path: string) {
 
 export function deactivate() {
     return new Promise(() => {
-        closeWS("Pascal", "Test");
+        if (!username || !project) {
+            return;
+        }
+        closeWS(username, project);
     });
 }
