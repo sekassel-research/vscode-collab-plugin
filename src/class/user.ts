@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import {stringToColor} from '../util/colourGen';
 
-export class user {
+export class User {
     colorIndicator: vscode.TextEditorDecorationType;
     nameTag: vscode.TextEditorDecorationType;
     selection: vscode.TextEditorDecorationType;

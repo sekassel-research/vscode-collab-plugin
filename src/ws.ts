@@ -1,26 +1,25 @@
-import {markLine, addText, replaceText, userJoined, userLeft} from "./extension";
-import {cursorMovedData, textAddedData, textReplacedData} from "./interface/data";
-import {message} from "./interface/message";
+import {markLine, replaceText, userJoined, userLeft} from "./extension";
+import {CursorMovedData, TextReplacedData} from "./interface/data";
+import {Message} from "./interface/message";
 import {
     buildCursorMovedMessage,
-    buildTextAddedMessage,
     buildTextReplacedMessage,
     buildUserMessage
 } from "./util/jsonUtils";
 
-const WebSocket = require('ws');
+const webSocket = require('ws');
 
-let ws = new WebSocket('ws://localhost:8080');
+let ws = new webSocket('ws://localhost:8080');
 let wsClose = false;
 
 
 export function openWS(name: string, project: string) {
-    ws = new WebSocket('ws://localhost:8080');
+    ws = new webSocket('ws://localhost:8080');
     ws.on('open', function open() {
         console.log("connected");
 
         ws.on('message', function incoming(data: any) {
-            const msg: message = JSON.parse(Buffer.from(data).toString());
+            const msg: Message = JSON.parse(Buffer.from(data).toString());
             console.log(JSON.stringify(msg));
             handleMessage(msg);
         });
@@ -53,56 +52,35 @@ export function closeWS(name: string, project: string) {
 }
 
 export function cursorMoved(pathName: string, lineNumber: number, position: number, selectionLine: number, selectionPosition: number, name: string, project: string) {
-    try {
-        ws.send(buildCursorMovedMessage(pathName, lineNumber, position, selectionLine, selectionPosition, name, project));
-    } catch (Error) {
-        console.log(Error);
-    }
-}
-
-export function textAdded(pathName: string, lineNumber: number, position: number, content: string, name: string, project: string) {
-    try {
-        ws.send(buildTextAddedMessage(pathName, lineNumber, position, content, name, project));
-    } catch (Error) {
-        console.log(Error);
-    }
+    ws.send(buildCursorMovedMessage(pathName, lineNumber, position, selectionLine, selectionPosition, name, project));
 }
 
 export function textReplaced(pathName: string, fromLine: number, fromPosition: number, toLine: number, toPosition: number, content: string, name: string, project: string) {
-    try {
-        ws.send(buildTextReplacedMessage(pathName, fromLine, fromPosition, toLine, toPosition, content, name, project));
-    } catch (Error) {
-        console.log(Error);
-    }
+    ws.send(buildTextReplacedMessage(pathName, fromLine, fromPosition, toLine, toPosition, content, name, project));
 }
 
-function handleMessage(msg: message) {
+function handleMessage(msg: Message) {
     console.log("handleMessage called");
 
     if (msg.operation === "userJoined") {
-        let data: cursorMovedData = msg.data;
+        let data: CursorMovedData = msg.data;
         userJoined(data.name);
         return;
     }
 
     if (msg.operation === "userLeft") {
-        let data: cursorMovedData = msg.data;
+        let data: CursorMovedData = msg.data;
         userLeft(data.name);
         return;
     }
 
     if (msg.operation === "cursorMoved") {
-        let data: cursorMovedData = msg.data;
+        let data: CursorMovedData = msg.data;
         markLine(data.pathName, data.lineNumber, data.position, data.selectionLine, data.selectionPosition, data.name);
         return;
     }
-    if (msg.operation === "textAdded") {
-        let data: textAddedData = msg.data;
-        addText(data.pathName, data.lineNumber, data.position, data.name, data.content);
-        return;
-    }
     if (msg.operation === "textReplaced") {
-        let data: textReplacedData = msg.data;
+        let data: TextReplacedData = msg.data;
         replaceText(data.pathName, data.fromLine, data.fromPosition, data.toLine, data.toPosition, data.content, data.name,);
         return;
     }

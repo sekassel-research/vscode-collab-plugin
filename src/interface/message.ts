@@ -1,4 +1,4 @@
-export interface message{
+export interface Message {
     operation: string;
     data: any
 }
