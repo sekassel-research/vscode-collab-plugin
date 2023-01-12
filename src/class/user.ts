@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import {stringToColor} from '../util/colourGen';
 
 export class user {
+    colorIndicator: vscode.TextEditorDecorationType;
     nameTag: vscode.TextEditorDecorationType;
     selection: vscode.TextEditorDecorationType;
     cursor: vscode.TextEditorDecorationType;
@@ -10,11 +11,18 @@ export class user {
     constructor(name: string) {
         let color = stringToColor(name);
 
-        this.nameTag = vscode.window.createTextEditorDecorationType({
+        this.colorIndicator = vscode.window.createTextEditorDecorationType({
             after: {
                 margin: "0 0 0 3em",
+                contentText: " ",
+                backgroundColor: color,
+            }
+        });
+
+        this.nameTag = vscode.window.createTextEditorDecorationType({
+            after: {
+                margin: "0 0 0 0.25em",
                 contentText: name,
-                border: '1px dotted ' + color,
             }
         });
 
@@ -26,6 +34,10 @@ export class user {
         this.cursor = vscode.window.createTextEditorDecorationType({
             border: '1px solid ' + color,
         });
+    }
+
+    public getColorIndicator(){
+        return this.colorIndicator;
     }
 
     public getNameTag() {
