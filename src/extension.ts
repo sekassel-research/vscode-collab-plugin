@@ -48,18 +48,11 @@ export function activate(context: vscode.ExtensionContext) {
                 const fromLine = change.range.start.line;
                 const fromPos = change.range.start.character;
                 const content = jsonString(change.text);
+                const toLine = change.range.end.line;
+                const toPos = change.range.end.character;
+                console.log(`Text replaced from ${fromLine + 1}:${fromPos} to ${toLine + 1}:${toPos}`);
 
-                if (change.range.isEmpty) {
-                    console.log(`Text added at ${fromLine + 1}:${fromPos} Text:`, content);
-
-                    textAdded(pathName, fromLine, fromPos, content, "Pascal", "Test");
-                } else {
-                    const toLine = change.range.end.line;
-                    const toPos = change.range.end.character;
-                    console.log(`Text removed from ${fromLine + 1}:${fromPos} to ${toLine + 1}:${toPos}`);
-
-                    textReplaced(pathName, fromLine, fromPos, toLine, toPos, content, "Pascal", "Test");
-                }
+                textReplaced(pathName, fromLine, fromPos, toLine, toPos, content, "Pascal", "Test"); 
             }
         }
     });
