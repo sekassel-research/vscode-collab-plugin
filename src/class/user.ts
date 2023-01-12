@@ -8,13 +8,15 @@ export class user {
 
 
     constructor(name: string) {
+        let color = stringToColor(name);
+
         this.nameTag = vscode.window.createTextEditorDecorationType({
             after: {
                 margin: "0 0 0 3em",
                 contentText: name,
+                border: '1px dotted ' + color,
             }
         });
-        let color = stringToColor(name);
 
         this.selection = vscode.window.createTextEditorDecorationType({
             backgroundColor: color + '66',
