@@ -1,6 +1,6 @@
 import {markLine, replaceText, userJoined, userLeft} from "./extension";
 import {CursorMovedData, TextReplacedData} from "./interface/data";
-import {message} from "./interface/message";
+import {Message} from "./interface/message";
 import {
     buildCursorMovedMessage,
     buildTextReplacedMessage,
@@ -19,7 +19,7 @@ export function openWS(name: string, project: string) {
         console.log("connected");
 
         ws.on('message', function incoming(data: any) {
-            const msg: message = JSON.parse(Buffer.from(data).toString());
+            const msg: Message = JSON.parse(Buffer.from(data).toString());
             console.log(JSON.stringify(msg));
             handleMessage(msg);
         });
@@ -52,22 +52,14 @@ export function closeWS(name: string, project: string) {
 }
 
 export function cursorMoved(pathName: string, lineNumber: number, position: number, selectionLine: number, selectionPosition: number, name: string, project: string) {
-    try {
-        ws.send(buildCursorMovedMessage(pathName, lineNumber, position, selectionLine, selectionPosition, name, project));
-    } catch (Error) {
-        console.log(Error);
-    }
+    ws.send(buildCursorMovedMessage(pathName, lineNumber, position, selectionLine, selectionPosition, name, project));
 }
 
 export function textReplaced(pathName: string, fromLine: number, fromPosition: number, toLine: number, toPosition: number, content: string, name: string, project: string) {
-    try {
-        ws.send(buildTextReplacedMessage(pathName, fromLine, fromPosition, toLine, toPosition, content, name, project));
-    } catch (Error) {
-        console.log(Error);
-    }
+    ws.send(buildTextReplacedMessage(pathName, fromLine, fromPosition, toLine, toPosition, content, name, project));
 }
 
-function handleMessage(msg: message) {
+function handleMessage(msg: Message) {
     console.log("handleMessage called");
 
     if (msg.operation === "userJoined") {
