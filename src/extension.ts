@@ -96,6 +96,7 @@ export function userLeft(name: string) {
 function removeMarking(user: user | undefined) {
     const editor = vscode.window.activeTextEditor;
     if (user && editor) {
+        editor.setDecorations(user.getColorIndicator(), []);
         editor.setDecorations(user.getNameTag(), []);
         editor.setDecorations(user.getSelection(), []);
         editor.setDecorations(user.getCursor(), []);
@@ -112,6 +113,7 @@ export function markLine(pathName: string, lineNumber: number, position: number,
     if (user) {
         const line = editor.document.lineAt(lineNumber);
 
+        editor.setDecorations(user.getColorIndicator(), [line.range]); 
         editor.setDecorations(user.getNameTag(), [line.range]);    // markiert ganze line damit NameTag am Ende ist
 
         console.log(selectionLine, selectionPosition);
