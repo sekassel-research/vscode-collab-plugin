@@ -36,7 +36,7 @@ export class User {
         });
     }
 
-    public getColorIndicator(){
+    public getColorIndicator() {
         return this.colorIndicator;
     }
 
