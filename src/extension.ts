@@ -27,18 +27,15 @@ export function activate(context: vscode.ExtensionContext) {
         if (!editor) {
             return;
         }
-        let lineNumber = editor.selection.active.line;
-        let position = editor.selection.active.character;
+        let cursor = editor.selection.active;
         let pathName = pathString(editor.document.fileName);
-        let selectionLine = editor.selection.end.line;
-        let selectionPosition = editor.selection.end.character;
+        let selectionEnd = editor.selection.end;
 
-        if (editor.selection.active === editor.selection.end) { // flippt wenn cursor ist am ende der Markierung
-            selectionLine = editor.selection.start.line;
-            selectionPosition = editor.selection.start.character;
+        if (cursor === selectionEnd) { // flippt wenn cursor ist am ende der Markierung
+            selectionEnd = editor.selection.start;
         }
         //markLine(lineNumber,position,"Pascal");	// markiert aktuell den cursor und taggt "Pascal" | wird später für syncro benötigt
-        cursorMoved(pathName, lineNumber, position, selectionLine, selectionPosition, "Pascal", "Test");
+        cursorMoved(pathName, cursor, selectionEnd, "Pascal", "Test");
     });
 
     vscode.workspace.onDidChangeTextDocument(changes => { // wird aufgerufen, wenn der Text geändert wird | muss Sperre reinmachen, wenn andere tippen | timeout?
@@ -98,26 +95,23 @@ function removeMarking(user: User | undefined) {
     }
 }
 
-export function markLine(pathName: string, lineNumber: number, position: number, selectionLine: number, selectionPosition: number, name: string): void {
+export function markLine(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string, project: string) {
     console.log("markLine called");
     let editor = vscode.window.activeTextEditor;
     let user = users.get(name);
     if (!editor || relPath(editor.document.fileName) !== pathName || !user) {
         return;
     }
-    let line = editor.document.lineAt(lineNumber);
+    let line = editor.document.lineAt(cursor.line);
 
     editor.setDecorations(user.getColorIndicator(), [line.range]);
     editor.setDecorations(user.getNameTag(), [line.range]);    // markiert ganze line damit NameTag am Ende ist
 
-    console.log(selectionLine, selectionPosition);
-
-    let selection = new vscode.Range(new vscode.Position(lineNumber, position), new vscode.Position(selectionLine, selectionPosition));
+    let selection = new vscode.Range(cursor, selectionEnd);
     editor.setDecorations(user.getSelection(), [selection]);   // markiert textauswahl in 66% crimson
 
-    let currrentPosition = new vscode.Position(lineNumber, position);
     let markerPosition = {
-        range: new vscode.Range(currrentPosition, currrentPosition),
+        range: new vscode.Range(cursor, cursor),
     };
     editor.setDecorations(user.getCursor(), [markerPosition]); // markiert Cursorposition in crimson
 }

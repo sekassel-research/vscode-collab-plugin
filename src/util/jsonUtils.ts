@@ -1,10 +1,12 @@
+import * as vscode from 'vscode';
+
 export function buildUserMessage(operation: string, name: string, project: string) {
     return `{"operation":"${operation}","data":{"name":"${name}","project":"${project}"}}`;
 }
 
-export function buildCursorMovedMessage(pathName: string, lineNumber: number, position: number, selectionLine: number, selectionPosition: number, name: string, project: string) {
-    return `{"operation":"cursorMoved","data":{"pathName":"${pathName}","lineNumber":${lineNumber},
-            "position":${position},"selectionLine":${selectionLine},"selectionPosition":${selectionPosition},"name":"${name}", "project":"${project}"}}`;
+export function buildCursorMovedMessage(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string, project: string) {
+    return `{"operation":"cursorMoved","data":{"pathName":"${pathName}","cursor":${JSON.stringify(cursor)},"selectionEnd":${JSON.stringify(selectionEnd)},
+    "name":"${name}", "project":"${project}"}}`;
 }
 
 export function buildTextReplacedMessage(pathName: string, fromLine: number, fromPosition: number, toLine: number, toPosition: number, content: string, name: string, project: string) {
