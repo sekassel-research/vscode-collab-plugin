@@ -1,3 +1,5 @@
+import * as vscode from 'vscode';
+
 export interface Data {
     name: string
     project: string
@@ -5,17 +7,13 @@ export interface Data {
 
 export interface CursorMovedData extends Data {
     pathName: string,
-    lineNumber: number,
-    position: number,
-    selectionLine: number,
-    selectionPosition: number,
+    cursor: vscode.Position;
+    selectionEnd: vscode.Position;
 }
 
 export interface TextReplacedData extends Data {
     pathName: string,
-    fromLine: number,
-    fromPosition: number,
-    toLine: number,
-    toPosition: number,
+    from: vscode.Position;
+    to: vscode.Position;
     content: string
 }

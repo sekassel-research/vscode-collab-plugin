@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import {markLine, replaceText, userJoined, userLeft} from "./extension";
 import {CursorMovedData, TextReplacedData} from "./interface/data";
 import {Message} from "./interface/message";
@@ -51,12 +52,12 @@ export function closeWS(name: string, project: string) {
     ws.close(1000, 'connection was closed by the user');
 }
 
-export function cursorMoved(pathName: string, lineNumber: number, position: number, selectionLine: number, selectionPosition: number, name: string, project: string) {
-    ws.send(buildCursorMovedMessage(pathName, lineNumber, position, selectionLine, selectionPosition, name, project));
+export function cursorMoved(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string, project: string) {
+    ws.send(buildCursorMovedMessage(pathName, cursor, selectionEnd, name, project));
 }
 
-export function textReplaced(pathName: string, fromLine: number, fromPosition: number, toLine: number, toPosition: number, content: string, name: string, project: string) {
-    ws.send(buildTextReplacedMessage(pathName, fromLine, fromPosition, toLine, toPosition, content, name, project));
+export function textReplaced(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string, project: string) {
+    ws.send(buildTextReplacedMessage(pathName, from, to, content, name, project));
 }
 
 function handleMessage(msg: Message) {
@@ -76,12 +77,12 @@ function handleMessage(msg: Message) {
 
     if (msg.operation === "cursorMoved") {
         let data: CursorMovedData = msg.data;
-        markLine(data.pathName, data.lineNumber, data.position, data.selectionLine, data.selectionPosition, data.name);
+        markLine(data.pathName, data.cursor, data.selectionEnd, data.name, data.project);
         return;
     }
     if (msg.operation === "textReplaced") {
         let data: TextReplacedData = msg.data;
-        replaceText(data.pathName, data.fromLine, data.fromPosition, data.toLine, data.toPosition, data.content, data.name,);
+        replaceText(data.pathName, data.from, data.to, data.content, data.name,);
         return;
     }
 }
