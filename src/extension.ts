@@ -45,14 +45,12 @@ export function activate(context: vscode.ExtensionContext) {
         }
         for (let change of changes.contentChanges) {
             let pathName = pathString(editor.document.fileName);
-            let fromLine = change.range.start.line;
-            let fromPos = change.range.start.character;
+            let from = change.range.start;
             let content = jsonString(change.text);
-            let toLine = change.range.end.line;
-            let toPos = change.range.end.character;
-            console.log(`Text replaced from ${fromLine + 1}:${fromPos} to ${toLine + 1}:${toPos}`);
+            let to = change.range.end;
+            console.log(`Text replaced from ${from.line + 1}:${from.character} to ${to.line + 1}:${to.character}`);
 
-            textReplaced(pathName, fromLine, fromPos, toLine, toPos, content, "Pascal", "Test");
+            textReplaced(pathName, from, to, content, "Pascal", "Test");
         }
     });
 
@@ -116,15 +114,12 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     editor.setDecorations(user.getCursor(), [markerPosition]); // markiert Cursorposition in crimson
 }
 
-export function replaceText(pathName: string, fromLine: number, fromPosition: number, toLine: number, toPosition: number, content: string, name: string) {
+export function replaceText(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string) {
     const editor = vscode.window.activeTextEditor;
     if (!editor || pathName !== relPath(editor.document.fileName) || !users.has(name)) {
         return;
     }
     const edit = new vscode.WorkspaceEdit();
-    const from = new vscode.Position(fromLine, fromPosition);
-    const to = new vscode.Position(toLine, toPosition);
-
 
     edit.replace(editor.document.uri, new vscode.Range(from, to), content);
     vscode.workspace.applyEdit(edit);

@@ -13,9 +13,7 @@ export interface CursorMovedData extends Data {
 
 export interface TextReplacedData extends Data {
     pathName: string,
-    fromLine: number,
-    fromPosition: number,
-    toLine: number,
-    toPosition: number,
+    from: vscode.Position;
+    to: vscode.Position;
     content: string
 }

@@ -9,7 +9,7 @@ export function buildCursorMovedMessage(pathName: string, cursor: vscode.Positio
     "name":"${name}", "project":"${project}"}}`;
 }
 
-export function buildTextReplacedMessage(pathName: string, fromLine: number, fromPosition: number, toLine: number, toPosition: number, content: string, name: string, project: string) {
-    return `{"operation":"textReplaced","data":{"pathName":"${pathName}","fromLine":${fromLine},"fromPosition":${fromPosition},
-    "toLine":${toLine},"toPosition":${toPosition},"content":"${content}","name":"${name}", "project":"${project}"}}`;
+export function buildTextReplacedMessage(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string, project: string) {
+    return `{"operation":"textReplaced","data":{"pathName":"${pathName}","from":${JSON.stringify(from)},"to":${JSON.stringify(to)},
+    "content":"${content}","name":"${name}", "project":"${project}"}}`;
 }

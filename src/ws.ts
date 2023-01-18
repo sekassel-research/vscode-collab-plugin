@@ -56,8 +56,8 @@ export function cursorMoved(pathName: string, cursor: vscode.Position, selection
     ws.send(buildCursorMovedMessage(pathName, cursor, selectionEnd, name, project));
 }
 
-export function textReplaced(pathName: string, fromLine: number, fromPosition: number, toLine: number, toPosition: number, content: string, name: string, project: string) {
-    ws.send(buildTextReplacedMessage(pathName, fromLine, fromPosition, toLine, toPosition, content, name, project));
+export function textReplaced(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string, project: string) {
+    ws.send(buildTextReplacedMessage(pathName, from, to, content, name, project));
 }
 
 function handleMessage(msg: Message) {
@@ -82,7 +82,7 @@ function handleMessage(msg: Message) {
     }
     if (msg.operation === "textReplaced") {
         let data: TextReplacedData = msg.data;
-        replaceText(data.pathName, data.fromLine, data.fromPosition, data.toLine, data.toPosition, data.content, data.name,);
+        replaceText(data.pathName, data.from, data.to, data.content, data.name,);
         return;
     }
 }
