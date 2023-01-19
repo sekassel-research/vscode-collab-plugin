@@ -27,7 +27,7 @@ export class User {
         });
 
         this.selection = vscode.window.createTextEditorDecorationType({
-            backgroundColor: color + '66',
+            border: '1px dashed ' + color + '66',
         });
 
 
