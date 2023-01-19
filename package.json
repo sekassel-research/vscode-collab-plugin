@@ -23,21 +23,22 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "package-explorer",
+          "id": "vscode-collab",
           "title": "VS-Code Collab",
-          "icon": "assets/HandshakeDavid.svg"
+          "icon": "media/HandshakeDavid.svg"
         }
       ]
     },
     "views": {
-      "package-explorer": [
+      "vscode-collab": [
         {
-          "id": "package-dependencies",
-          "name": "Dependencies"
+          "id": "vscode-collab-activeUsers",
+          "name": "active users"
         },
         {
-          "id": "package-outline",
-          "name": "Outline"
+        "type": "webview",
+        "id": "chat.chatView",
+        "name": "Chat"
         }
       ]
     }
