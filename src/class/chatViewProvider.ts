@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { sendDummy } from '../ws';
 
 export class ChatViewProvider implements vscode.WebviewViewProvider {
 
@@ -33,6 +34,11 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 				case 'colorSelected':
 					{
 						vscode.window.activeTextEditor?.insertSnippet(new vscode.SnippetString(`#${data.value}`));
+						break;
+					}
+				case 'test':
+					{
+						sendDummy();
 						break;
 					}
 			}

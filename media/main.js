@@ -39,8 +39,8 @@
 
     document.querySelector('#submitMsg').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
+            vscode.postMessage({ type: 'test'});
             addColor();
-            vscode.postMessage({ type: 'colorSelected', value: color });
         }
     });
 

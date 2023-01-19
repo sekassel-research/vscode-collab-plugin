@@ -62,7 +62,7 @@ export function textReplaced(pathName: string, from: vscode.Position, to: vscode
 
 export function sendDummy(){
     console.log("yes sir");
-    ws.send("yes sir");
+    //ws.send("yes sir");
 }
 
 function handleMessage(msg: Message) {
