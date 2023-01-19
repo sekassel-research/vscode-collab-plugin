@@ -82,12 +82,14 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 				<link href="${styleVSCodeUri}" rel="stylesheet">
 				<link href="${styleMainUri}" rel="stylesheet">
 
-				<title>Cat Colors</title>
+				<title>Chat</title>
 			</head>
 			<body>
-				<ul class="color-list">
+				<ul class="chatBody">
 				</ul>
+				<hr>
 
+				<input type="text" id="submitMsg" name="chatMessage">
 				<button class="add-color-button">Add Color</button>
 
 				<script nonce="${nonce}" src="${scriptUri}"></script>

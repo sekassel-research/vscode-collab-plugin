@@ -60,6 +60,11 @@ export function textReplaced(pathName: string, from: vscode.Position, to: vscode
     ws.send(buildTextReplacedMessage(pathName, from, to, content, name, project));
 }
 
+export function sendDummy(){
+    console.log("yes sir");
+    ws.send("yes sir");
+}
+
 function handleMessage(msg: Message) {
     console.log("handleMessage called");
 

@@ -156,3 +156,7 @@ export function deactivate() {
         closeWS(username, project);
     });
 }
+
+export function log(msg:any){
+    console.log(msg);
+}

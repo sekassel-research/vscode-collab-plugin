@@ -1,4 +1,4 @@
-//@ts-check
+// @ts-nocheck
 
 // This script will be run within the webview itself
 // It cannot access the main VS Code APIs directly.
@@ -35,11 +35,20 @@
         }
     });
 
+    console.log("init scripts");
+
+    document.querySelector('#submitMsg').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            addColor();
+            vscode.postMessage({ type: 'colorSelected', value: color });
+        }
+    });
+
     /**
      * @param {Array<{ value: string }>} colors
      */
     function updateColorList(colors) {
-        const ul = document.querySelector('.color-list');
+        const ul = document.querySelector('.chatBody');
         ul.textContent = '';
         for (const color of colors) {
             const li = document.createElement('li');
