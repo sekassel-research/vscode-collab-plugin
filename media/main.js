@@ -12,15 +12,20 @@
 
     updateColorList(colors);
 
-    document.querySelector('.add-color-button').addEventListener('click', () => {
-        addColor();
+    const msgInput = document.querySelector('#submitMsg');
+
+    msgInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && msgInput.value!=='') {
+            vscode.postMessage({ type: 'sendMsg', content: msgInput.value});
+            msgInput.value = ''
+        }
     });
 
     // Handle messages sent from the extension to the webview
     window.addEventListener('message', event => {
         const message = event.data; // The json data that the extension sent
         switch (message.type) {
-            case 'addColor':
+            case 'receivedMsg':
                 {
                     addColor();
                     break;
@@ -36,13 +41,6 @@
     });
 
     console.log("init scripts");
-
-    document.querySelector('#submitMsg').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            vscode.postMessage({ type: 'test'});
-            addColor();
-        }
-    });
 
     /**
      * @param {Array<{ value: string }>} colors

@@ -31,14 +31,9 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
 		webviewView.webview.onDidReceiveMessage(data => {
 			switch (data.type) {
-				case 'colorSelected':
+				case 'sendMsg':
 					{
-						vscode.window.activeTextEditor?.insertSnippet(new vscode.SnippetString(`#${data.value}`));
-						break;
-					}
-				case 'test':
-					{
-						sendDummy();
+						console.log(data);
 						break;
 					}
 			}
@@ -96,7 +91,6 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 				<hr>
 
 				<input type="text" id="submitMsg" name="chatMessage">
-				<button class="add-color-button">Add Color</button>
 
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
