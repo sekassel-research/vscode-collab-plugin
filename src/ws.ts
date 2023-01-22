@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import {markLine, replaceText, userJoined, userLeft} from "./extension";
-import {CursorMovedData, TextReplacedData} from "./interface/data";
+import {getProvidor, markLine, replaceText, userJoined, userLeft} from "./extension";
+import {ChatData, CursorMovedData, TextReplacedData} from "./interface/data";
 import {Message} from "./interface/message";
 import {
     buildChatMessage,
@@ -54,15 +54,15 @@ export function closeWS(name: string, project: string) {
 }
 
 export function cursorMoved(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string, project: string) {
-    ws.send(buildCursorMovedMessage("cursorMoved",pathName, cursor, selectionEnd, name, project));
+    ws.send(buildCursorMovedMessage("cursorMoved", pathName, cursor, selectionEnd, name, project));
 }
 
 export function textReplaced(pathName: string, range: vscode.Range, content: string, name: string, project: string) {
-    ws.send(buildTextReplacedMessage("textReplaced",pathName, range, content, name, project));
+    ws.send(buildTextReplacedMessage("textReplaced", pathName, range, content, name, project));
 }
 
-export function sendChatMessage(msg:string,name:string | undefined,project:string | undefined){
-    ws.send(buildChatMessage("chatMsg",msg,name,project))
+export function sendChatMessage(msg: string, name: string | undefined, project: string | undefined) {
+    ws.send(buildChatMessage("chatMsg", msg, name, project))
 }
 
 function handleMessage(msg: Message) {
@@ -88,6 +88,12 @@ function handleMessage(msg: Message) {
     if (msg.operation === "textReplaced") {
         let data: TextReplacedData = msg.data;
         replaceText(data.pathName, data.range, data.content, data.name,);
+        return;
+    }
+
+    if (msg.operation === "chatMsg") {
+        let data: ChatData = msg.data;
+        getProvidor().receivedMsg(data);
         return;
     }
 }

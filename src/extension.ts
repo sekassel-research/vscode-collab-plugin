@@ -6,6 +6,7 @@ import {closeWS, cursorMoved, openWS, textReplaced} from './ws';
 import {ChatViewProvider} from './class/chatViewProvider'
 
 const users = new Map<string, User>();
+let provider: ChatViewProvider;
 
 let username = process.env.username;
 let project = process.env.projectId;
@@ -22,11 +23,11 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     openWS(username, project);
+    provider = new ChatViewProvider(context.extensionUri);
 
-    const provider = new ChatViewProvider(context.extensionUri);
 
-	context.subscriptions.push(
-		vscode.window.registerWebviewViewProvider(ChatViewProvider.viewType, provider));
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider(ChatViewProvider.viewType, provider));
 
     vscode.window.onDidChangeTextEditorSelection(() => { // wird aufgerufen, wenn cursorposition sich ändert
         let editor = vscode.window.activeTextEditor;
@@ -147,12 +148,16 @@ function relPath(path: string) {
     return path;
 }
 
-export function getUserName(){
+export function getUserName() {
     return username;
 }
 
-export function getProjectId(){
+export function getProjectId() {
     return project;
+}
+
+export function getProvidor() {
+    return provider;
 }
 
 export function deactivate() {
@@ -164,6 +169,6 @@ export function deactivate() {
     });
 }
 
-export function log(msg:any){
+export function log(msg: any) {
     console.log(msg);
 }

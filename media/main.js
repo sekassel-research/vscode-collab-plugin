@@ -11,8 +11,7 @@
 
     msgInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
-            vscode.postMessage({ type: 'sendMsg', content: msgInput.value});
-            addMsg(msgInput);
+            vscode.postMessage({type: 'sendMsg', content: msgInput.value});
             msgInput.value = '';
         }
     });
@@ -21,22 +20,32 @@
     window.addEventListener('message', event => {
         const message = event.data; // The json data that the extension sent
         switch (message.type) {
-            case 'receivedMsg':
-                {
-                    //addMsg(msgInput);
-                    break;
-                }
+            case 'receivedMsg': {
+                addMsg(message);
+                break;
+            }
         }
     });
 
     console.log("init scripts");
 
-    function addMsg(msgInput){
-        chat.push(msgInput.value);
+    function addMsg(message) {
+        let earlyMsg = false
+        for (let i = 0; i < chat.length; i++) {
+            const chatMsg = chat[i];
+            if (chatMsg.time > message.time) {
+                chat.splice(i, 0, message)
+                break;
+            }
+        }
+        if (!earlyMsg) {
+            chat.push(message);
+        }
         updateChat(chat);
     }
 
-    function updateChat(chat){
+    function updateChat(chat) {
+        console.log("updateChat called")
         const ul = document.querySelector('.chatBody');
         ul.textContent = '';
         for (const msg of chat) {
@@ -45,13 +54,13 @@
             chatMsg.className = 'chatMsg';
             const user = document.createElement('user');
             user.className = 'userName';
-            user.appendChild(document.createTextNode('Pascal:'));
+            user.appendChild(document.createTextNode(msg.name));
             console.log(user);
 
             const content = document.createElement('content');
             content.className = 'content';
-            content.appendChild(document.createTextNode(msg));
-            
+            content.appendChild(document.createTextNode(msg.msg));
+
             chatMsg.appendChild(user);
             chatMsg.appendChild(content);
 
@@ -97,14 +106,14 @@
         }
 
         // Update the saved state
-        vscode.setState({ colors: colors });
+        vscode.setState({colors: colors});
     }
 
-    /** 
-     * @param {string} color 
+    /**
+     * @param {string} color
      */
     function onColorClicked(color) {
-        vscode.postMessage({ type: 'colorSelected', value: color });
+        vscode.postMessage({type: 'colorSelected', value: color});
     }
 
     /**
@@ -116,7 +125,7 @@
     }
 
     function addColor() {
-        colors.push({ value: getNewCalicoColor() });
+        colors.push({value: getNewCalicoColor()});
         updateColorList(colors);
     }
 }());
