@@ -17,6 +17,7 @@
     msgInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && msgInput.value!=='') {
             vscode.postMessage({ type: 'sendMsg', content: msgInput.value});
+            addMsg(msgInput.value);
             msgInput.value = ''
         }
     });
@@ -41,6 +42,24 @@
     });
 
     console.log("init scripts");
+
+    function addMsg(msg){
+        const ul = document.querySelector('.chatBody');
+        ul.textContent = '';
+
+        const chatMsg = document.createElement('chatMsg');
+        chatMsg.className = 'chatMsg';
+        const user = document.createElement('text');
+        user.className = 'user';
+        user.value = "Pascal -";
+        const msg = document.createElement('text');
+        msg.value = msg;
+
+        chatMsg.appendChild(user);
+        chatMsg.appendChild(msg);
+
+        ul.appendChild(chatMsg);
+    }
 
     /**
      * @param {Array<{ value: string }>} colors
