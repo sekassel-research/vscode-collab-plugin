@@ -16,3 +16,8 @@ export interface TextReplacedData extends Data {
     range: vscode.Range,
     content: string
 }
+
+export interface ChatData extends Data {
+    msg: string,
+    time: Date
+}

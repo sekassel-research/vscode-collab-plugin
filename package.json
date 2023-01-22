@@ -19,7 +19,29 @@
         "command": "vscode-collab-plugin.helloWorld",
         "title": "Hello World"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "vscode-collab",
+          "title": "VS-Code Collab",
+          "icon": "media/HandshakeDavid.svg"
+        }
+      ]
+    },
+    "views": {
+      "vscode-collab": [
+        {
+          "id": "vscode-collab-activeUsers",
+          "name": "active users"
+        },
+        {
+        "type": "webview",
+        "id": "chat.chatView",
+        "name": "Chat"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
