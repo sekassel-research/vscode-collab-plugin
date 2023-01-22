@@ -5,20 +5,15 @@
 (function () {
     const vscode = acquireVsCodeApi();
 
-    const oldState = vscode.getState() || { colors: [] };
-
-    /** @type {Array<{ value: string }>} */
-    let colors = oldState.colors;
-
-    updateColorList(colors);
+    const chat = [];
 
     const msgInput = document.querySelector('#submitMsg');
 
     msgInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && msgInput.value!=='') {
+        if (e.key === 'Enter') {
             vscode.postMessage({ type: 'sendMsg', content: msgInput.value});
-            addMsg(msgInput.value);
-            msgInput.value = ''
+            addMsg(msgInput);
+            msgInput.value = '';
         }
     });
 
@@ -43,22 +38,28 @@
 
     console.log("init scripts");
 
-    function addMsg(msg){
+    function addMsg(msgInput){
+        chat.push(msgInput.value);
+        updateChat(chat);
+    }
+
+    function updateChat(chat){
         const ul = document.querySelector('.chatBody');
         ul.textContent = '';
+        for (const msg of chat) {
+            console.log(msg);
+            const chatMsg = document.createElement('chatMsg');
+            chatMsg.className = 'chatMsg';
+            const user = document.createTextNode('Pascal:');
+            user.className = 'userName'
+            const content = document.createTextNode(msg);
+            content.className = 'content';
 
-        const chatMsg = document.createElement('chatMsg');
-        chatMsg.className = 'chatMsg';
-        const user = document.createElement('text');
-        user.className = 'user';
-        user.value = "Pascal -";
-        const msg = document.createElement('text');
-        msg.value = msg;
+            chatMsg.appendChild(user);
+            chatMsg.appendChild(content);
 
-        chatMsg.appendChild(user);
-        chatMsg.appendChild(msg);
-
-        ul.appendChild(chatMsg);
+            ul.appendChild(chatMsg);
+        }
     }
 
     /**
