@@ -53,11 +53,11 @@ export function closeWS(name: string, project: string) {
 }
 
 export function cursorMoved(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string, project: string) {
-    ws.send(buildCursorMovedMessage(pathName, cursor, selectionEnd, name, project));
+    ws.send(buildCursorMovedMessage("cursorMoved",pathName, cursor, selectionEnd, name, project));
 }
 
 export function textReplaced(pathName: string, range: vscode.Range, content: string, name: string, project: string) {
-    ws.send(buildTextReplacedMessage(pathName, range, content, name, project));
+    ws.send(buildTextReplacedMessage("textReplaced",pathName, range, content, name, project));
 }
 
 function handleMessage(msg: Message) {
