@@ -8,8 +8,9 @@ body {
 }
 
 .chatMsg{
-	align-items: flex-start;
+	left: 0px;
 	width: 100%;
+	padding: 5px;
 	display: inline-block;
 	word-break: break-word;
 	margin-bottom: 0.4em;
@@ -17,7 +18,12 @@ body {
 }
 
 .userName{
-	margin-right: 10px;
+	margin-right: 1em;
+	text-decoration: 1px underline;
+}
+
+.content{
+	word-break: break-word;
 }
 
 .color-entry {

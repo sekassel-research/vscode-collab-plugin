@@ -47,14 +47,18 @@
         const ul = document.querySelector('.chatBody');
         ul.textContent = '';
         for (const msg of chat) {
-            console.log(msg);
-            const chatMsg = document.createElement('chatMsg');
-            chatMsg.className = 'chatMsg';
-            const user = document.createTextNode('Pascal:');
-            user.className = 'userName'
-            const content = document.createTextNode(msg);
-            content.className = 'content';
 
+            const chatMsg = document.createElement('div');
+            chatMsg.className = 'chatMsg';
+            const user = document.createElement('user');
+            user.className = 'userName';
+            user.appendChild(document.createTextNode('Pascal:'));
+            console.log(user);
+
+            const content = document.createElement('content');
+            content.className = 'content';
+            content.appendChild(document.createTextNode(msg));
+            
             chatMsg.appendChild(user);
             chatMsg.appendChild(content);
 
