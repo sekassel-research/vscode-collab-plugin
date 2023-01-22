@@ -33,11 +33,11 @@
       "vscode-collab": [
         {
           "id": "vscode-collab-activeUsers",
-          "name": "active users"
+          "name": "Active Users"
         },
         {
         "type": "webview",
-        "id": "chat.chatView",
+        "id": "vscode-collab-chatView",
         "name": "Chat"
         }
       ]

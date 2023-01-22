@@ -5,7 +5,7 @@ import {sendChatMessage} from '../ws';
 
 export class ChatViewProvider implements vscode.WebviewViewProvider {
 
-    public static readonly viewType = 'chat.chatView';
+    public static readonly viewType = 'vscode-collab-chatView';
 
     private _view?: vscode.WebviewView;
 

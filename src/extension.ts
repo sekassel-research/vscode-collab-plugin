@@ -6,7 +6,7 @@ import {closeWS, cursorMoved, openWS, textReplaced} from './ws';
 import {ChatViewProvider} from './class/chatViewProvider'
 
 const users = new Map<string, User>();
-let provider: ChatViewProvider;
+let chatViewProvider: ChatViewProvider;
 
 let username = process.env.username;
 let project = process.env.projectId;
@@ -23,11 +23,11 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     openWS(username, project);
-    provider = new ChatViewProvider(context.extensionUri);
+    chatViewProvider = new ChatViewProvider(context.extensionUri);
 
 
     context.subscriptions.push(
-        vscode.window.registerWebviewViewProvider(ChatViewProvider.viewType, provider));
+        vscode.window.registerWebviewViewProvider(ChatViewProvider.viewType, chatViewProvider));
 
     vscode.window.onDidChangeTextEditorSelection(() => { // wird aufgerufen, wenn cursorposition sich ändert
         let editor = vscode.window.activeTextEditor;
@@ -156,8 +156,8 @@ export function getProjectId() {
     return project;
 }
 
-export function getProvidor() {
-    return provider;
+export function getChatViewProvider() {
+    return chatViewProvider;
 }
 
 export function deactivate() {
