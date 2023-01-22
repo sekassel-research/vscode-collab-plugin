@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
-import { sendDummy } from '../ws';
+import { getProjectId, getUserName } from '../extension';
+import { sendChatMessage } from '../ws';
 
 export class ChatViewProvider implements vscode.WebviewViewProvider {
 
@@ -33,7 +34,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 			switch (data.type) {
 				case 'sendMsg':
 					{
-						console.log(data);
+						sendChatMessage(data.msg,getUserName(),getProjectId());
 						break;
 					}
 			}

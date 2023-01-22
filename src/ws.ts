@@ -3,6 +3,7 @@ import {markLine, replaceText, userJoined, userLeft} from "./extension";
 import {CursorMovedData, TextReplacedData} from "./interface/data";
 import {Message} from "./interface/message";
 import {
+    buildChatMessage,
     buildCursorMovedMessage,
     buildTextReplacedMessage,
     buildUserMessage
@@ -60,9 +61,8 @@ export function textReplaced(pathName: string, range: vscode.Range, content: str
     ws.send(buildTextReplacedMessage("textReplaced",pathName, range, content, name, project));
 }
 
-export function sendDummy(){
-    console.log("yes sir");
-    //ws.send("yes sir");
+export function sendChatMessage(msg:string,name:string | undefined,project:string | undefined){
+    ws.send(buildChatMessage("chatMsg",msg,name,project))
 }
 
 function handleMessage(msg: Message) {

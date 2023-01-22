@@ -147,6 +147,14 @@ function relPath(path: string) {
     return path;
 }
 
+export function getUserName(){
+    return username;
+}
+
+export function getProjectId(){
+    return project;
+}
+
 export function deactivate() {
     return new Promise(() => {
         if (!username || !project) {

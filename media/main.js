@@ -23,16 +23,9 @@
         switch (message.type) {
             case 'receivedMsg':
                 {
-                    addColor();
+                    //addMsg(msgInput);
                     break;
                 }
-            case 'clearColors':
-                {
-                    colors = [];
-                    updateColorList(colors);
-                    break;
-                }
-
         }
     });
 
