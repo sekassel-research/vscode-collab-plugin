@@ -4,9 +4,11 @@ import * as vscode from 'vscode';
 import {User} from './class/user';
 import {closeWS, cursorMoved, openWS, textReplaced} from './ws';
 import {ChatViewProvider} from './class/chatViewProvider'
+import {ActiveUsersProvider} from './class/activeUsersProvider';
 
 const users = new Map<string, User>();
 let chatViewProvider: ChatViewProvider;
+let activeUsersProvider: ActiveUsersProvider;
 
 let username = process.env.username;
 let project = process.env.projectId;
@@ -23,8 +25,11 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     openWS(username, project);
+
     chatViewProvider = new ChatViewProvider(context.extensionUri);
 
+    activeUsersProvider = new ActiveUsersProvider(users);
+    vscode.window.createTreeView('vscode-collab-activeUsers', {treeDataProvider: activeUsersProvider});
 
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(ChatViewProvider.viewType, chatViewProvider));
@@ -79,6 +84,7 @@ export function activate(context: vscode.ExtensionContext) {
 export function userJoined(name: string) {
     users.set(name, new User(name));
     vscode.window.setStatusBarMessage("User: " + name + " joined", 5000);
+    activeUsersProvider.refresh();
 }
 
 export function userLeft(name: string) {
@@ -86,6 +92,7 @@ export function userLeft(name: string) {
         removeMarking(users.get(name));
         users.delete(name);
         vscode.window.setStatusBarMessage("User: " + name + " left", 5000);
+        activeUsersProvider.refresh();
     }
 }
 
