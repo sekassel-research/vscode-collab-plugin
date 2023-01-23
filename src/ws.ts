@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import {getProvidor, markLine, replaceText, userJoined, userLeft} from "./extension";
+import {getChatViewProvider, markLine, replaceText, userJoined, userLeft} from "./extension";
 import {ChatData, CursorMovedData, TextReplacedData} from "./interface/data";
 import {Message} from "./interface/message";
 import {
@@ -93,7 +93,7 @@ function handleMessage(msg: Message) {
 
     if (msg.operation === "chatMsg") {
         let data: ChatData = msg.data;
-        getProvidor().receivedMsg(data);
+        getChatViewProvider().receivedMsg(data);
         return;
     }
 }
