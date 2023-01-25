@@ -13,5 +13,5 @@ export function buildTextReplacedMessage(operation: string, pathName: string, ra
 }
 
 export function buildChatMessage(operation: string, msg: string, name: string | undefined, project: string | undefined) {
-    return JSON.stringify({operation, data: {msg, name, time: new Date().getTime(), project}})
+    return JSON.stringify({operation, data: {msg, name, time: new Date(), project}})
 }
