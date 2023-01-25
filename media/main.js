@@ -48,18 +48,18 @@
         console.log("updateChat called")
         const ul = document.querySelector('.chatBody');
         ul.textContent = '';
-        for (const msg of chat) {
-
+        for (const message of chat) {
             const chatMsg = document.createElement('div');
             chatMsg.className = 'chatMsg';
+            chatMsg.title = new Date(message.time).toLocaleString('de-DE');
             const user = document.createElement('user');
             user.className = 'userName';
-            user.appendChild(document.createTextNode(msg.name));
+            user.appendChild(document.createTextNode(message.name));
             console.log(user);
 
             const content = document.createElement('content');
             content.className = 'content';
-            content.appendChild(document.createTextNode(msg.msg));
+            content.appendChild(document.createTextNode(message.msg));
 
             chatMsg.appendChild(user);
             chatMsg.appendChild(content);
