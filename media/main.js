@@ -7,10 +7,10 @@
 
     const chat = [];
 
-    const msgInput = document.querySelector('#submitMsg');
+    const msgInput = document.getElementById('submitMsg');
 
     msgInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && !e.shiftKey) {
             vscode.postMessage({type: 'sendMsg', content: msgInput.value});
             msgInput.value = '';
         }
