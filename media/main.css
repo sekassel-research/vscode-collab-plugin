@@ -6,7 +6,7 @@ body {
 .submitMsg {
     position: fixed;
     bottom: 0px;
-    height: 10%;
+    max-height: 15vh;
 }
 
 .chatBody {

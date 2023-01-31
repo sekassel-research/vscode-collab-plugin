@@ -13,6 +13,7 @@
         if (e.key === 'Enter' && !e.shiftKey) {
             vscode.postMessage({type: 'sendMsg', content: msgInput.value});
             msgInput.value = '';
+            e.preventDefault();
         }
     });
 
