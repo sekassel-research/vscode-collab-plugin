@@ -35,6 +35,7 @@
             const chatMsg = chat[i];
             if (chatMsg.time > message.time) {
                 chat.splice(i, 0, message)
+                earlyMsg = true;
                 break;
             }
         }

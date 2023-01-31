@@ -73,14 +73,6 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 }
 
-//function getUserName() {
-//	return process.env.userName;
-//}
-
-//function getProjectId(){
-//	return process.env.projectId;
-//}
-
 export function userJoined(name: string) {
     users.set(name, new User(name));
     vscode.window.setStatusBarMessage("User: " + name + " joined", 5000);
@@ -153,6 +145,10 @@ function relPath(path: string) {
         path = path.replace(projectRoot, '');
     }
     return path;
+}
+
+export function getUsers() {
+    return users;
 }
 
 export function getUserName() {
