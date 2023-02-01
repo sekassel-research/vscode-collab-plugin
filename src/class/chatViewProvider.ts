@@ -9,6 +9,8 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
     private _view?: vscode.WebviewView;
 
+    private chat: object[] = [];
+
     constructor(
         private readonly _extensionUri: vscode.Uri,
     ) {
@@ -38,16 +40,32 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                     sendChatMessage(data.content, getUserName(), getProjectId());
                     break;
                 }
+                case 'initChat': {
+                    if (!this._view) {
+                        return;
+                    }
+                    for (const webViewChatMessage of this.chat) {
+                        this._view.webview.postMessage(webViewChatMessage);
+                    }
+                }
             }
         });
     }
 
     public receivedMsg(data: ChatData) {
-        if (this._view && getUsers().has(data.name)) {
-            //this._view.show?.(true); // `show` is not implemented in 1.49 but is for 1.50 insiders
-            this._view.webview.postMessage({type: 'receivedMsg', name: data.name, time: data.time, msg: data.msg});
+        if (!getUsers().has(data.name)) {
+            return;
         }
+        const webViewChatMessage = {type: 'receivedMsg', name: data.name, time: data.time, msg: data.msg}
+        this.chat.push(webViewChatMessage);
+
+        if (this._view) {
+            //this._view.show?.(true); // `show` is not implemented in 1.49 but is for 1.50 insiders
+            this._view.webview.postMessage(webViewChatMessage);
+        }
+        vscode.window.setStatusBarMessage("User: " + data.name + " send a Message", 5000);
     }
+
 
     private _getHtmlForWebview(webview: vscode.Webview) {
         // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.

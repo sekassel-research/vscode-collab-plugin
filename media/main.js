@@ -29,6 +29,7 @@
     });
 
     console.log("init chatView scripts");
+    vscode.postMessage({type: 'initChat'});
 
     function addMsg(message) {
         let earlyMsg = false
