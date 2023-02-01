@@ -44,12 +44,25 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                     if (!this._view) {
                         return;
                     }
-                    for (const webViewChatMessage of this.chat) {
-                        this._view.webview.postMessage(webViewChatMessage);
-                    }
+                    this._view.webview.postMessage({type: "chat", chat: this.chat});
                 }
             }
         });
+    }
+
+    private addMsg(message: any) {
+        let earlyMsg = false
+        for (let i = 0; i < this.chat.length; i++) {
+            const chatMsg: any = this.chat[i];
+            if (chatMsg.time > message.time) {
+                this.chat.splice(i, 0, message)
+                earlyMsg = true;
+                break;
+            }
+        }
+        if (!earlyMsg) {
+            this.chat.push(message);
+        }
     }
 
     public receivedMsg(data: ChatData) {
@@ -57,7 +70,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             return;
         }
         const webViewChatMessage = {type: 'receivedMsg', name: data.name, time: data.time, msg: data.msg}
-        this.chat.push(webViewChatMessage);
+        this.addMsg(webViewChatMessage);
 
         if (this._view) {
             //this._view.show?.(true); // `show` is not implemented in 1.49 but is for 1.50 insiders

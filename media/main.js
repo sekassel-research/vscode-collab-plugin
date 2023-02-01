@@ -5,7 +5,7 @@
 (function () {
     const vscode = acquireVsCodeApi();
 
-    const chat = [];
+    let chat = [];
 
     const msgInput = document.getElementById('submitMsg');
 
@@ -24,6 +24,10 @@
             case 'receivedMsg': {
                 addMsg(message);
                 break;
+            }
+            case 'chat': {
+                chat = message.chat;
+                updateChat();
             }
         }
     });
@@ -44,10 +48,10 @@
         if (!earlyMsg) {
             chat.push(message);
         }
-        updateChat(chat);
+        updateChat();
     }
 
-    function updateChat(chat) {
+    function updateChat() {
         console.log("updateChat called")
         const ul = document.querySelector('.chatBody');
         ul.textContent = '';
