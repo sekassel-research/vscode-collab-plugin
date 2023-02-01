@@ -11,6 +11,8 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
     private chat: object[] = [];
 
+    private webViewStatus = false
+
     constructor(
         private readonly _extensionUri: vscode.Uri,
     ) {
@@ -48,6 +50,10 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                         this._view.webview.postMessage(webViewChatMessage);
                     }
                 }
+                case 'webViewStatus': {
+                    console.log("webViewStatus")
+                    this.webViewStatus = true;
+                }
             }
         });
     }
@@ -63,7 +69,13 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             //this._view.show?.(true); // `show` is not implemented in 1.49 but is for 1.50 insiders
             this._view.webview.postMessage(webViewChatMessage);
         }
-        vscode.window.setStatusBarMessage("User: " + data.name + " send a Message", 5000);
+        this.webViewStatus = false;
+        setTimeout(() => {
+            if (!this.webViewStatus) {
+                vscode.window.setStatusBarMessage("User: " + data.name + " send a Message", 5000);
+            }
+        }, 500);
+
     }
 
 
