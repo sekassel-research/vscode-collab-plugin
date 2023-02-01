@@ -23,7 +23,6 @@
         switch (message.type) {
             case 'receivedMsg': {
                 addMsg(message);
-                vscode.postMessage({type: 'webViewStatus'});
                 break;
             }
         }
