@@ -5,14 +5,15 @@
 (function () {
     const vscode = acquireVsCodeApi();
 
-    const chat = [];
+    let chat = [];
 
-    const msgInput = document.querySelector('#submitMsg');
+    const msgInput = document.getElementById('submitMsg');
 
     msgInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && !e.shiftKey) {
             vscode.postMessage({type: 'sendMsg', content: msgInput.value});
             msgInput.value = '';
+            e.preventDefault();
         }
     });
 
@@ -24,10 +25,15 @@
                 addMsg(message);
                 break;
             }
+            case 'chat': {
+                chat = message.chat;
+                updateChat();
+            }
         }
     });
 
     console.log("init chatView scripts");
+    vscode.postMessage({type: 'initChat'});
 
     function addMsg(message) {
         let earlyMsg = false
@@ -42,10 +48,10 @@
         if (!earlyMsg) {
             chat.push(message);
         }
-        updateChat(chat);
+        updateChat();
     }
 
-    function updateChat(chat) {
+    function updateChat() {
         console.log("updateChat called")
         const ul = document.querySelector('.chatBody');
         ul.textContent = '';

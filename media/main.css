@@ -1,10 +1,19 @@
 body {
     background-color: transparent;
+    overflow:hidden
+}
+
+.submitMsg {
+    position: fixed;
+    bottom: 0px;
+    max-height: 15vh;
 }
 
 .chatBody {
     list-style: none;
     padding: 0;
+    max-height:80vh;
+    overflow:scroll;
 }
 
 .chatMsg {

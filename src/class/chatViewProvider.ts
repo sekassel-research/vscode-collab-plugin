@@ -9,6 +9,8 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
     private _view?: vscode.WebviewView;
 
+    private chat: object[] = [];
+
     constructor(
         private readonly _extensionUri: vscode.Uri,
     ) {
@@ -38,16 +40,47 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                     sendChatMessage(data.content, getUserName(), getProjectId());
                     break;
                 }
+                case 'initChat': {
+                    if (!this._view) {
+                        return;
+                    }
+                    this._view.webview.postMessage({type: "chat", chat: this.chat});
+                }
             }
         });
     }
 
-    public receivedMsg(data: ChatData) {
-        if (this._view && getUsers().has(data.name)) {
-            //this._view.show?.(true); // `show` is not implemented in 1.49 but is for 1.50 insiders
-            this._view.webview.postMessage({type: 'receivedMsg', name: data.name, time: data.time, msg: data.msg});
+    private addMsg(message: any) {
+        let earlyMsg = false
+        for (let i = 0; i < this.chat.length; i++) {
+            const chatMsg: any = this.chat[i];
+            if (chatMsg.time > message.time) {
+                this.chat.splice(i, 0, message)
+                earlyMsg = true;
+                break;
+            }
+        }
+        if (!earlyMsg) {
+            this.chat.push(message);
         }
     }
+
+    public receivedMsg(data: ChatData) {
+        if (!getUsers().has(data.name)) {
+            return;
+        }
+        const webViewChatMessage = {type: 'receivedMsg', name: data.name, time: data.time, msg: data.msg}
+        this.addMsg(webViewChatMessage);
+
+        if (this._view) {
+            //this._view.show?.(true); // `show` is not implemented in 1.49 but is for 1.50 insiders
+            this._view.webview.postMessage(webViewChatMessage);
+        }
+        if (!this._view?.visible) {
+            vscode.window.setStatusBarMessage("User: " + data.name + " send a Message", 5000);
+        }
+    }
+
 
     private _getHtmlForWebview(webview: vscode.Webview) {
         // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
@@ -86,7 +119,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 				</ul>
 				<hr>
 
-				<input type="text" id="submitMsg" name="chatMessage">
+				<textarea id="submitMsg" name="chatMessage" placeholder="send message"></textarea>
 
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
