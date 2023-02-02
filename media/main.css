@@ -1,16 +1,16 @@
 body {
     background-color: transparent;
-    overflow: hidden
+    overflow: hidden;
+    position: absolute;
+    bottom: 10px;
 }
 
 .submitMsg {
-    position: fixed;
     height: 10vh;
     max-height: 25vh;
 }
 
 .chatBody {
-    list-style: none;
     padding: 0;
     min-height: 63vh;
     height: 88vh;

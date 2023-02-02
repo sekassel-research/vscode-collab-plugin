@@ -117,7 +117,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 			<body>
 				<ul class="chatBody">
 				</ul>
-				<hr>
+				<hr></hr>
 
 				<textarea id="submitMsg" name="chatMessage" placeholder="send message"></textarea>
 
