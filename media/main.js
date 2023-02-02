@@ -8,9 +8,9 @@
     let chat = [];
 
     const msgInput = document.getElementById('submitMsg');
-    const msgInputHeight = 10;
-    const chatBody = document.querySelector('.chatBody');
-    const chatBodyHeight = 88
+
+    msgInput.style.height = 'auto';
+    msgInput.style.height = msgInput.scrollHeight+5 + 'px';
 
     console.log(getComputedStyle(msgInput));
 
@@ -19,13 +19,13 @@
             vscode.postMessage({type: 'sendMsg', content: msgInput.value});
             msgInput.value = '';
             e.preventDefault();
-            msgInput.style.height = msgInputHeight + "vh";
-            chatBody.style.height = chatBodyHeight + "vh";
+            msgInput.style.height = 'auto';
+            msgInput.style.height = msgInput.scrollHeight+5 + 'px';
         }
         if (getComputedStyle(msgInput).height.split("px")[0] < 270) {
             console.log(getComputedStyle(msgInput).height,getComputedStyle(msgInput).maxHeight)
             msgInput.style.height = 'auto';
-            msgInput.style.height = msgInput.scrollHeight + 'px';
+            msgInput.style.height = msgInput.scrollHeight+5 + 'px';
         }
     });
 
