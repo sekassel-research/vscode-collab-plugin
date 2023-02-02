@@ -102,7 +102,7 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     console.log("markLine called");
     let editor = vscode.window.activeTextEditor;
     let user = users.get(name);
-    if (!editor || pathName !== pathString(editor.document.fileName) || !user) {
+    if (!editor || pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/") || !user) {
         return;
     }
     let line = editor.document.lineAt(cursor.line);
@@ -123,7 +123,7 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
     const editor = vscode.window.activeTextEditor;
 
     let user = users.get(name);
-    if (!editor || pathName !== pathString(editor.document.fileName) || !user) {
+    if (!editor || pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/") || !user) {
         return;
     }
     const edit = new vscode.WorkspaceEdit();
