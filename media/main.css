@@ -23,6 +23,7 @@ body {
     padding: 5px;
     display: inline-block;
     word-break: break-word;
+    white-space: pre-wrap;
     margin-bottom: 0.4em;
     border: 1px solid var(--vscode-input-border);
 }
