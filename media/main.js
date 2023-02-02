@@ -9,13 +9,26 @@
 
     const msgInput = document.getElementById('submitMsg');
 
+    msgInput.style.height = 'auto';
+    msgInput.style.height = msgInput.scrollHeight+5 + 'px';
+
+    console.log(getComputedStyle(msgInput));
+
     msgInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             vscode.postMessage({type: 'sendMsg', content: msgInput.value});
             msgInput.value = '';
             e.preventDefault();
+            msgInput.style.height = 'auto';
+            msgInput.style.height = msgInput.scrollHeight+5 + 'px';
+        }
+        if (getComputedStyle(msgInput).height.split("px")[0] < 270) {
+            console.log(getComputedStyle(msgInput).height,getComputedStyle(msgInput).maxHeight)
+            msgInput.style.height = 'auto';
+            msgInput.style.height = msgInput.scrollHeight+5 + 'px';
         }
     });
+
 
     // Handle messages sent from the extension to the webview
     window.addEventListener('message', event => {

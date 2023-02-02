@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 import {User} from './class/user';
 import {closeWS, cursorMoved, openWS, textReplaced} from './ws';
-import {ChatViewProvider} from './class/chatViewProvider'
+import {ChatViewProvider} from './class/chatViewProvider';
 import {ActiveUsersProvider} from './class/activeUsersProvider';
 
 const users = new Map<string, User>();
@@ -58,10 +58,10 @@ export function activate(context: vscode.ExtensionContext) {
         for (let change of changes.contentChanges) {
             let pathName = pathString(editor.document.fileName);
             let range = change.range;
-            let content = jsonString(change.text);
+            let content = change.text;
             console.log(`Text replaced from ${range.start.line + 1}:${range.start.character} to ${range.end.line + 1}:${range.end.character}`);
 
-            textReplaced(pathName, range, content, "Pascal", "Test");
+            textReplaced(pathName, range.start, range.end, content, "Pascal", "Test");
         }
     });
 
@@ -102,7 +102,7 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     console.log("markLine called");
     let editor = vscode.window.activeTextEditor;
     let user = users.get(name);
-    if (!editor || relPath(editor.document.fileName) !== pathName || !user) {
+    if (!editor || pathName !== pathString(editor.document.fileName) || !user) {
         return;
     }
     let line = editor.document.lineAt(cursor.line);
@@ -119,27 +119,19 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     editor.setDecorations(user.getCursor(), [markerPosition]); // markiert Cursorposition in crimson
 }
 
-export function replaceText(pathName: string, range: vscode.Range, content: string, name: string) {
+export function replaceText(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string) {
     const editor = vscode.window.activeTextEditor;
-    if (!editor || pathName !== relPath(editor.document.fileName) || !users.has(name)) {
+
+    let user = users.get(name);
+    if (!editor || pathName !== pathString(editor.document.fileName) || !user) {
         return;
     }
     const edit = new vscode.WorkspaceEdit();
-
-    edit.replace(editor.document.uri, range, content);
+    edit.replace(editor.document.uri, new vscode.Range(from, to), content);
     vscode.workspace.applyEdit(edit);
 }
 
-function jsonString(content: string) {
-    return content.replace(/\\/g, '\\\\').replace(/\n/g, "\\n").replace(/"/g, '\\"');
-}
-
 function pathString(path: string) {
-    path = relPath(path);
-    return path.replace(/\\/g, '\\\\');
-}
-
-function relPath(path: string) {
     const projectRoot = vscode.workspace.workspaceFolders?.at(0)?.uri.fsPath;
     if (projectRoot) {
         path = path.replace(projectRoot, '');
