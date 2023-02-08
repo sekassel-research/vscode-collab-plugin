@@ -44,6 +44,8 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                     if (!this._view) {
                         return;
                     }
+                    console.log(getUserName(),"test");
+                    this._view.webview.postMessage({type: "userName", userName: getUserName()});
                     this._view.webview.postMessage({type: "chat", chat: this.chat});
                 }
             }

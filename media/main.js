@@ -6,6 +6,7 @@
     const vscode = acquireVsCodeApi();
 
     let chat = [];
+    let userName="";
 
     const body = document.getElementById('body');
     const msgInput = document.getElementById('submitMsg');
@@ -41,6 +42,9 @@
                 chat = message.chat;
                 updateChat();
             }
+            case 'userName':{
+                userName = message.userName;
+            }
         }
     });
 
@@ -74,6 +78,14 @@
             const user = document.createElement('user');
             user.className = 'userName';
             user.appendChild(document.createTextNode(message.name));
+            console.log(message.name, userName);
+            if (message.name == userName){
+                chatMsg.style.border = "1px solid #1139EE";
+                chatMsg.style.backgroundColor = "#4169E1";
+            } else {
+                chatMsg.style.border = "1px solid lightblue";
+                chatMsg.style.backgroundColor = "#3B494F";
+            }
             console.log(user);
 
             const content = document.createElement('content');
