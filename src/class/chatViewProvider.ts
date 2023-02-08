@@ -44,9 +44,8 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                     if (!this._view) {
                         return;
                     }
-                    console.log(getUserName(),"test");
-                    this._view.webview.postMessage({type: "userName", userName: getUserName()});
-                    this._view.webview.postMessage({type: "chat", chat: this.chat});
+
+                    this._view.webview.postMessage({type: "chat", chat: this.chat, userName: getUserName()});
                 }
             }
         });
@@ -57,7 +56,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         for (let i = 0; i < this.chat.length; i++) {
             const chatMsg: any = this.chat[i];
             if (chatMsg.time > message.time) {
-                this.chat.splice(i, 0, message)
+                this.chat.splice(i, 0, message);
                 earlyMsg = true;
                 break;
             }
@@ -71,7 +70,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         if (!getUsers().has(data.name)) {
             return;
         }
-        const webViewChatMessage = {type: 'receivedMsg', name: data.name, time: data.time, msg: data.msg}
+        const webViewChatMessage = {type: 'receivedMsg', name: data.name, time: data.time, msg: data.msg};
         this.addMsg(webViewChatMessage);
 
         if (this._view) {

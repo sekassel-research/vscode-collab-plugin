@@ -6,7 +6,7 @@
     const vscode = acquireVsCodeApi();
 
     let chat = [];
-    let userName="";
+    let userName = "";
 
     const body = document.getElementById('body');
     const msgInput = document.getElementById('submitMsg');
@@ -22,12 +22,10 @@
             updateStyle();
         }
         if (getComputedStyle(msgInput).height.split("px")[0] < 200) {
-            console.log(getComputedStyle(msgInput).height,getComputedStyle(msgInput).maxHeight)
+            console.log(getComputedStyle(msgInput).height, getComputedStyle(msgInput).maxHeight);
             updateStyle();
         }
     });
-
-
 
 
     // Handle messages sent from the extension to the webview
@@ -39,11 +37,9 @@
                 break;
             }
             case 'chat': {
+                userName = message.userName;
                 chat = message.chat;
                 updateChat();
-            }
-            case 'userName':{
-                userName = message.userName;
             }
         }
     });
@@ -56,7 +52,7 @@
         for (let i = 0; i < chat.length; i++) {
             const chatMsg = chat[i];
             if (chatMsg.time > message.time) {
-                chat.splice(i, 0, message)
+                chat.splice(i, 0, message);
                 earlyMsg = true;
                 break;
             }
@@ -79,7 +75,7 @@
             user.className = 'userName';
             user.appendChild(document.createTextNode(message.name));
             console.log(message.name, userName);
-            if (message.name == userName){
+            if (message.name === userName) {
                 chatMsg.style.border = "1px solid #1139EE";
                 chatMsg.style.backgroundColor = "#4169E1";
             } else {
@@ -99,12 +95,12 @@
         }
     }
 
-    function updateStyle(){
+    function updateStyle() {
         msgInput.style.height = 'auto';
-        msgInput.style.height = msgInput.scrollHeight+5 + 'px';
-        console.log(body.height- msgInput.height - 5 + 'px')
+        msgInput.style.height = msgInput.scrollHeight + 5 + 'px';
+        console.log(body.height - msgInput.height - 5 + 'px');
         chatBody.style.height = (body.offsetHeight - msgInput.offsetHeight) - 5 + 'px';
-        console.log(getComputedStyle(chatBody).height,"chatBox");
+        console.log(getComputedStyle(chatBody).height, "chatBox");
     }
 }());
 

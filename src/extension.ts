@@ -10,7 +10,7 @@ const users = new Map<string, User>();
 let chatViewProvider: ChatViewProvider;
 let activeUsersProvider: ActiveUsersProvider;
 
-let username:any;
+let username: any;
 let project = process.env.projectId;
 
 
@@ -138,7 +138,7 @@ function pathString(path: string) {
 }
 
 async function initUserName(): Promise<string | undefined> {
-	return process.env.username ;
+    return process.env.username;
 }
 
 export function getUsers() {
