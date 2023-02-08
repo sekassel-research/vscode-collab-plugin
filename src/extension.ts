@@ -86,6 +86,14 @@ export function userLeft(name: string) {
     }
 }
 
+export function addActiveUsers(data:[]) {
+    for (const userName of data){
+        console.log(userName);
+        users.set(userName,new User(userName));
+    }
+    activeUsersProvider.refresh();
+}
+
 function removeMarking(user: User | undefined) {
     let editor = vscode.window.activeTextEditor;
     if (user && editor) {
@@ -100,7 +108,7 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     console.log("markLine called");
     let editor = vscode.window.activeTextEditor;
     let user = users.get(name);
-    if (!editor || pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/") || !user) {
+    if (!editor || pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/") || !user || name === username) {
         return;
     }
     let line = editor.document.lineAt(cursor.line);
@@ -121,7 +129,7 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
     const editor = vscode.window.activeTextEditor;
 
     let user = users.get(name);
-    if (!editor || pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/") || !user) {
+    if (!editor || pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/") || !user || name === username) {
         return;
     }
     const edit = new vscode.WorkspaceEdit();

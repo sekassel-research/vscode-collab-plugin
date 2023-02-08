@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import {getChatViewProvider, markLine, replaceText, userJoined, userLeft} from "./extension";
+import {addActiveUsers, getChatViewProvider, getUsers, markLine, replaceText, userJoined, userLeft} from "./extension";
 import {ChatData, CursorMovedData, TextReplacedData} from "./interface/data";
 import {Message} from "./interface/message";
 import {
@@ -78,6 +78,10 @@ function handleMessage(msg: Message) {
         let data: CursorMovedData = msg.data;
         userLeft(data.name);
         return;
+    }
+
+    if (msg.operation === "activeUsers") {
+        addActiveUsers(msg.data);
     }
 
     if (msg.operation === "cursorMoved") {
