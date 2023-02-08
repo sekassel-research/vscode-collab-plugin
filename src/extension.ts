@@ -132,7 +132,7 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
 }
 
 function pathString(path: string) {
-    const projectRoot = vscode.workspace.workspaceFolders?.at(0)?.uri.fsPath;
+    const projectRoot = vscode.workspace.rootPath;
     if (projectRoot) {
         path = path.replace(projectRoot, '');
     }
