@@ -6,26 +6,24 @@
     const vscode = acquireVsCodeApi();
 
     let chat = [];
+    let userName = "";
 
+    const body = document.getElementById('body');
     const msgInput = document.getElementById('submitMsg');
+    const chatBody = document.getElementById('chatBody');
 
-    msgInput.style.height = 'auto';
-    msgInput.style.height = msgInput.scrollHeight+5 + 'px';
-
-    console.log(getComputedStyle(msgInput));
+    updateStyle();
 
     msgInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             vscode.postMessage({type: 'sendMsg', content: msgInput.value});
             msgInput.value = '';
             e.preventDefault();
-            msgInput.style.height = 'auto';
-            msgInput.style.height = msgInput.scrollHeight+5 + 'px';
+            updateStyle();
         }
-        if (getComputedStyle(msgInput).height.split("px")[0] < 270) {
-            console.log(getComputedStyle(msgInput).height,getComputedStyle(msgInput).maxHeight)
-            msgInput.style.height = 'auto';
-            msgInput.style.height = msgInput.scrollHeight+5 + 'px';
+        if (getComputedStyle(msgInput).height.split("px")[0] < 200) {
+            console.log(getComputedStyle(msgInput).height, getComputedStyle(msgInput).maxHeight);
+            updateStyle();
         }
     });
 
@@ -39,6 +37,7 @@
                 break;
             }
             case 'chat': {
+                userName = message.userName;
                 chat = message.chat;
                 updateChat();
             }
@@ -53,7 +52,7 @@
         for (let i = 0; i < chat.length; i++) {
             const chatMsg = chat[i];
             if (chatMsg.time > message.time) {
-                chat.splice(i, 0, message)
+                chat.splice(i, 0, message);
                 earlyMsg = true;
                 break;
             }
@@ -75,6 +74,14 @@
             const user = document.createElement('user');
             user.className = 'userName';
             user.appendChild(document.createTextNode(message.name));
+            console.log(message.name, userName);
+            if (message.name === userName) {
+                chatMsg.style.border = "1px solid #1139EE";
+                chatMsg.style.backgroundColor = "#4169E1";
+            } else {
+                chatMsg.style.border = "1px solid lightblue";
+                chatMsg.style.backgroundColor = "#3B494F";
+            }
             console.log(user);
 
             const content = document.createElement('content');
@@ -86,6 +93,14 @@
 
             ul.appendChild(chatMsg);
         }
+    }
+
+    function updateStyle() {
+        msgInput.style.height = 'auto';
+        msgInput.style.height = msgInput.scrollHeight + 5 + 'px';
+        console.log(body.height - msgInput.height - 5 + 'px');
+        chatBody.style.height = (body.offsetHeight - msgInput.offsetHeight) - 5 + 'px';
+        console.log(getComputedStyle(chatBody).height, "chatBox");
     }
 }());
 
