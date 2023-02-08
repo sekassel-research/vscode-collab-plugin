@@ -114,8 +114,8 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
 				<title>Chat</title>
 			</head>
-			<body>
-				<ul class="chatBody">
+			<body id="body">
+				<ul id="chatBody" class="chatBody">
 				</ul>
 				<hr></hr>
 

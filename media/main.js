@@ -7,27 +7,26 @@
 
     let chat = [];
 
+    const body = document.getElementById('body');
     const msgInput = document.getElementById('submitMsg');
+    const chatBody = document.getElementById('chatBody');
 
-    msgInput.style.height = 'auto';
-    msgInput.style.height = msgInput.scrollHeight+5 + 'px';
-
-    console.log(getComputedStyle(msgInput));
+    updateStyle();
 
     msgInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             vscode.postMessage({type: 'sendMsg', content: msgInput.value});
             msgInput.value = '';
             e.preventDefault();
-            msgInput.style.height = 'auto';
-            msgInput.style.height = msgInput.scrollHeight+5 + 'px';
+            updateStyle();
         }
-        if (getComputedStyle(msgInput).height.split("px")[0] < 270) {
+        if (getComputedStyle(msgInput).height.split("px")[0] < 200) {
             console.log(getComputedStyle(msgInput).height,getComputedStyle(msgInput).maxHeight)
-            msgInput.style.height = 'auto';
-            msgInput.style.height = msgInput.scrollHeight+5 + 'px';
+            updateStyle();
         }
     });
+
+
 
 
     // Handle messages sent from the extension to the webview
@@ -86,6 +85,14 @@
 
             ul.appendChild(chatMsg);
         }
+    }
+
+    function updateStyle(){
+        msgInput.style.height = 'auto';
+        msgInput.style.height = msgInput.scrollHeight+5 + 'px';
+        console.log(body.height- msgInput.height - 5 + 'px')
+        chatBody.style.height = (body.offsetHeight - msgInput.offsetHeight) - 5 + 'px';
+        console.log(getComputedStyle(chatBody).height,"chatBox");
     }
 }());
 
