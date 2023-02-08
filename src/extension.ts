@@ -10,16 +10,14 @@ const users = new Map<string, User>();
 let chatViewProvider: ChatViewProvider;
 let activeUsersProvider: ActiveUsersProvider;
 
-let username = process.env.username;
+let username: any;
 let project = process.env.projectId;
 
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
     console.log("init");
 
-    if (!username) {
-        username = "User";
-    }
+    username = await initUserName();
     if (!project) {
         project = "Test";
     }
@@ -137,6 +135,10 @@ function pathString(path: string) {
         path = path.replace(projectRoot, '');
     }
     return path;
+}
+
+async function initUserName(): Promise<string | undefined> {
+    return process.env.username;
 }
 
 export function getUsers() {
