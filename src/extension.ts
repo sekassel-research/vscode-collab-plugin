@@ -12,12 +12,13 @@ let activeUsersProvider: ActiveUsersProvider;
 
 let username: any;
 let project = process.env.projectId;
+let textEdits: string[] = [];
 
 
 export async function activate(context: vscode.ExtensionContext) {
     console.log("init");
 
-    username = await initUserName();
+    username = "Code-Server"
     if (!project) {
         project = "Test";
     }
@@ -45,7 +46,7 @@ export async function activate(context: vscode.ExtensionContext) {
             selectionEnd = editor.selection.start;
         }
         //markLine(lineNumber,position,"Pascal");	// markiert aktuell den cursor und taggt "Pascal" | wird später für syncro benötigt
-        cursorMoved(pathName, cursor, selectionEnd, "Pascal", "Test");
+        cursorMoved(pathName, cursor, selectionEnd, username, "Test");
     });
 
     vscode.workspace.onDidChangeTextDocument(changes => { // wird aufgerufen, wenn der Text geändert wird | muss Sperre reinmachen, wenn andere tippen | timeout?
@@ -58,8 +59,19 @@ export async function activate(context: vscode.ExtensionContext) {
             let range = change.range;
             let content = change.text;
             console.log(`Text replaced from ${range.start.line + 1}:${range.start.character} to ${range.end.line + 1}:${range.end.character}`);
+            let uri = editor.document.uri;
 
-            textReplaced(pathName, range.start, range.end, content, "Pascal", "Test");
+            let ownText = true;
+            textEdits.filter((edit,index) => {
+                if (edit === JSON.stringify({uri,range,content})){
+                    ownText = false;
+                    textEdits.splice(index,1);
+                }
+            });
+            if (ownText){
+                console.log("yes sir")
+                textReplaced(pathName, range.start, range.end, content, username, "Test");
+            }
         }
     });
 
@@ -105,10 +117,9 @@ function removeMarking(user: User | undefined) {
 }
 
 export function markLine(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string, project: string) {
-    console.log("markLine called");
     let editor = vscode.window.activeTextEditor;
     let user = users.get(name);
-    if (!editor || pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/") || !user || name === username) {
+    if (!editor || !user || name === username) { //|| pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/") 
         return;
     }
     let line = editor.document.lineAt(cursor.line);
@@ -129,11 +140,12 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
     const editor = vscode.window.activeTextEditor;
 
     let user = users.get(name);
-    if (!editor || pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/") || !user || name === username) {
+    if (!editor || !user || name === username ) { //|| pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/") || !user || name === username
         return;
     }
     const edit = new vscode.WorkspaceEdit();
     edit.replace(editor.document.uri, new vscode.Range(from, to), content);
+    textEdits.push(JSON.stringify({uri:editor.document.uri,range: new vscode.Range(from, to), content}));
     vscode.workspace.applyEdit(edit);
 }
 
