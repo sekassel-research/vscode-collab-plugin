@@ -91,7 +91,7 @@ function handleMessage(msg: Message) {
     }
     if (msg.operation === "textReplaced") {
         let data: TextReplacedData = msg.data;
-        replaceText(data.pathName, data.from, data.to, data.content, data.name,);
+        replaceText(data.pathName, data.from, data.to, data.content, data.name);
         return;
     }
 

@@ -140,13 +140,18 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
     const editor = vscode.window.activeTextEditor;
 
     let user = users.get(name);
-    if (!editor || !user || name === username ) { //|| pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/") || !user || name === username
+    if (!editor || !user || name === username ) { //|| pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/")
         return;
     }
     const edit = new vscode.WorkspaceEdit();
     edit.replace(editor.document.uri, new vscode.Range(from, to), content);
     textEdits.push(JSON.stringify({uri:editor.document.uri,range: new vscode.Range(from, to), content}));
     vscode.workspace.applyEdit(edit);
+
+    let line = editor.document.lineAt(to.line);
+
+    editor.setDecorations(user.getColorIndicator(), [line.range]);
+    editor.setDecorations(user.getNameTag(), [line.range]);  
 }
 
 function pathString(path: string) {
