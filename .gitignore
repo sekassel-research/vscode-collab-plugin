@@ -37,4 +37,4 @@ lerna-debug.log*
 # VSCode Extension
 out
 
-.vsix
+*.vsix
