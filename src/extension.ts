@@ -5,24 +5,30 @@ import {User} from './class/user';
 import {closeWS, cursorMoved, openWS, textReplaced} from './ws';
 import {ChatViewProvider} from './class/chatViewProvider';
 import {ActiveUsersProvider} from './class/activeUsersProvider';
+import { randomUUID } from 'crypto';
 
 const users = new Map<string, User>();
 let chatViewProvider: ChatViewProvider;
 let activeUsersProvider: ActiveUsersProvider;
 
-let username: any;
+let username = process.env.username;
 let project = process.env.projectId;
 let textEdits: string[] = [];
 
 
 export async function activate(context: vscode.ExtensionContext) {
     console.log("init");
+    
 
-    username = "Code-Server"
-    if (!project) {
-        project = "Test";
+    username = await initUserName();
+    console.log("username",username)
+    if (username===undefined){
+        username = "User"+randomUUID();
     }
-
+    if (!project) {
+        project = "Default";
+    }
+    vscode.window.showInformationMessage("username , "+ username);
     openWS(username, project);
 
     chatViewProvider = new ChatViewProvider(context.extensionUri);
