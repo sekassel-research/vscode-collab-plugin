@@ -52,7 +52,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     }
 
     private addMsg(message: any) {
-        let earlyMsg = false
+        let earlyMsg = false;
         for (let i = 0; i < this.chat.length; i++) {
             const chatMsg: any = this.chat[i];
             if (chatMsg.time > message.time) {
@@ -118,7 +118,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 			<body id="body">
 				<ul id="chatBody" class="chatBody">
 				</ul>
-				<hr></hr>
+				<hr>
 
 				<textarea id="submitMsg" name="chatMessage" placeholder="send message"></textarea>
 

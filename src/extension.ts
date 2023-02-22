@@ -5,7 +5,7 @@ import {User} from './class/user';
 import {closeWS, cursorMoved, openWS, textReplaced} from './ws';
 import {ChatViewProvider} from './class/chatViewProvider';
 import {ActiveUsersProvider} from './class/activeUsersProvider';
-import { randomUUID } from 'crypto';
+import {randomUUID} from 'crypto';
 
 const users = new Map<string, User>();
 let chatViewProvider: ChatViewProvider;
@@ -18,17 +18,18 @@ let textEdits: string[] = [];
 
 export async function activate(context: vscode.ExtensionContext) {
     console.log("init");
-    
+
 
     username = await initUserName();
-    console.log("username",username)
-    if (username===undefined){
-        username = "User"+randomUUID();
+    console.log("username", username);
+    if (username === undefined) {
+        username = "User" + randomUUID();
     }
-    if (!project) {
+    project = await initProjectName();
+    if (project === undefined) {
         project = "Default";
     }
-    vscode.window.showInformationMessage("username , "+ username);
+    vscode.window.showInformationMessage("username , " + username);
     openWS(username, project);
 
     chatViewProvider = new ChatViewProvider(context.extensionUri);
@@ -68,14 +69,13 @@ export async function activate(context: vscode.ExtensionContext) {
             let uri = editor.document.uri;
 
             let ownText = true;
-            textEdits.filter((edit,index) => {
-                if (edit === JSON.stringify({uri,range,content})){
+            textEdits.filter((edit, index) => {
+                if (edit === JSON.stringify({uri, range, content})) {
                     ownText = false;
-                    textEdits.splice(index,1);
+                    textEdits.splice(index, 1);
                 }
             });
-            if (ownText){
-                console.log("yes sir")
+            if (ownText) {
                 textReplaced(pathName, range.start, range.end, content, username, "Test");
             }
         }
@@ -104,10 +104,10 @@ export function userLeft(name: string) {
     }
 }
 
-export function addActiveUsers(data:[]) {
-    for (const userName of data){
+export function addActiveUsers(data: []) {
+    for (const userName of data) {
         console.log(userName);
-        users.set(userName,new User(userName));
+        users.set(userName, new User(userName));
     }
     activeUsersProvider.refresh();
 }
@@ -125,7 +125,7 @@ function removeMarking(user: User | undefined) {
 export function markLine(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string, project: string) {
     let editor = vscode.window.activeTextEditor;
     let user = users.get(name);
-    if (!editor || !user || name === username) { //|| pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/") 
+    if (!editor || !user || name === username) { //|| pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/")
         return;
     }
     let line = editor.document.lineAt(cursor.line);
@@ -146,18 +146,18 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
     const editor = vscode.window.activeTextEditor;
 
     let user = users.get(name);
-    if (!editor || !user || name === username ) { //|| pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/")
+    if (!editor || !user || name === username) { //|| pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/")
         return;
     }
     const edit = new vscode.WorkspaceEdit();
     edit.replace(editor.document.uri, new vscode.Range(from, to), content);
-    textEdits.push(JSON.stringify({uri:editor.document.uri,range: new vscode.Range(from, to), content}));
+    textEdits.push(JSON.stringify({uri: editor.document.uri, range: new vscode.Range(from, to), content}));
     vscode.workspace.applyEdit(edit);
 
     let line = editor.document.lineAt(to.line);
 
     editor.setDecorations(user.getColorIndicator(), [line.range]);
-    editor.setDecorations(user.getNameTag(), [line.range]);  
+    editor.setDecorations(user.getNameTag(), [line.range]);
 }
 
 function pathString(path: string) {
@@ -170,6 +170,10 @@ function pathString(path: string) {
 
 async function initUserName(): Promise<string | undefined> {
     return process.env.username;
+}
+
+async function initProjectName(): Promise<string | undefined> {
+    return process.env.projectname;
 }
 
 export function getUsers() {
@@ -195,8 +199,4 @@ export function deactivate() {
         }
         closeWS(username, project);
     });
-}
-
-export function log(msg: any) {
-    console.log(msg);
 }

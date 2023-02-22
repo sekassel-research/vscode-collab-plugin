@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import {addActiveUsers, getChatViewProvider, getUsers, markLine, replaceText, userJoined, userLeft} from "./extension";
+import {addActiveUsers, getChatViewProvider, markLine, replaceText, userJoined, userLeft} from "./extension";
 import {ChatData, CursorMovedData, TextReplacedData} from "./interface/data";
 import {Message} from "./interface/message";
 import {
@@ -22,7 +22,6 @@ export function openWS(name: string, project: string) {
 
         ws.on('message', function incoming(data: any) {
             const msg: Message = JSON.parse(Buffer.from(data).toString());
-            console.log(JSON.stringify(msg));
             handleMessage(msg);
         });
 
@@ -62,7 +61,7 @@ export function textReplaced(pathName: string, from: vscode.Position, to: vscode
 }
 
 export function sendChatMessage(msg: string, name: string | undefined, project: string | undefined) {
-    ws.send(buildChatMessage("chatMsg", msg, name, project))
+    ws.send(buildChatMessage("chatMsg", msg, name, project));
 }
 
 function handleMessage(msg: Message) {
