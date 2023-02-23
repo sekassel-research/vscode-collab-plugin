@@ -6,6 +6,7 @@ import {closeWS, cursorMoved, openWS, textReplaced} from './ws';
 import {ChatViewProvider} from './class/chatViewProvider';
 import {ActiveUsersProvider} from './class/activeUsersProvider';
 import {randomUUID} from 'crypto';
+import { TextReplacedData } from './interface/data';
 
 const users = new Map<string, User>();
 let chatViewProvider: ChatViewProvider;
@@ -14,6 +15,7 @@ let activeUsersProvider: ActiveUsersProvider;
 let username = process.env.username;
 let project = process.env.projectId;
 let textEdits: string[] = [];
+let textChangeQueue: any[] = []
 
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -142,6 +144,13 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     editor.setDecorations(user.getCursor(), [markerPosition]); // markiert Cursorposition in crimson
 }
 
+export function workThroughTextQueue(){
+    while (textChangeQueue.length != 0) {
+        let textOperation:TextReplacedData = textChangeQueue.shift();
+        replaceText(textOperation.pathName,textOperation.from,textOperation.to,textOperation.content,textOperation.name);
+    }
+}
+
 export function replaceText(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string) {
     const editor = vscode.window.activeTextEditor;
 
@@ -182,6 +191,10 @@ export function getUsers() {
 
 export function getUserName() {
     return username;
+}
+
+export function getTextChangeQueue(){
+    return textChangeQueue;
 }
 
 export function getProjectId() {

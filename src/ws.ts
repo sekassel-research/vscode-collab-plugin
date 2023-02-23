@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import {addActiveUsers, getChatViewProvider, markLine, replaceText, userJoined, userLeft} from "./extension";
+import {addActiveUsers, getChatViewProvider, getTextChangeQueue, markLine, replaceText, userJoined, userLeft, workThroughTextQueue} from "./extension";
 import {ChatData, CursorMovedData, TextReplacedData} from "./interface/data";
 import {Message} from "./interface/message";
 import {
@@ -90,7 +90,13 @@ function handleMessage(msg: Message) {
     }
     if (msg.operation === "textReplaced") {
         let data: TextReplacedData = msg.data;
-        replaceText(data.pathName, data.from, data.to, data.content, data.name);
+        getTextChangeQueue().push(msg.data);
+        if(getTextChangeQueue().length==0){
+            getTextChangeQueue().push(msg.data);
+            workThroughTextQueue();
+        } else{
+            getTextChangeQueue().push(msg.data);
+        }
         return;
     }
 
