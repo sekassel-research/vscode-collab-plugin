@@ -1,8 +1,10 @@
 {
   "name": "vscode-collab-plugin",
   "displayName": "vscode-collab-plugin",
+  "publisher": "Pascal-D",
   "description": "TBA",
   "version": "0.0.1",
+  "repository": "https://github.com/sekassel-research/vscode-collab-plugin",
   "engines": {
     "vscode": "^1.73.0"
   },
