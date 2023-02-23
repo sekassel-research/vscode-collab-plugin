@@ -90,12 +90,11 @@ function handleMessage(msg: Message) {
     }
     if (msg.operation === "textReplaced") {
         let data: TextReplacedData = msg.data;
-        getTextChangeQueue().push(msg.data);
         if(getTextChangeQueue().length==0){
-            getTextChangeQueue().push(msg.data);
+            getTextChangeQueue().push(data);
             workThroughTextQueue();
         } else{
-            getTextChangeQueue().push(msg.data);
+            getTextChangeQueue().push(data);
         }
         return;
     }
