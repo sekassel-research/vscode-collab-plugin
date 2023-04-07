@@ -37,3 +37,12 @@ body {
 .content {
     word-break: break-word;
 }
+
+.lineLink {
+    color: #bbb;
+    transition: color 0.3s ease-in-out;
+}
+
+.lineLink:hover {
+  color: #fff;
+}

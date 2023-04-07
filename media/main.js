@@ -22,7 +22,6 @@
             updateStyle();
         }
         if (getComputedStyle(msgInput).height.split("px")[0] < 200) {
-            console.log(getComputedStyle(msgInput).height, getComputedStyle(msgInput).maxHeight);
             updateStyle();
         }
     });
@@ -44,11 +43,10 @@
         }
     });
 
-    console.log("init chatView scripts");
     vscode.postMessage({type: 'initChat'});
 
     function addMsg(message) {
-        let earlyMsg = false
+        let earlyMsg = false;
         for (let i = 0; i < chat.length; i++) {
             const chatMsg = chat[i];
             if (chatMsg.time > message.time) {
@@ -64,43 +62,56 @@
     }
 
     function updateChat() {
-        console.log("updateChat called")
         const ul = document.querySelector('.chatBody');
         ul.textContent = '';
         for (const message of chat) {
-            const chatMsg = document.createElement('div');
-            chatMsg.className = 'chatMsg';
-            chatMsg.title = new Date(message.time).toLocaleString('de-DE');
-            const user = document.createElement('user');
-            user.className = 'userName';
-            user.appendChild(document.createTextNode(message.name));
-            console.log(message.name, userName);
-            if (message.name === userName) {
-                chatMsg.style.border = "1px solid #1139EE";
-                chatMsg.style.backgroundColor = "#4169E1";
-            } else {
-                chatMsg.style.border = "1px solid lightblue";
-                chatMsg.style.backgroundColor = "#3B494F";
-            }
-            console.log(user);
+          const chatMsg = document.createElement('div');
+          chatMsg.className = 'chatMsg';
+      
+          // RegEx-Ausdruck zur Extraktion der Zeilennummer und des "Line"/"Zeile"-Präfixes
+          const regex = /(Line|Zeile)\s*(\d+)/gi;
 
-            const content = document.createElement('content');
-            content.className = 'content';
-            content.appendChild(document.createTextNode(message.msg));
-
-            chatMsg.appendChild(user);
-            chatMsg.appendChild(content);
-
-            ul.appendChild(chatMsg);
+          chatMsg.title = new Date(message.time).toLocaleString('de-DE');
+      
+          const user = document.createElement('user');
+          user.className = 'userName';
+          user.appendChild(document.createTextNode(message.name));
+          if (message.name === userName) {
+            chatMsg.style.border = "1px solid #1139EE";
+            chatMsg.style.backgroundColor = "#4169E1";
+          } else {
+            chatMsg.style.border = "1px solid lightblue";
+            chatMsg.style.backgroundColor = "#3B494F";
+          }
+      
+          const content = document.createElement('content');
+          content.className = 'content';
+      
+          // Ersetzen von "Line" oder "Zeile" gefolgt von Leerzeichen und Ziffern durch Links
+          const msgWithLinks = message.msg.replace(regex, '<a href="#" class="lineLink">$&</a>');
+          content.innerHTML = msgWithLinks;
+      
+          chatMsg.appendChild(user);
+          chatMsg.appendChild(content);
+      
+          ul.appendChild(chatMsg);
         }
-    }
+      
+        // Hinzufügen eines Event-Listeners für alle Links mit der Klasse "lineLink"
+        const lineLinks = document.querySelectorAll('.lineLink');
+        lineLinks.forEach(link => {
+          link.addEventListener('click', e => {
+            e.preventDefault();
+            const lineNumber = e.target.textContent.match(/\d+/)[0];
+            vscode.postMessage({type: 'jumpToLine', content: lineNumber});
+          });
+        });
+      }
 
     function updateStyle() {
         msgInput.style.height = 'auto';
         msgInput.style.height = msgInput.scrollHeight + 5 + 'px';
-        console.log(body.height - msgInput.height - 5 + 'px');
         chatBody.style.height = (body.offsetHeight - msgInput.offsetHeight) - 5 + 'px';
-        console.log(getComputedStyle(chatBody).height, "chatBox");
     }
 }());
 

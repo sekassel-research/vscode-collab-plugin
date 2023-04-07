@@ -1,5 +1,14 @@
 import * as vscode from 'vscode';
-import {addActiveUsers, getChatViewProvider, getTextChangeQueue, markLine, replaceText, userJoined, userLeft, workThroughTextQueue} from "./extension";
+import {
+    addActiveUsers,
+    getChatViewProvider,
+    getTextChangeQueue,
+    markLine,
+    replaceText,
+    userJoined,
+    userLeft,
+    workThroughTextQueue
+} from "./extension";
 import {ChatData, CursorMovedData, TextReplacedData} from "./interface/data";
 import {Message} from "./interface/message";
 import {
@@ -18,7 +27,6 @@ let wsClose = false;
 export function openWS(name: string, project: string) {
     ws = new webSocket('ws://localhost:8080');
     ws.on('open', function open() {
-        console.log("connected");
 
         ws.on('message', function incoming(data: any) {
             const msg: Message = JSON.parse(Buffer.from(data).toString());
@@ -31,7 +39,6 @@ export function openWS(name: string, project: string) {
     ws.on('close', function close() {
         if (!wsClose) {
             // Starte den Wiederverbindungsprozess nach 10 Sekunden
-            console.log('Verbindung geschlossen. retry in 10s');
             setTimeout(() => {
                 openWS(name, project);
             }, 10000);
@@ -40,7 +47,7 @@ export function openWS(name: string, project: string) {
 
     ws.on('error', (error: Error) => {
         setTimeout(() => {
-            console.log(error);
+            console.error(error);
         }, 2000);
     });
 }
@@ -65,7 +72,6 @@ export function sendChatMessage(msg: string, name: string | undefined, project: 
 }
 
 function handleMessage(msg: Message) {
-    console.log("handleMessage called");
 
     if (msg.operation === "userJoined") {
         let data: CursorMovedData = msg.data;
@@ -90,10 +96,10 @@ function handleMessage(msg: Message) {
     }
     if (msg.operation === "textReplaced") {
         let data: TextReplacedData = msg.data;
-        if(getTextChangeQueue().length==0){
+        if (getTextChangeQueue().length === 0) {
             getTextChangeQueue().push(data);
             workThroughTextQueue();
-        } else{
+        } else {
             getTextChangeQueue().push(data);
         }
         return;
