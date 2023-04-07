@@ -5,23 +5,29 @@ import {User} from './class/user';
 import {closeWS, cursorMoved, openWS, textReplaced} from './ws';
 import {ChatViewProvider} from './class/chatViewProvider';
 import {ActiveUsersProvider} from './class/activeUsersProvider';
+import {randomUUID} from 'crypto';
+import {TextReplacedData} from './interface/data';
 
 const users = new Map<string, User>();
 let chatViewProvider: ChatViewProvider;
 let activeUsersProvider: ActiveUsersProvider;
 
-let username: any;
+let username = process.env.username;
 let project = process.env.projectId;
+let textEdits: string[] = [];
+let textChangeQueue: any[] = [];
 
 
 export async function activate(context: vscode.ExtensionContext) {
-    console.log("init");
-
     username = await initUserName();
-    if (!project) {
-        project = "Test";
+    if (username === undefined) {
+        username = "User" + randomUUID();
     }
-
+    project = await initProjectName();
+    if (project === undefined) {
+        project = "Default";
+    }
+    vscode.window.showInformationMessage("username , " + username);
     openWS(username, project);
 
     chatViewProvider = new ChatViewProvider(context.extensionUri);
@@ -45,7 +51,7 @@ export async function activate(context: vscode.ExtensionContext) {
             selectionEnd = editor.selection.start;
         }
         //markLine(lineNumber,position,"Pascal");	// markiert aktuell den cursor und taggt "Pascal" | wird später für syncro benötigt
-        cursorMoved(pathName, cursor, selectionEnd, "Pascal", "Test");
+        cursorMoved(pathName, cursor, selectionEnd, username, "Test");
     });
 
     vscode.workspace.onDidChangeTextDocument(changes => { // wird aufgerufen, wenn der Text geändert wird | muss Sperre reinmachen, wenn andere tippen | timeout?
@@ -57,9 +63,18 @@ export async function activate(context: vscode.ExtensionContext) {
             let pathName = pathString(editor.document.fileName);
             let range = change.range;
             let content = change.text;
-            console.log(`Text replaced from ${range.start.line + 1}:${range.start.character} to ${range.end.line + 1}:${range.end.character}`);
+            let uri = editor.document.uri;
 
-            textReplaced(pathName, range.start, range.end, content, "Pascal", "Test");
+            let ownText = true;
+            textEdits.filter((edit, index) => {
+                if (edit === JSON.stringify({uri, range, content})) {
+                    ownText = false;
+                    textEdits.splice(index, 1);
+                }
+            });
+            if (ownText) {
+                textReplaced(pathName, range.start, range.end, content, username, "Test");
+            }
         }
     });
 
@@ -86,6 +101,13 @@ export function userLeft(name: string) {
     }
 }
 
+export function addActiveUsers(data: []) {
+    for (const userName of data) {
+        users.set(userName, new User(userName));
+    }
+    activeUsersProvider.refresh();
+}
+
 function removeMarking(user: User | undefined) {
     let editor = vscode.window.activeTextEditor;
     if (user && editor) {
@@ -97,10 +119,9 @@ function removeMarking(user: User | undefined) {
 }
 
 export function markLine(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string, project: string) {
-    console.log("markLine called");
     let editor = vscode.window.activeTextEditor;
     let user = users.get(name);
-    if (!editor || pathName !== pathString(editor.document.fileName) || !user) {
+    if (!editor || !user || name === username) { //|| pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/")
         return;
     }
     let line = editor.document.lineAt(cursor.line);
@@ -117,28 +138,55 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     editor.setDecorations(user.getCursor(), [markerPosition]); // markiert Cursorposition in crimson
 }
 
+export function workThroughTextQueue() {
+    while (textChangeQueue.length !== 0) {
+        let textOperation: TextReplacedData = textChangeQueue.shift();
+        replaceText(textOperation.pathName, textOperation.from, textOperation.to, textOperation.content, textOperation.name);
+    }
+}
+
 export function replaceText(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string) {
     const editor = vscode.window.activeTextEditor;
 
     let user = users.get(name);
-    if (!editor || pathName !== pathString(editor.document.fileName) || !user) {
+    if (!editor || !user || name === username) { //|| pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/")
         return;
     }
     const edit = new vscode.WorkspaceEdit();
     edit.replace(editor.document.uri, new vscode.Range(from, to), content);
+    textEdits.push(JSON.stringify({uri: editor.document.uri, range: new vscode.Range(from, to), content}));
     vscode.workspace.applyEdit(edit);
+
+    let line = editor.document.lineAt(to.line);
+
+    editor.setDecorations(user.getColorIndicator(), [line.range]);
+    editor.setDecorations(user.getNameTag(), [line.range]);
 }
 
 function pathString(path: string) {
-    const projectRoot = vscode.workspace.workspaceFolders?.at(0)?.uri.fsPath;
+    const projectRoot = vscode.workspace.rootPath;
     if (projectRoot) {
         path = path.replace(projectRoot, '');
     }
     return path;
 }
 
+export function jumpToLine(lineNumber:number){
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        return;
+    }
+    const range = editor.document.lineAt(lineNumber - 1).range;
+    editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+    editor.selection = new vscode.Selection(range.start, range.end);
+}
+
 async function initUserName(): Promise<string | undefined> {
     return process.env.username;
+}
+
+async function initProjectName(): Promise<string | undefined> {
+    return process.env.projectname;
 }
 
 export function getUsers() {
@@ -147,6 +195,10 @@ export function getUsers() {
 
 export function getUserName() {
     return username;
+}
+
+export function getTextChangeQueue() {
+    return textChangeQueue;
 }
 
 export function getProjectId() {
@@ -164,8 +216,4 @@ export function deactivate() {
         }
         closeWS(username, project);
     });
-}
-
-export function log(msg: any) {
-    console.log(msg);
 }

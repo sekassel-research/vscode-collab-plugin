@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import {getProjectId, getUserName, getUsers} from '../extension';
+import {getProjectId, getUserName, getUsers, jumpToLine} from '../extension';
 import {ChatData} from '../interface/data';
 import {sendChatMessage} from '../ws';
 
@@ -47,12 +47,16 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
                     this._view.webview.postMessage({type: "chat", chat: this.chat, userName: getUserName()});
                 }
+                case 'jumpToLine':{
+                    jumpToLine(data.content);
+                    break;
+                }
             }
         });
     }
 
     private addMsg(message: any) {
-        let earlyMsg = false
+        let earlyMsg = false;
         for (let i = 0; i < this.chat.length; i++) {
             const chatMsg: any = this.chat[i];
             if (chatMsg.time > message.time) {
@@ -118,7 +122,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 			<body id="body">
 				<ul id="chatBody" class="chatBody">
 				</ul>
-				<hr></hr>
+				<hr>
 
 				<textarea id="submitMsg" name="chatMessage" placeholder="send message"></textarea>
 

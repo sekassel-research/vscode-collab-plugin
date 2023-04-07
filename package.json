@@ -1,10 +1,12 @@
 {
   "name": "vscode-collab-plugin",
   "displayName": "vscode-collab-plugin",
+  "publisher": "Pascal-D",
   "description": "TBA",
   "version": "0.0.1",
+  "repository": "https://github.com/sekassel-research/vscode-collab-plugin",
   "engines": {
-    "vscode": "^1.74.0"
+    "vscode": "^1.73.0"
   },
   "categories": [
     "Other"
@@ -55,7 +57,7 @@
     "@types/glob": "^8.0.0",
     "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
-    "@types/vscode": "^1.74.0",
+    "@types/vscode": "^1.73.0",
     "@typescript-eslint/eslint-plugin": "^5.45.0",
     "@typescript-eslint/parser": "^5.45.0",
     "@vscode/test-electron": "^2.2.0",

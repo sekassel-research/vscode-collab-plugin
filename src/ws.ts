@@ -1,5 +1,14 @@
 import * as vscode from 'vscode';
-import {getChatViewProvider, markLine, replaceText, userJoined, userLeft} from "./extension";
+import {
+    addActiveUsers,
+    getChatViewProvider,
+    getTextChangeQueue,
+    markLine,
+    replaceText,
+    userJoined,
+    userLeft,
+    workThroughTextQueue
+} from "./extension";
 import {ChatData, CursorMovedData, TextReplacedData} from "./interface/data";
 import {Message} from "./interface/message";
 import {
@@ -18,11 +27,9 @@ let wsClose = false;
 export function openWS(name: string, project: string) {
     ws = new webSocket('ws://localhost:8080');
     ws.on('open', function open() {
-        console.log("connected");
 
         ws.on('message', function incoming(data: any) {
             const msg: Message = JSON.parse(Buffer.from(data).toString());
-            console.log(JSON.stringify(msg));
             handleMessage(msg);
         });
 
@@ -32,7 +39,6 @@ export function openWS(name: string, project: string) {
     ws.on('close', function close() {
         if (!wsClose) {
             // Starte den Wiederverbindungsprozess nach 10 Sekunden
-            console.log('Verbindung geschlossen. retry in 10s');
             setTimeout(() => {
                 openWS(name, project);
             }, 10000);
@@ -41,7 +47,7 @@ export function openWS(name: string, project: string) {
 
     ws.on('error', (error: Error) => {
         setTimeout(() => {
-            console.log(error);
+            console.error(error);
         }, 2000);
     });
 }
@@ -53,20 +59,19 @@ export function closeWS(name: string, project: string) {
     ws.close(1000, 'connection was closed by the user');
 }
 
-export function cursorMoved(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string, project: string) {
+export function cursorMoved(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string | undefined, project: string) {
     ws.send(buildCursorMovedMessage("cursorMoved", pathName, cursor, selectionEnd, name, project));
 }
 
-export function textReplaced(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string, project: string) {
+export function textReplaced(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string | undefined, project: string) {
     ws.send(buildTextReplacedMessage("textReplaced", pathName, from, to, content, name, project));
 }
 
 export function sendChatMessage(msg: string, name: string | undefined, project: string | undefined) {
-    ws.send(buildChatMessage("chatMsg", msg, name, project))
+    ws.send(buildChatMessage("chatMsg", msg, name, project));
 }
 
 function handleMessage(msg: Message) {
-    console.log("handleMessage called");
 
     if (msg.operation === "userJoined") {
         let data: CursorMovedData = msg.data;
@@ -80,6 +85,10 @@ function handleMessage(msg: Message) {
         return;
     }
 
+    if (msg.operation === "activeUsers") {
+        addActiveUsers(msg.data);
+    }
+
     if (msg.operation === "cursorMoved") {
         let data: CursorMovedData = msg.data;
         markLine(data.pathName, data.cursor, data.selectionEnd, data.name, data.project);
@@ -87,7 +96,12 @@ function handleMessage(msg: Message) {
     }
     if (msg.operation === "textReplaced") {
         let data: TextReplacedData = msg.data;
-        replaceText(data.pathName, data.from, data.to, data.content, data.name,);
+        if (getTextChangeQueue().length === 0) {
+            getTextChangeQueue().push(data);
+            workThroughTextQueue();
+        } else {
+            getTextChangeQueue().push(data);
+        }
         return;
     }
 
