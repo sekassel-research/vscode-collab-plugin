@@ -171,6 +171,16 @@ function pathString(path: string) {
     return path;
 }
 
+export function jumpToLine(lineNumber:number){
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        return;
+    }
+    const range = editor.document.lineAt(lineNumber - 1).range;
+    editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+    editor.selection = new vscode.Selection(range.start, range.end);
+}
+
 async function initUserName(): Promise<string | undefined> {
     return process.env.username;
 }
