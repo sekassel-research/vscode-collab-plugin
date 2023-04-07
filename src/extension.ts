@@ -6,7 +6,7 @@ import {closeWS, cursorMoved, openWS, textReplaced} from './ws';
 import {ChatViewProvider} from './class/chatViewProvider';
 import {ActiveUsersProvider} from './class/activeUsersProvider';
 import {randomUUID} from 'crypto';
-import { TextReplacedData } from './interface/data';
+import {TextReplacedData} from './interface/data';
 
 const users = new Map<string, User>();
 let chatViewProvider: ChatViewProvider;
@@ -15,15 +15,11 @@ let activeUsersProvider: ActiveUsersProvider;
 let username = process.env.username;
 let project = process.env.projectId;
 let textEdits: string[] = [];
-let textChangeQueue: any[] = []
+let textChangeQueue: any[] = [];
 
 
 export async function activate(context: vscode.ExtensionContext) {
-    console.log("init");
-
-
     username = await initUserName();
-    console.log("username", username);
     if (username === undefined) {
         username = "User" + randomUUID();
     }
@@ -67,7 +63,6 @@ export async function activate(context: vscode.ExtensionContext) {
             let pathName = pathString(editor.document.fileName);
             let range = change.range;
             let content = change.text;
-            console.log(`Text replaced from ${range.start.line + 1}:${range.start.character} to ${range.end.line + 1}:${range.end.character}`);
             let uri = editor.document.uri;
 
             let ownText = true;
@@ -108,7 +103,6 @@ export function userLeft(name: string) {
 
 export function addActiveUsers(data: []) {
     for (const userName of data) {
-        console.log(userName);
         users.set(userName, new User(userName));
     }
     activeUsersProvider.refresh();
@@ -144,10 +138,10 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     editor.setDecorations(user.getCursor(), [markerPosition]); // markiert Cursorposition in crimson
 }
 
-export function workThroughTextQueue(){
-    while (textChangeQueue.length != 0) {
-        let textOperation:TextReplacedData = textChangeQueue.shift();
-        replaceText(textOperation.pathName,textOperation.from,textOperation.to,textOperation.content,textOperation.name);
+export function workThroughTextQueue() {
+    while (textChangeQueue.length !== 0) {
+        let textOperation: TextReplacedData = textChangeQueue.shift();
+        replaceText(textOperation.pathName, textOperation.from, textOperation.to, textOperation.content, textOperation.name);
     }
 }
 
@@ -193,7 +187,7 @@ export function getUserName() {
     return username;
 }
 
-export function getTextChangeQueue(){
+export function getTextChangeQueue() {
     return textChangeQueue;
 }
 
