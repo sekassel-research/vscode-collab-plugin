@@ -20,12 +20,12 @@ import {
 
 const webSocket = require('ws');
 
-let ws = new webSocket('ws://192.168.178.159:8080');
+let ws = new webSocket('ws://localhost:8080');
 let wsClose = false;
 
 
 export function openWS(name: string, project: string) {
-    ws = new webSocket('ws://192.168.178.159:8080');
+    ws = new webSocket('ws://localhost:8080');
     ws.on('open', function open() {
 
         ws.on('message', function incoming(data: any) {
