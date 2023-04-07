@@ -20,7 +20,7 @@ import {
 
 const webSocket = require('ws');
 
-let ws = new webSocket('ws://localhost:8080');
+let ws = new webSocket('ws://192.168.178.159:8080');
 let wsClose = false;
 
 

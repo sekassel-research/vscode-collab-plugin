@@ -70,10 +70,7 @@
       
           // RegEx-Ausdruck zur Extraktion der Zeilennummer und des "Line"/"Zeile"-Präfixes
           const regex = /(Line|Zeile)\s*(\d+)/gi;
-          const matches = message.msg.matchAll(regex);
-      
-          // Erstellen des Titels mit allen Zeilennummern
-          const lineNumberStr = Array.from(matches, match => `Line ${match[2]}`).join(', ');
+
           chatMsg.title = new Date(message.time).toLocaleString('de-DE');
       
           const user = document.createElement('user');
@@ -106,7 +103,7 @@
           link.addEventListener('click', e => {
             e.preventDefault();
             const lineNumber = e.target.textContent.match(/\d+/)[0];
-            console.log(lineNumber);
+            vscode.postMessage({type: 'jumpToLine', content: lineNumber});
           });
         });
       }
