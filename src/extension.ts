@@ -130,12 +130,12 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     editor.setDecorations(user.getNameTag(), [line.range]);    // markiert ganze line damit NameTag am Ende ist
 
     let selection = new vscode.Range(cursor, selectionEnd);
-    editor.setDecorations(user.getSelection(), [selection]);   // markiert textauswahl in 66% crimson
+    editor.setDecorations(user.getSelection(), [selection]);   // markiert textauswahl
 
     let markerPosition = {
         range: new vscode.Range(cursor, cursor),
     };
-    editor.setDecorations(user.getCursor(), [markerPosition]); // markiert Cursorposition in crimson
+    editor.setDecorations(user.getCursor(), [markerPosition]); // markiert Cursorposition 
 }
 
 export function workThroughTextQueue() {
@@ -155,14 +155,15 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
     const edit = new vscode.WorkspaceEdit();
     edit.replace(editor.document.uri, new vscode.Range(from, to), content);
     textEdits.push(JSON.stringify({uri: editor.document.uri, range: new vscode.Range(from, to), content}));
-    vscode.workspace.applyEdit(edit);
-
-    setTimeout((user) => {
+    vscode.workspace.applyEdit(edit).then(() => {
+        if (!user) {
+            return;
+        }
         let line = editor.document.lineAt(to.line);
 
         editor.setDecorations(user.getColorIndicator(), [line.range]);
         editor.setDecorations(user.getNameTag(), [line.range]);
-    }, 500);
+    });
 }
 
 function pathString(path: string) {
