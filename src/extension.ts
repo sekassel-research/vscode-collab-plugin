@@ -157,10 +157,12 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
     textEdits.push(JSON.stringify({uri: editor.document.uri, range: new vscode.Range(from, to), content}));
     vscode.workspace.applyEdit(edit);
 
-    let line = editor.document.lineAt(to.line);
+    setTimeout((user) => {
+        let line = editor.document.lineAt(to.line);
 
-    editor.setDecorations(user.getColorIndicator(), [line.range]);
-    editor.setDecorations(user.getNameTag(), [line.range]);
+        editor.setDecorations(user.getColorIndicator(), [line.range]);
+        editor.setDecorations(user.getNameTag(), [line.range]);
+    }, 500);
 }
 
 function pathString(path: string) {
