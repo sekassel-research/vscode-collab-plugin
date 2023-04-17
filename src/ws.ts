@@ -71,7 +71,6 @@ export function sendChatMessage(msg: string, name: string | undefined, project: 
 }
 
 function handleMessage(msg: Message) {
-
     if (msg.operation === "userJoined") {
         let data: CursorMovedData = msg.data;
         userJoined(data.name);

@@ -156,13 +156,15 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
     edit.replace(editor.document.uri, new vscode.Range(from, to), content);
     textEdits.push(JSON.stringify({uri: editor.document.uri, range: new vscode.Range(from, to), content}));
     vscode.workspace.applyEdit(edit).then(() => {
+        console.log(content);
         if (!user) {
             return;
         }
-        let line = editor.document.lineAt(to.line);
-
-        editor.setDecorations(user.getColorIndicator(), [line.range]);
-        editor.setDecorations(user.getNameTag(), [line.range]);
+        let cursorPosition = new vscode.Position(from.line,from.character + content.length);
+        if (content.includes("\n")){
+            cursorPosition = new vscode.Position(to.line + content.length,0);
+        }
+        markLine(pathName,cursorPosition,cursorPosition,name,"");
     });
 }
 
