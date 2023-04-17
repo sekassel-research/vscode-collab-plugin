@@ -58,11 +58,11 @@ export function closeWS(name: string, project: string) {
     ws.close(1000, 'connection was closed by the user');
 }
 
-export function cursorMoved(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string | undefined, project: string) {
+export function cursorMoved(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string | undefined, project: string | undefined) {
     ws.send(buildCursorMovedMessage("cursorMoved", pathName, cursor, selectionEnd, name, project));
 }
 
-export function textReplaced(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string | undefined, project: string) {
+export function textReplaced(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string | undefined, project: string | undefined) {
     ws.send(buildTextReplacedMessage("textReplaced", pathName, from, to, content, name, project));
 }
 
