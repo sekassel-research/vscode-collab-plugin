@@ -1,10 +1,15 @@
 # Vscode-collab-plugin
 
-This Extention is developed for VS-Code,other VS-Code based IDE's and Code-Server to Work together on projects.
+This Extention is developed for VS-Code, other VS-Code based IDE's and Code-Server to Work together on projects.
 
 to work with the avaliable code:
 
 ## Set up vscode-collab-plugin
+
+  To get a local copy of the current code, clone it using git:
+
+    $ git clone https://github.com/sekassel-research/vscode-collab-plugin.git
+    $ cd vscode-collab-plugin
 
   To work on this extension you need to run the following comands:
 
