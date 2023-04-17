@@ -1,15 +1,25 @@
-# vscode-collab-plugin README
+# Vscode-collab-plugin
 
-This Extention is developed for VS-Code and other VS-Code based IDE's to Work together on projects.
+This Extention is developed for VS-Code,other VS-Code based IDE's and Code-Server to Work together on projects.
 
 to work with the avaliable code:
 
-run npm install
----
-to build the code:
+## Set up vscode-collab-plugin
 
-install vsce and run vsce package
----
+  To work on this extension you need to run the following comands:
+
+    $ npm install 
+  
+   After that you can work on the extension.
+
+## Build .vsix file
+
+  To install the extension you can generate a .vsix file. To do this, first clone this repository, then run 
+    
+    $ npm install vsce
+    $ vsce package
+  
+  Once this is done you can install the extension.
 
 MIT License
 
