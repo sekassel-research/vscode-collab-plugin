@@ -25,7 +25,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }
     project = await initProjectName();
     if (project === undefined) {
-        project = "Default";
+        project = "global";
     }
     vscode.window.showInformationMessage("username , " + username);
     openWS(username, project);
@@ -50,8 +50,7 @@ export async function activate(context: vscode.ExtensionContext) {
         if (cursor === selectionEnd) { // flippt wenn cursor ist am ende der Markierung
             selectionEnd = editor.selection.start;
         }
-        //markLine(lineNumber,position,"Pascal");	// markiert aktuell den cursor und taggt "Pascal" | wird später für syncro benötigt
-        cursorMoved(pathName, cursor, selectionEnd, username, "Test");
+        cursorMoved(pathName, cursor, selectionEnd, username, project);
     });
 
     vscode.workspace.onDidChangeTextDocument(changes => { // wird aufgerufen, wenn der Text geändert wird | muss Sperre reinmachen, wenn andere tippen | timeout?
@@ -73,8 +72,14 @@ export async function activate(context: vscode.ExtensionContext) {
                 }
             });
             if (ownText) {
-                textReplaced(pathName, range.start, range.end, content, username, "Test");
+                textReplaced(pathName, range.start, range.end, content, username, project);
             }
+        }
+    });
+
+    vscode.window.onDidChangeActiveTextEditor(()=> {
+        for (let user in users.keys){
+            console.log(user);
         }
     });
 
@@ -121,7 +126,8 @@ function removeMarking(user: User | undefined) {
 export function markLine(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string, project: string) {
     let editor = vscode.window.activeTextEditor;
     let user = users.get(name);
-    if (!editor || !user || name === username) { //|| pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/")
+    
+    if (!editor || !user || name === username || pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/")) { 
         return;
     }
     let line = editor.document.lineAt(cursor.line);
@@ -147,9 +153,9 @@ export function workThroughTextQueue() {
 
 export function replaceText(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string) {
     const editor = vscode.window.activeTextEditor;
-
     let user = users.get(name);
-    if (!editor || !user || name === username) { //|| pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/")
+
+    if (!editor || !user || name === username || pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/")) {
         return;
     }
     const edit = new vscode.WorkspaceEdit();
