@@ -14,8 +14,11 @@ export class User {
         this.colorIndicator = vscode.window.createTextEditorDecorationType({
             after: {
                 margin: "0 0 0 3em",
-                contentText: " ",
+                contentText: "",
                 backgroundColor: color,
+                border: "solid 1px " + color,
+                width: "10px",
+                height: "10px"
             }
         });
 
