@@ -39,18 +39,7 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.window.registerWebviewViewProvider(ChatViewProvider.viewType, chatViewProvider));
 
     vscode.window.onDidChangeTextEditorSelection(() => { // wird aufgerufen, wenn cursorposition sich ändert
-        let editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            return;
-        }
-        let cursor = editor.selection.active;
-        let pathName = pathString(editor.document.fileName);
-        let selectionEnd = editor.selection.end;
-
-        if (cursor === selectionEnd) { // flippt wenn cursor ist am ende der Markierung
-            selectionEnd = editor.selection.start;
-        }
-        cursorMoved(pathName, cursor, selectionEnd, username, project);
+        sendCurrentCursor();
     });
 
     vscode.workspace.onDidChangeTextDocument(changes => { // wird aufgerufen, wenn der Text geändert wird | muss Sperre reinmachen, wenn andere tippen | timeout?
@@ -77,8 +66,8 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    vscode.window.onDidChangeActiveTextEditor(()=> {
-        for (let user in users.keys){
+    vscode.window.onDidChangeActiveTextEditor(() => {
+        for (let user in users.keys) {
             console.log(user);
         }
     });
@@ -126,8 +115,8 @@ function removeMarking(user: User | undefined) {
 export function markLine(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string, project: string) {
     let editor = vscode.window.activeTextEditor;
     let user = users.get(name);
-    
-    if (!editor || !user || name === username || pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/")) { 
+
+    if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
         return;
     }
     let line = editor.document.lineAt(cursor.line);
@@ -141,7 +130,7 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     let markerPosition = {
         range: new vscode.Range(cursor, cursor),
     };
-    editor.setDecorations(user.getCursor(), [markerPosition]); // markiert Cursorposition 
+    editor.setDecorations(user.getCursor(), [markerPosition]); // markiert Cursorposition
 }
 
 export function workThroughTextQueue() {
@@ -151,11 +140,26 @@ export function workThroughTextQueue() {
     }
 }
 
+export function sendCurrentCursor() {
+    let editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        return;
+    }
+    let cursor = editor.selection.active;
+    let pathName = pathString(editor.document.fileName);
+    let selectionEnd = editor.selection.end;
+
+    if (cursor === selectionEnd) { // flippt wenn cursor ist am ende der Markierung
+        selectionEnd = editor.selection.start;
+    }
+    cursorMoved(pathName, cursor, selectionEnd, username, project);
+}
+
 export function replaceText(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string) {
     const editor = vscode.window.activeTextEditor;
     let user = users.get(name);
 
-    if (!editor || !user || name === username || pathName.replace("\\","/") !== pathString(editor.document.fileName).replace("\\","/")) {
+    if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
         return;
     }
     const edit = new vscode.WorkspaceEdit();
@@ -166,11 +170,11 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
         if (!user) {
             return;
         }
-        let cursorPosition = new vscode.Position(from.line,from.character + content.length);
-        if (content.includes("\n")){
-            cursorPosition = new vscode.Position(to.line + content.length,0);
+        let cursorPosition = new vscode.Position(from.line, from.character + content.length);
+        if (content.includes("\n")) {
+            cursorPosition = new vscode.Position(to.line + content.length, 0);
         }
-        markLine(pathName,cursorPosition,cursorPosition,name,"");
+        markLine(pathName, cursorPosition, cursorPosition, name, "");
     });
 }
 
@@ -182,7 +186,7 @@ function pathString(path: string) {
     return path;
 }
 
-export function jumpToLine(lineNumber:number){
+export function jumpToLine(lineNumber: number) {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
         return;

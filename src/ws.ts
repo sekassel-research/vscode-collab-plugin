@@ -4,11 +4,12 @@ import {
     getChatViewProvider,
     getTextChangeQueue,
     markLine,
+    sendCurrentCursor,
     userJoined,
     userLeft,
     workThroughTextQueue
 } from "./extension";
-import {ChatData, CursorMovedData, TextReplacedData} from "./interface/data";
+import {ChatData, CursorMovedData, Data, TextReplacedData} from "./interface/data";
 import {Message} from "./interface/message";
 import {
     buildChatMessage,
@@ -33,6 +34,7 @@ export function openWS(name: string, project: string) {
         });
 
         ws.send(buildUserMessage("userJoined", name, project));
+        ws.send(buildUserMessage("getCursors", name, project));
     });
 
     ws.on('close', function close() {
@@ -72,13 +74,13 @@ export function sendChatMessage(msg: string, name: string | undefined, project: 
 
 function handleMessage(msg: Message) {
     if (msg.operation === "userJoined") {
-        let data: CursorMovedData = msg.data;
+        let data: Data = msg.data;
         userJoined(data.name);
         return;
     }
 
     if (msg.operation === "userLeft") {
-        let data: CursorMovedData = msg.data;
+        let data: Data = msg.data;
         userLeft(data.name);
         return;
     }
@@ -93,6 +95,7 @@ function handleMessage(msg: Message) {
         markLine(data.pathName, data.cursor, data.selectionEnd, data.name, data.project);
         return;
     }
+
     if (msg.operation === "textReplaced") {
         let data: TextReplacedData = msg.data;
         if (getTextChangeQueue().length === 0) {
@@ -102,6 +105,10 @@ function handleMessage(msg: Message) {
             getTextChangeQueue().push(data);
         }
         return;
+    }
+
+    if (msg.operation === "getCursors") {
+        sendCurrentCursor();
     }
 
     if (msg.operation === "chatMsg") {
