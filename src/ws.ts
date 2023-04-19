@@ -59,22 +59,19 @@ export function closeWS(name: string, project: string) {
     ws.close(1000, 'connection was closed by the user');
 }
 
-export function cursorMoved(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string | undefined, project: string | undefined) {
+export function cursorMoved(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string, project: string) {
     ws.send(buildCursorMovedMessage("cursorMoved", pathName, cursor, selectionEnd, name, project));
 }
 
-export function textReplaced(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string | undefined, project: string | undefined) {
+export function textReplaced(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string, project: string) {
     ws.send(buildTextReplacedMessage("textReplaced", pathName, from, to, content, name, project));
 }
 
-export function sendChatMessage(msg: string, name: string | undefined, project: string | undefined) {
+export function sendChatMessage(msg: string, name: string, project: string) {
     ws.send(buildChatMessage("chatMsg", msg, name, project));
 }
 
-export function getCursors(name: string | undefined, project: string | undefined) {
-    if (!name || !project) {
-        return;
-    }
+export function getCursors(name: string, project: string) {
     ws.send(buildUserMessage("getCursors", name, project));
 }
 

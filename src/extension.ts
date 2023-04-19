@@ -12,21 +12,28 @@ const users = new Map<string, User>();
 let chatViewProvider: ChatViewProvider;
 let activeUsersProvider: ActiveUsersProvider;
 
-let username = process.env.username;
-let project = process.env.projectId;
+let username = "User" + randomUUID();
+let project = "global";
 let textEdits: string[] = [];
 let textChangeQueue: any[] = [];
 
 
 export async function activate(context: vscode.ExtensionContext) {
-    username = await initUserName();
-    if (username === undefined) {
-        username = "User" + randomUUID();
-    }
-    project = await initProjectName();
-    if (project === undefined) {
-        project = "global";
-    }
+    await initUserName().then((envUsername) => {
+        if (envUsername !== undefined) {
+            username = envUsername;
+        }
+        console.log(username);
+    });
+
+    await initProjectName().then((envProject) => {
+        if (envProject !== undefined) {
+            project = envProject;
+        }
+        console.log(project);
+    });
+
+
     vscode.window.showInformationMessage("username , " + username);
     openWS(username, project);
 
