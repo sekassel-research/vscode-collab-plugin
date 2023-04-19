@@ -34,7 +34,7 @@ export function openWS(name: string, project: string) {
         });
 
         ws.send(buildUserMessage("userJoined", name, project));
-        ws.send(buildUserMessage("getCursors", name, project));
+        getCursors(name, project);
     });
 
     ws.on('close', function close() {
@@ -53,7 +53,6 @@ export function openWS(name: string, project: string) {
     });
 }
 
-
 export function closeWS(name: string, project: string) {
     wsClose = true;
     ws.send(buildUserMessage("userLeft", name, project));
@@ -70,6 +69,13 @@ export function textReplaced(pathName: string, from: vscode.Position, to: vscode
 
 export function sendChatMessage(msg: string, name: string | undefined, project: string | undefined) {
     ws.send(buildChatMessage("chatMsg", msg, name, project));
+}
+
+export function getCursors(name: string | undefined, project: string | undefined) {
+    if (!name || !project) {
+        return;
+    }
+    ws.send(buildUserMessage("getCursors", name, project));
 }
 
 function handleMessage(msg: Message) {
