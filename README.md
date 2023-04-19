@@ -9,9 +9,10 @@ This Extention is developed for VS-Code, other VS-Code based IDE's and Code-Serv
   ![](https://github.com/sekassel-research/vscode-collab-plugin/blob/ReadMe/media/ReadMe/Hello%20World.gif)
  - Displays cursor and selection of all users with their name
  
- ![](https://github.com/sekassel-research/vscode-collab-plugin/blob/ReadMe/media/ReadMe/Mark.gif)
+  ![](https://github.com/sekassel-research/vscode-collab-plugin/blob/ReadMe/media/ReadMe/Mark.gif)
  - Realtime Chat to exhange information between all active users in the project + lineCommand feature
- ![](https://github.com/sekassel-research/vscode-collab-plugin/blob/ReadMe/media/ReadMe/Chat.gif)
+ 
+  ![](https://github.com/sekassel-research/vscode-collab-plugin/blob/ReadMe/media/ReadMe/Chat.gif)
 
 ## Development
 
