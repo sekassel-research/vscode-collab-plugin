@@ -2,9 +2,11 @@
 
 This Extention is developed for VS-Code, other VS-Code based IDE's and Code-Server to Work together on projects.
 
-to work with the avaliable code:
+## Development
 
-## Set up vscode-collab-plugin
+  to work with the avaliable code:
+
+### Set up vscode-collab-plugin
 
   To get a local copy of the current code, clone it using git:
 
@@ -17,7 +19,7 @@ to work with the avaliable code:
   
    After that you can work on the extension.
 
-## Build .vsix file
+### Build .vsix file
 
   To install the extension you can generate a .vsix file. To do this, first clone this repository, then run 
     
