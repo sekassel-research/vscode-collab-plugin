@@ -43,7 +43,17 @@
         "name": "Chat"
         }
       ]
-    }
+    },
+    "configuration": {
+      "title": "vscode-collab",
+      "properties": {
+        "vscode-collab.test": {
+          "type": "boolean",
+          "default": false,
+          "description": "This is a test setting"
+        }
+      }
+    }  
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
