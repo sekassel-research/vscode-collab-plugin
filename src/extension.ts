@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import {User} from './class/user';
-import {closeWS, cursorMoved, openWS, textReplaced} from './ws';
+import {closeWS, cursorMoved, getCursors, openWS, textReplaced} from './ws';
 import {ChatViewProvider} from './class/chatViewProvider';
 import {ActiveUsersProvider} from './class/activeUsersProvider';
 import {randomUUID} from 'crypto';
@@ -67,9 +67,7 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 
     vscode.window.onDidChangeActiveTextEditor(() => {
-        for (let user in users.keys) {
-            console.log(user);
-        }
+        getCursors(username, project);
     });
 
 
