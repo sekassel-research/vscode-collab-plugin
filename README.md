@@ -39,7 +39,9 @@ This Extention is developed for VS-Code, other VS-Code based IDE's and Code-Serv
     $ vsce package
   
   Once this is done you can install the extension.
+ 
+## Assets
 
-Handshake Icon licend under https://creativecommons.org/licenses/by/3.0/deed.en
+ Handshake Icon licend under https://creativecommons.org/licenses/by/3.0/deed.en
 
-shoutout to the creator David and his website https://thenounproject.com/kaxgyatso/ .
+ shoutout to the creator David and his website https://thenounproject.com/kaxgyatso/
