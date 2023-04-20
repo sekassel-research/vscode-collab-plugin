@@ -66,7 +66,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
             let ownText = true;
             textEdits.filter((edit, index) => {
-                if (edit === JSON.stringify({uri, range, content})) {
+                const jsonContent : string = JSON.parse(edit).content;
+                if (edit === JSON.stringify({uri, range, content}) || (jsonContent.includes(content))) {
                     ownText = false;
                     textEdits.splice(index, 1);
                 }
