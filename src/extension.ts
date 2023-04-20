@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import {User} from './class/user';
-import {closeWS, cursorMoved, getCursors, openWS, textReplaced} from './ws';
+import {closeWS, cursorMoved, getCursors, openWS, sendTextReplaced} from './ws';
 import {ChatViewProvider} from './class/chatViewProvider';
 import {ActiveUsersProvider} from './class/activeUsersProvider';
 import {randomUUID} from 'crypto';
@@ -16,6 +16,8 @@ let username = "user_" + randomUUID();
 let project = "global";
 let textEdits: string[] = [];
 let textChangeQueue: any[] = [];
+let sendTextQueue: any[] = [];
+let textQueueProcessing = false;
 let blockCursorUpdate = false;
 
 
@@ -47,7 +49,7 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.window.registerWebviewViewProvider(ChatViewProvider.viewType, chatViewProvider));
 
     vscode.window.onDidChangeTextEditorSelection(() => { // wird aufgerufen, wenn cursorposition sich ändert
-        if(blockCursorUpdate){
+        if (blockCursorUpdate) {
             return;
         }
         sendCurrentCursor();
@@ -66,7 +68,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
             let ownText = true;
             textEdits.filter((edit, index) => {
-                const jsonContent : string = JSON.parse(edit).content;
+                const jsonContent: string = JSON.parse(edit).content;
                 if (edit === JSON.stringify({uri, range, content}) || (jsonContent.includes(content))) {
                     ownText = false;
                     textEdits.splice(index, 1);
@@ -126,7 +128,7 @@ function removeMarking(user: User | undefined) {
     }
 }
 
-export function markLine(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string, project: string) {
+export function markLine(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string) {
     let editor = vscode.window.activeTextEditor;
     let user = users.get(name);
 
@@ -169,6 +171,29 @@ export function sendCurrentCursor() {
     cursorMoved(pathName, cursor, selectionEnd, username, project);
 }
 
+function textReplaced(pathName: string, start: vscode.Position, end: vscode.Position, content: string, username: string, project: string) {
+    sendTextQueue.push([pathName, start, end, content, username, project]);
+
+    if (!textQueueProcessing) {
+        processSendTextQueue();
+    }
+}
+
+
+function processSendTextQueue() {
+    textQueueProcessing = true;
+
+    setTimeout(() => {
+        const message = sendTextQueue.shift();
+        if (message) {
+            sendTextReplaced(message[0], message[1], message[2], message[3], message[4], message[5]);
+            processSendTextQueue();
+        } else {
+            textQueueProcessing = false;
+        }
+    }, 30);
+}
+
 export function replaceText(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string) {
     const editor = vscode.window.activeTextEditor;
     let user = users.get(name);
@@ -188,7 +213,7 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
         if (content.includes("\n")) {
             cursorPosition = new vscode.Position(to.line + content.length, 0);
         }
-        markLine(pathName, cursorPosition, cursorPosition, name, "");
+        markLine(pathName, cursorPosition, cursorPosition, name);
     });
 }
 
