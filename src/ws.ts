@@ -95,7 +95,7 @@ function handleMessage(msg: Message) {
 
     if (msg.operation === "cursorMoved") {
         let data: CursorMovedData = msg.data;
-        markLine(data.pathName, data.cursor, data.selectionEnd, data.name, data.project);
+        markLine(data.pathName, data.cursor, data.selectionEnd, data.name);
         return;
     }
 

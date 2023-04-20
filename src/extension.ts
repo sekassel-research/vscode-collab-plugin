@@ -128,7 +128,7 @@ function removeMarking(user: User | undefined) {
     }
 }
 
-export function markLine(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string, project: string) {
+export function markLine(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string) {
     let editor = vscode.window.activeTextEditor;
     let user = users.get(name);
 
@@ -213,7 +213,7 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
         if (content.includes("\n")) {
             cursorPosition = new vscode.Position(to.line + content.length, 0);
         }
-        markLine(pathName, cursorPosition, cursorPosition, name, "");
+        markLine(pathName, cursorPosition, cursorPosition, name);
     });
 }
 
