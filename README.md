@@ -4,7 +4,7 @@ This extention is designed for code servers to synchronize work on projects in r
 
 ## Features
 
- The cursors, their movement and the selection of all active users are displayed in real time. In the line in which the cursor of a user is located, a name tag and its cursor color is displayed behind the code for all other users. Supports writing, deleting, cutting, copying, pasting and replacing text.
+ The cursors, their movement and the selection of all active users are displayed in real time. In the line where a user's cursor is located, a name tag and its cursor color are displayed behind the code for all other users. Supports writing, deleting, cutting, copying, pasting and replacing text. Attention is paid to the file in which the changes are located, so that the changes are only applied to the correct file.
  
   ![](https://github.com/sekassel-research/vscode-collab-plugin/blob/ReadMe/media/ReadMe/Hello%20World.gif)
   
