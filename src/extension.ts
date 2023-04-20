@@ -12,10 +12,11 @@ const users = new Map<string, User>();
 let chatViewProvider: ChatViewProvider;
 let activeUsersProvider: ActiveUsersProvider;
 
-let username = "User" + randomUUID();
+let username = "user_" + randomUUID();
 let project = "global";
 let textEdits: string[] = [];
 let textChangeQueue: any[] = [];
+let blockCursorUpdate = false;
 
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -46,6 +47,9 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.window.registerWebviewViewProvider(ChatViewProvider.viewType, chatViewProvider));
 
     vscode.window.onDidChangeTextEditorSelection(() => { // wird aufgerufen, wenn cursorposition sich ändert
+        if(blockCursorUpdate){
+            return;
+        }
         sendCurrentCursor();
     });
 
@@ -68,7 +72,11 @@ export async function activate(context: vscode.ExtensionContext) {
                 }
             });
             if (ownText) {
+                blockCursorUpdate = true;
                 textReplaced(pathName, range.start, range.end, content, username, project);
+                setTimeout(() => {
+                    blockCursorUpdate = false;
+                }, 100);
             }
         }
     });
