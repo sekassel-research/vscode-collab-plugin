@@ -236,9 +236,10 @@ export function jumpToLine(lineNumber: number) {
 }
 
 export function clearUsers() {
-    if (users.size !== 0) {
-        users.clear;
-    }
+    users.forEach((user)=>{
+        removeMarking(user);
+    });
+    users.clear();
 }
 
 async function initUserName(): Promise<string | undefined> {
