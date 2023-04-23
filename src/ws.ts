@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import {
     addActiveUsers,
+    clearUsers,
     getChatViewProvider,
     getTextChangeQueue,
     markLine,
@@ -40,6 +41,7 @@ export function openWS(name: string, project: string) {
     ws.on('close', function close() {
         if (!wsClose) {
             // Starte den Wiederverbindungsprozess nach 10 Sekunden
+            clearUsers();
             setTimeout(() => {
                 openWS(name, project);
             }, 10000);
@@ -47,6 +49,7 @@ export function openWS(name: string, project: string) {
     });
 
     ws.on('error', (error: Error) => {
+        clearUsers();
         setTimeout(() => {
             console.error(error);
         }, 2000);

@@ -235,6 +235,13 @@ export function jumpToLine(lineNumber: number) {
     editor.selection = new vscode.Selection(range.start, range.end);
 }
 
+export function clearUsers() {
+    users.forEach((user)=>{
+        removeMarking(user);
+    });
+    users.clear();
+}
+
 async function initUserName(): Promise<string | undefined> {
     return process.env.username;
 }

@@ -47,7 +47,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
                     this._view.webview.postMessage({type: "chat", chat: this.chat, userName: getUserName()});
                 }
-                case 'jumpToLine':{
+                case 'jumpToLine': {
                     jumpToLine(data.content);
                     break;
                 }
