@@ -113,6 +113,7 @@
         msgInput.style.height = 'auto';
         msgInput.style.height = msgInput.scrollHeight + 5 + 'px';
         chatBody.style.height = (body.offsetHeight - msgInput.offsetHeight) - 5 + 'px';
+        chatBody.scrollTop = chatBody.scrollHeight;
     }
 }());
 
