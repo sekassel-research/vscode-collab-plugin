@@ -106,6 +106,7 @@
                 vscode.postMessage({type: 'jumpToLine', content: lineNumber});
             });
         });
+        ul.scrollTop = ul.scrollHeight;
     }
 
     function updateStyle() {
