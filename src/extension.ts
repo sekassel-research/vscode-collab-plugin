@@ -73,7 +73,12 @@ export async function activate(context: vscode.ExtensionContext) {
                     ownText = false;
                     textEdits.splice(index, 1);
                 }
-            });
+            }); // cheap fix für das Zwischenspeichern von LatexWorkshop
+            const regex = /^\[\d{2}:\d{2}:\d{2}\]\[/;
+            if (regex.test(change.text)) {
+                ownText = false;
+            }
+
             if (ownText) {
                 blockCursorUpdate = true;
                 textReplaced(pathName, range.start, range.end, content, username, project);
