@@ -4,7 +4,6 @@ import {closeWS, cursorMoved, getCursors, openWS, sendTextReplaced} from './ws';
 import {ChatViewProvider} from './class/chatViewProvider';
 import {ActiveUsersProvider} from './class/activeUsersProvider';
 import {randomUUID} from 'crypto';
-import {TextReplacedData} from './interface/data';
 
 const users = new Map<string, User>();
 let chatViewProvider: ChatViewProvider;
@@ -271,7 +270,7 @@ export function getChatViewProvider() {
     return chatViewProvider;
 }
 
-export function getTextReceivedQueueProcessing(){
+export function getTextReceivedQueueProcessing() {
     return textReceivedQueueProcessing;
 }
 
