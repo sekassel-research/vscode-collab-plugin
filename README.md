@@ -1,8 +1,8 @@
 # Vscode-collab-plugin
 
-This Extention is developed for VS-Code, other VS-Code based IDE's and Code-Server to Work together on projects.
+This Extension is developed for VS-Code, other VS-Code based IDE's and Code-Server to Work together on projects.
 
-to work with the avaliable code:
+to work with the available code:
 
 ## Set up vscode-collab-plugin
 
@@ -11,7 +11,7 @@ to work with the avaliable code:
     $ git clone https://github.com/sekassel-research/vscode-collab-plugin.git
     $ cd vscode-collab-plugin
 
-  To work on this extension you need to run the following comands:
+  To work on this extension you need to run the following commands:
 
     $ npm install 
   
@@ -26,6 +26,6 @@ to work with the avaliable code:
   
   Once this is done you can install the extension.
 
-Handshake Icon licend under https://creativecommons.org/licenses/by/3.0/deed.en
+Handshake Icon licensed under https://creativecommons.org/licenses/by/3.0/deed.en
 
-shoutout to the creator David and his website https://thenounproject.com/kaxgyatso/ .
+Shout-out to the creator David and his website https://thenounproject.com/kaxgyatso/ .

@@ -1,5 +1,3 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import {User} from './class/user';
 import {closeWS, cursorMoved, getCursors, openWS, sendTextReplaced} from './ws';
@@ -13,11 +11,12 @@ let chatViewProvider: ChatViewProvider;
 let activeUsersProvider: ActiveUsersProvider;
 
 let username = "user_" + randomUUID();
-let project = "global";
+let project = "default";
 let textEdits: string[] = [];
 let textChangeQueue: any[] = [];
 let sendTextQueue: any[] = [];
 let textQueueProcessing = false;
+let textReceivedQueueProcessing = false;
 let blockCursorUpdate = false;
 
 
@@ -26,36 +25,32 @@ export async function activate(context: vscode.ExtensionContext) {
         if (envUsername !== undefined) {
             username = envUsername;
         }
-        console.log(username);
     });
 
     await initProjectName().then((envProject) => {
         if (envProject !== undefined) {
             project = envProject;
         }
-        console.log(project);
     });
 
-
-    vscode.window.showInformationMessage("username , " + username);
     openWS(username, project);
 
     chatViewProvider = new ChatViewProvider(context.extensionUri);
-
     activeUsersProvider = new ActiveUsersProvider(users);
+
     vscode.window.createTreeView('vscode-collab-activeUsers', {treeDataProvider: activeUsersProvider});
 
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(ChatViewProvider.viewType, chatViewProvider));
 
-    vscode.window.onDidChangeTextEditorSelection(() => { // wird aufgerufen, wenn cursorposition sich ändert
+    vscode.window.onDidChangeTextEditorSelection(() => {
         if (blockCursorUpdate) {
             return;
         }
         sendCurrentCursor();
     });
 
-    vscode.workspace.onDidChangeTextDocument(changes => { // wird aufgerufen, wenn der Text geändert wird | muss Sperre reinmachen, wenn andere tippen | timeout?
+    vscode.workspace.onDidChangeTextDocument(changes => {
         let editor = vscode.window.activeTextEditor;
         if (!editor) {
             return;
@@ -92,13 +87,6 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.onDidChangeActiveTextEditor(() => {
         getCursors(username, project);
     });
-
-
-    let disposable = vscode.commands.registerCommand('firstextention.testCommand', () => {
-        vscode.window.showInformationMessage('Line: ' + vscode.window.activeTextEditor?.selection.active.line + " | Position: " + vscode.window.activeTextEditor?.selection.active.character);
-    });
-
-    context.subscriptions.push(disposable);
 }
 
 export function userJoined(name: string) {
@@ -143,22 +131,30 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     let line = editor.document.lineAt(cursor.line);
 
     editor.setDecorations(user.getColorIndicator(), [line.range]);
-    editor.setDecorations(user.getNameTag(), [line.range]);    // markiert ganze line damit NameTag am Ende ist
 
     let selection = new vscode.Range(cursor, selectionEnd);
-    editor.setDecorations(user.getSelection(), [selection]);   // markiert textauswahl
+    editor.setDecorations(user.getSelection(), [selection]);
 
     let markerPosition = {
         range: new vscode.Range(cursor, cursor),
     };
-    editor.setDecorations(user.getCursor(), [markerPosition]); // markiert Cursorposition
+    editor.setDecorations(user.getCursor(), [markerPosition]);
+
+    editor.setDecorations(user.getNameTag(), [line.range]);
 }
 
-export function workThroughTextQueue() {
-    while (textChangeQueue.length !== 0) {
-        let textOperation: TextReplacedData = textChangeQueue.shift();
-        replaceText(textOperation.pathName, textOperation.from, textOperation.to, textOperation.content, textOperation.name);
-    }
+export function workThroughReceivedTextQueue() {
+    textReceivedQueueProcessing = true;
+
+    setTimeout(() => {
+        const textOperation = textChangeQueue.shift();
+        if (textOperation) {
+            replaceText(textOperation.pathName, textOperation.from, textOperation.to, textOperation.content, textOperation.name);
+            workThroughReceivedTextQueue();
+        } else {
+            textReceivedQueueProcessing = false;
+        }
+    }, 30);
 }
 
 export function sendCurrentCursor() {
@@ -210,7 +206,6 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
     edit.replace(editor.document.uri, new vscode.Range(from, to), content);
     textEdits.push(JSON.stringify({uri: editor.document.uri, range: new vscode.Range(from, to), content}));
     vscode.workspace.applyEdit(edit).then(() => {
-        console.log(content);
         if (!user) {
             return;
         }
@@ -223,11 +218,12 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
 }
 
 function pathString(path: string) {
-    const projectRoot = vscode.workspace.rootPath;
-    if (projectRoot) {
+    if (vscode.workspace.workspaceFolders !== undefined) {
+        const projectRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
         path = path.replace(projectRoot, '');
+        return path;
     }
-    return path;
+    return "";
 }
 
 export function jumpToLine(lineNumber: number) {
@@ -241,7 +237,7 @@ export function jumpToLine(lineNumber: number) {
 }
 
 export function clearUsers() {
-    users.forEach((user)=>{
+    users.forEach((user) => {
         removeMarking(user);
     });
     users.clear();
@@ -275,11 +271,12 @@ export function getChatViewProvider() {
     return chatViewProvider;
 }
 
+export function getTextReceivedQueueProcessing(){
+    return textReceivedQueueProcessing;
+}
+
 export function deactivate() {
     return new Promise(() => {
-        if (!username || !project) {
-            return;
-        }
         closeWS(username, project);
     });
 }

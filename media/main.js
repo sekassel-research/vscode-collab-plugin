@@ -88,8 +88,7 @@
             content.className = 'content';
 
             // Ersetzen von "Line" oder "Zeile" gefolgt von Leerzeichen und Ziffern durch Links
-            const msgWithLinks = message.msg.replace(regex, '<a href="#" class="lineLink">$&</a>');
-            content.innerHTML = msgWithLinks;
+            content.innerHTML = message.msg.replace(regex, '<a href="#" class="lineLink">$&</a>');
 
             chatMsg.appendChild(user);
             chatMsg.appendChild(content);
