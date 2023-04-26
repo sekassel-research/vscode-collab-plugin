@@ -4,11 +4,12 @@ import {
     clearUsers,
     getChatViewProvider,
     getTextChangeQueue,
+    getTextReceivedQueueProcessing,
     markLine,
     sendCurrentCursor,
     userJoined,
     userLeft,
-    workThroughTextQueue
+    workThroughReceivedTextQueue,
 } from "./extension";
 import {ChatData, CursorMovedData, Data, TextReplacedData} from "./interface/data";
 import {Message} from "./interface/message";
@@ -104,11 +105,9 @@ function handleMessage(msg: Message) {
 
     if (msg.operation === "textReplaced") {
         let data: TextReplacedData = msg.data;
-        if (getTextChangeQueue().length === 0) {
-            getTextChangeQueue().push(data);
-            workThroughTextQueue();
-        } else {
-            getTextChangeQueue().push(data);
+        getTextChangeQueue().push(data);
+        if (!getTextReceivedQueueProcessing()) {
+            workThroughReceivedTextQueue();
         }
         return;
     }
