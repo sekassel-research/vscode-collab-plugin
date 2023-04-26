@@ -1,5 +1,3 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import {User} from './class/user';
 import {closeWS, cursorMoved, getCursors, openWS, sendTextReplaced} from './ws';
@@ -13,11 +11,12 @@ let chatViewProvider: ChatViewProvider;
 let activeUsersProvider: ActiveUsersProvider;
 
 let username = "user_" + randomUUID();
-let project = "global";
+let project = "default";
 let textEdits: string[] = [];
 let textChangeQueue: any[] = [];
 let sendTextQueue: any[] = [];
 let textQueueProcessing = false;
+let textReceivedQueueProcessing = false;
 let blockCursorUpdate = false;
 
 
@@ -132,22 +131,30 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     let line = editor.document.lineAt(cursor.line);
 
     editor.setDecorations(user.getColorIndicator(), [line.range]);
-    editor.setDecorations(user.getNameTag(), [line.range]);    // markiert ganze line damit NameTag am Ende ist
 
     let selection = new vscode.Range(cursor, selectionEnd);
-    editor.setDecorations(user.getSelection(), [selection]);   // markiert textauswahl
+    editor.setDecorations(user.getSelection(), [selection]);
 
     let markerPosition = {
         range: new vscode.Range(cursor, cursor),
     };
-    editor.setDecorations(user.getCursor(), [markerPosition]); // markiert Cursorposition
+    editor.setDecorations(user.getCursor(), [markerPosition]);
+
+    editor.setDecorations(user.getNameTag(), [line.range]);
 }
 
-export function workThroughTextQueue() {
-    while (textChangeQueue.length !== 0) {
-        let textOperation: TextReplacedData = textChangeQueue.shift();
-        replaceText(textOperation.pathName, textOperation.from, textOperation.to, textOperation.content, textOperation.name);
-    }
+export function workThroughReceivedTextQueue() {
+    textReceivedQueueProcessing = true;
+
+    setTimeout(() => {
+        const textOperation = textChangeQueue.shift();
+        if (textOperation) {
+            replaceText(textOperation.pathName, textOperation.from, textOperation.to, textOperation.content, textOperation.name);
+            workThroughReceivedTextQueue();
+        } else {
+            textReceivedQueueProcessing = false;
+        }
+    }, 30);
 }
 
 export function sendCurrentCursor() {
@@ -199,7 +206,6 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
     edit.replace(editor.document.uri, new vscode.Range(from, to), content);
     textEdits.push(JSON.stringify({uri: editor.document.uri, range: new vscode.Range(from, to), content}));
     vscode.workspace.applyEdit(edit).then(() => {
-        console.log(content);
         if (!user) {
             return;
         }
@@ -216,10 +222,8 @@ function pathString(path: string) {
         const projectRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
         path = path.replace(projectRoot, '');
         return path;
-    } else {
-        return "";
     }
-
+    return "";
 }
 
 export function jumpToLine(lineNumber: number) {
@@ -265,6 +269,10 @@ export function getProjectId() {
 
 export function getChatViewProvider() {
     return chatViewProvider;
+}
+
+export function getTextReceivedQueueProcessing(){
+    return textReceivedQueueProcessing;
 }
 
 export function deactivate() {
