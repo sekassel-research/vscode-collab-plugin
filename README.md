@@ -4,13 +4,13 @@ This extention is designed for code servers to synchronize work on projects in r
 
 ## Features
 
- The cursors, their movement and the selection of all active users are displayed in real time. In the line where a user's cursor is located, a name tag and its cursor color are displayed behind the code for all other users. Supports writing, deleting, cutting, copying, pasting and replacing text. Attention is paid to the file in which the changes are located, so that the changes are only applied to the correct file.
+ With the extension installed, users can enjoy real-time display of cursors and user selection, making it effortless to collaborate on shared files. A name tag and color are displayed behind the code for each user's cursor, allowing for easy identification. The extension supports a range of functions, including writing, deleting, cutting, copying, pasting, and replacing text. To ensure data accuracy, changes are only applied to the correct file, preventing any unintended modifications.
  
   ![](https://github.com/sekassel-research/vscode-collab-plugin/blob/ReadMe/media/ReadMe/Hello%20World.gif)
   
   ![](https://github.com/sekassel-research/vscode-collab-plugin/blob/ReadMe/media/ReadMe/Mark.gif)
-  
- In addition, all active users are displayed. When a user joins the project, a small notification is displayed at the bottom and the user is shown in the list of all active users. The users can communicate via a chat in the IDEA, so that they do not have to change the window if necessary. If a user hovers with the mouse over a chat message, he can see when it was sent. Finally, the chat has been extended by the ability to jump to a specific line. To do this, a user only has to write "line X" in his chat message. If a user now clicks on "line X", the active window will jump to line x.
+
+ In addition to real-time cursor display and user selection, the tool also provides an overview of all active users in the project. When a new user joins, a small notification is displayed at the bottom, and their name is added to the list of active users. With the integrated chat feature, users can communicate with each other without having to switch to a separate window. When hovering over a chat message, users can easily see when it was sent. We've also added a new feature that allows users to jump to a specific line in the shared file by typing "line X" in their chat message. Clicking on the "line X" hyperlink will automatically take the user to that line in the active window.
  
   ![](https://github.com/sekassel-research/vscode-collab-plugin/blob/ReadMe/media/ReadMe/Chat.gif)
 
