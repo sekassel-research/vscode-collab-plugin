@@ -1,6 +1,6 @@
 # Vscode-collab-plugin
 
-This extention is designed for code servers to synchronize work on projects in real time. This synchronization does not work with this extension on different directories.
+This extension is designed to work with code-server and allows for real-time synchronization of work on projects. However, it's important to note that this synchronization only works when users are working on the same directory. The extension does not support synchronization between different directories or projects, so users should ensure they are working within the same context to ensure seamless collaboration.
 
 ## Features
 
