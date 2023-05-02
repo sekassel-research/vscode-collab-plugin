@@ -4,7 +4,6 @@ import {closeWS, cursorMoved, getCursors, openWS, sendTextReplaced} from './ws';
 import {ChatViewProvider} from './class/chatViewProvider';
 import {ActiveUsersProvider} from './class/activeUsersProvider';
 import {randomUUID} from 'crypto';
-import {TextReplacedData} from './interface/data';
 
 const users = new Map<string, User>();
 let chatViewProvider: ChatViewProvider;
@@ -17,7 +16,12 @@ let textChangeQueue: any[] = [];
 let sendTextQueue: any[] = [];
 let textQueueProcessing = false;
 let textReceivedQueueProcessing = false;
+
 let blockCursorUpdate = false;
+let spamPufferTimeout: NodeJS.Timer | undefined = undefined;
+let rangeStart = new vscode.Position(0, 0);
+let rangeEnd = new vscode.Position(0, 0);
+let pufferContent = "";
 
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -50,7 +54,8 @@ export async function activate(context: vscode.ExtensionContext) {
         sendCurrentCursor();
     });
 
-    vscode.workspace.onDidChangeTextDocument(changes => {
+
+    vscode.workspace.onDidChangeTextDocument(changes => { //splitte Funktion auf für bessere Übersicht
         let editor = vscode.window.activeTextEditor;
         if (!editor) {
             return;
@@ -64,7 +69,10 @@ export async function activate(context: vscode.ExtensionContext) {
             let ownText = true;
             textEdits.filter((edit, index) => {
                 const jsonContent: string = JSON.parse(edit).content;
-                if (edit === JSON.stringify({uri, range, content}) || (jsonContent.includes(content))) {
+                if (
+                    edit === JSON.stringify({uri, range, content}) ||
+                    jsonContent.includes(content)
+                ) {
                     ownText = false;
                     textEdits.splice(index, 1);
                 }
@@ -73,13 +81,20 @@ export async function activate(context: vscode.ExtensionContext) {
             if (regex.test(change.text)) {
                 ownText = false;
             }
-
             if (ownText) {
-                blockCursorUpdate = true;
-                textReplaced(pathName, range.start, range.end, content, username, project);
-                setTimeout(() => {
-                    blockCursorUpdate = false;
-                }, 100);
+                if (spamPufferTimeout) {
+                    clearTimeout(spamPufferTimeout);
+                    spamPufferTimeout = undefined;
+                }
+                updatePuffer(range.start, range.end, content);
+                spamPufferTimeout = setTimeout(() => {
+                    blockCursorUpdate = true;
+                    textReplaced(pathName, rangeStart, rangeEnd, pufferContent, username, project);
+                    clearPuffer();
+                    setTimeout(() => {
+                        blockCursorUpdate = false;
+                    }, 100);
+                }, 90);
             }
         }
     });
@@ -87,6 +102,24 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.onDidChangeActiveTextEditor(() => {
         getCursors(username, project);
     });
+}
+
+function updatePuffer(start: vscode.Position, end: vscode.Position, content: string) {
+    if (rangeStart.isAfter(start) || rangeStart.isEqual(new vscode.Position(0, 0))) {
+        rangeStart = start;
+    }
+    if (rangeEnd.isBefore(end)) {
+        rangeEnd = end;
+    }
+    if (content !== "") {
+        pufferContent += content;
+    }
+}
+
+function clearPuffer() {
+    rangeStart = new vscode.Position(0, 0);
+    rangeEnd = new vscode.Position(0, 0);
+    pufferContent = "";
 }
 
 export function userJoined(name: string) {
@@ -271,7 +304,7 @@ export function getChatViewProvider() {
     return chatViewProvider;
 }
 
-export function getTextReceivedQueueProcessing(){
+export function getTextReceivedQueueProcessing() {
     return textReceivedQueueProcessing;
 }
 
