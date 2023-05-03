@@ -17,6 +17,7 @@ let sendTextQueue: any[] = [];
 let textQueueProcessing = false;
 let textReceivedQueueProcessing = false;
 
+let blockCursorUpdate = false;
 let spamPufferTimeout: NodeJS.Timer | undefined = undefined;
 let rangeStart = new vscode.Position(0, 0);
 let rangeEnd = new vscode.Position(0, 0);
@@ -47,6 +48,9 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.window.registerWebviewViewProvider(ChatViewProvider.viewType, chatViewProvider));
 
     vscode.window.onDidChangeTextEditorSelection(() => {
+        if (blockCursorUpdate) {
+            return;
+        }
         sendCurrentCursor();
     });
 
@@ -61,8 +65,8 @@ export async function activate(context: vscode.ExtensionContext) {
             let range = change.range;
             let content = change.text;
             let uri = editor.document.uri;
-
             let ownText = true;
+
             textEdits.filter((edit, index) => {
                 const jsonContent: string = JSON.parse(edit).content;
                 if (
@@ -78,6 +82,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 ownText = false;
             }
             if (ownText) {
+                blockCursorUpdate = true;
                 if (spamPufferTimeout) {
                     clearTimeout(spamPufferTimeout);
                     spamPufferTimeout = undefined;
@@ -86,6 +91,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 spamPufferTimeout = setTimeout(() => {
                     textReplaced(pathName, rangeStart, rangeEnd, pufferContent, username, project);
                     clearPuffer();
+                    blockCursorUpdate = false;
                 }, 90);
             }
         }
