@@ -17,7 +17,6 @@ let sendTextQueue: any[] = [];
 let textQueueProcessing = false;
 let textReceivedQueueProcessing = false;
 
-let blockCursorUpdate = false;
 let spamPufferTimeout: NodeJS.Timer | undefined = undefined;
 let rangeStart = new vscode.Position(0, 0);
 let rangeEnd = new vscode.Position(0, 0);
@@ -48,9 +47,6 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.window.registerWebviewViewProvider(ChatViewProvider.viewType, chatViewProvider));
 
     vscode.window.onDidChangeTextEditorSelection(() => {
-        if (blockCursorUpdate) {
-            return;
-        }
         sendCurrentCursor();
     });
 
@@ -88,12 +84,8 @@ export async function activate(context: vscode.ExtensionContext) {
                 }
                 updatePuffer(range.start, range.end, content);
                 spamPufferTimeout = setTimeout(() => {
-                    blockCursorUpdate = true;
                     textReplaced(pathName, rangeStart, rangeEnd, pufferContent, username, project);
                     clearPuffer();
-                    setTimeout(() => {
-                        blockCursorUpdate = false;
-                    }, 100);
                 }, 90);
             }
         }
@@ -108,11 +100,14 @@ function updatePuffer(start: vscode.Position, end: vscode.Position, content: str
     if (rangeStart.isAfter(start) || rangeStart.isEqual(new vscode.Position(0, 0))) {
         rangeStart = start;
     }
-    if (rangeEnd.isBefore(end)) {
+    if (rangeEnd.isEqual(new vscode.Position(0, 0))) {
         rangeEnd = end;
     }
     if (content !== "") {
         pufferContent += content;
+    }
+    if (pufferContent.length > 0 && content === "") {
+        pufferContent = pufferContent.substring(0, pufferContent.length - 1);
     }
 }
 
