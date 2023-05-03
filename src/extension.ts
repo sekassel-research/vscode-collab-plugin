@@ -53,7 +53,7 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 
 
-    vscode.workspace.onDidChangeTextDocument(changes => { //splitte Funktion auf für bessere Übersicht
+    vscode.workspace.onDidChangeTextDocument(changes => { // splitte Funktion auf für bessere Übersicht
         let editor = vscode.window.activeTextEditor;
         if (!editor) {
             return;
@@ -75,7 +75,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     textEdits.splice(index, 1);
                 }
             }); // cheap fix für das Zwischenspeichern von LatexWorkshop
-            const regex = /^\[\d{2}:\d{2}:\d{2}\]\[/;
+            const regex = /^\[\d{2}:\d{2}:\d{2}\]\[/; // format [XX:XX:XX][ | latexworkshop uses root.tex file as temp storage
             if (regex.test(change.text)) {
                 ownText = false;
             }
@@ -100,19 +100,21 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 }
 
-function updatePuffer(start: vscode.Position, end: vscode.Position, content: string) {
+function updatePuffer(start: vscode.Position, end: vscode.Position, content: string) {  // rebuild logic to work with 'del'-key
     if (rangeStart.isAfter(start) || rangeStart.isEqual(new vscode.Position(0, 0))) {
         rangeStart = start;
     }
-    console.log("range_End", end)
+    console.log("range_End",end);
     if (rangeEnd.isEqual(new vscode.Position(0, 0))) {
         rangeEnd = end;
     }
     if (content !== "") {
         pufferContent += content;
+        return;
     }
-    if (pufferContent.length > 0 && content === "") {
+    if (pufferContent.length > 0) {
         pufferContent = pufferContent.substring(0, pufferContent.length - 1);
+        return;
     }
 }
 
