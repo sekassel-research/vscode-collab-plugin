@@ -13,8 +13,6 @@ let username = "user_" + randomUUID();
 let project = "default";
 let textEdits: string[] = [];
 let textChangeQueue: any[] = [];
-let sendTextQueue: any[] = [];
-let textQueueProcessing = false;
 let textReceivedQueueProcessing = false;
 
 let blockCursorUpdate = false;
@@ -89,7 +87,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 }
                 updatePuffer(range.start, range.end, content);
                 spamPufferTimeout = setTimeout(() => {
-                    textReplaced(pathName, rangeStart, rangeEnd, pufferContent, username, project);
+                    sendTextReplaced(pathName, rangeStart, rangeEnd, pufferContent, username, project);
                     clearPuffer();
                     blockCursorUpdate = false;
                 }, 90);
@@ -106,6 +104,7 @@ function updatePuffer(start: vscode.Position, end: vscode.Position, content: str
     if (rangeStart.isAfter(start) || rangeStart.isEqual(new vscode.Position(0, 0))) {
         rangeStart = start;
     }
+    console.log("range_End", end)
     if (rangeEnd.isEqual(new vscode.Position(0, 0))) {
         rangeEnd = end;
     }
@@ -204,29 +203,6 @@ export function sendCurrentCursor() {
         selectionEnd = editor.selection.start;
     }
     cursorMoved(pathName, cursor, selectionEnd, username, project);
-}
-
-function textReplaced(pathName: string, start: vscode.Position, end: vscode.Position, content: string, username: string, project: string) {
-    sendTextQueue.push([pathName, start, end, content, username, project]);
-
-    if (!textQueueProcessing) {
-        processSendTextQueue();
-    }
-}
-
-
-function processSendTextQueue() {
-    textQueueProcessing = true;
-
-    setTimeout(() => {
-        const message = sendTextQueue.shift();
-        if (message) {
-            sendTextReplaced(message[0], message[1], message[2], message[3], message[4], message[5]);
-            processSendTextQueue();
-        } else {
-            textQueueProcessing = false;
-        }
-    }, 30);
 }
 
 export function replaceText(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string) {
