@@ -4,6 +4,9 @@ import {closeWS, cursorMoved, getCursors, openWS, sendTextReplaced} from './ws';
 import {ChatViewProvider} from './class/chatViewProvider';
 import {ActiveUsersProvider} from './class/activeUsersProvider';
 import {randomUUID} from 'crypto';
+import {Subject} from 'rxjs';
+import {bufferTime} from 'rxjs/operators';
+
 
 const users = new Map<string, User>();
 let chatViewProvider: ChatViewProvider;
@@ -14,9 +17,9 @@ let project = "default";
 let textEdits: string[] = [];
 let textChangeQueue: any[] = [];
 let textReceivedQueueProcessing = false;
+const textDocumentChanges$ = new Subject<vscode.TextDocumentContentChangeEvent>();
 
 let blockCursorUpdate = false;
-let spamPufferTimeout: NodeJS.Timer | undefined = undefined;
 let rangeStart = new vscode.Position(0, 0);
 let rangeEnd = new vscode.Position(0, 0);
 let pufferContent = "";
@@ -52,14 +55,13 @@ export async function activate(context: vscode.ExtensionContext) {
         sendCurrentCursor();
     });
 
-
     vscode.workspace.onDidChangeTextDocument(changes => { // splitte Funktion auf für bessere Übersicht
+        console.log(changes.contentChanges)
         let editor = vscode.window.activeTextEditor;
         if (!editor) {
             return;
         }
         for (let change of changes.contentChanges) {
-            let pathName = pathString(editor.document.fileName);
             let range = change.range;
             let content = change.text;
             let uri = editor.document.uri;
@@ -81,16 +83,7 @@ export async function activate(context: vscode.ExtensionContext) {
             }
             if (ownText) {
                 blockCursorUpdate = true;
-                if (spamPufferTimeout) {
-                    clearTimeout(spamPufferTimeout);
-                    spamPufferTimeout = undefined;
-                }
-                updatePuffer(range.start, range.end, content);
-                spamPufferTimeout = setTimeout(() => {
-                    sendTextReplaced(pathName, rangeStart, rangeEnd, pufferContent, username, project);
-                    clearPuffer();
-                    blockCursorUpdate = false;
-                }, 90);
+                textDocumentChanges$.next(change);
             }
         }
     });
@@ -100,11 +93,42 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 }
 
+textDocumentChanges$
+    .pipe(
+        bufferTime(200), // sammelt Änderungen in einem 200-ms-Zeitfenster | WS-Überlastungsschutz
+    )
+    .subscribe((changes) => {
+        let editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            return;
+        }
+        for (let change of changes) {
+            let range = change.range;
+            let content = change.text;
+
+            updatePuffer(range.start, range.end, content);
+
+        }
+        if ((!rangeStart.isEqual(new vscode.Position(0, 0)) || !rangeEnd.isEqual(new vscode.Position(0, 0)) || pufferContent !== "") && changes.length > 0) {
+            let pathName = pathString(editor.document.fileName);
+            sendTextReplaced(
+                pathName,
+                rangeStart,
+                rangeEnd,
+                pufferContent,
+                username,
+                project
+            );
+            clearPuffer();
+            blockCursorUpdate = false;
+        }
+    });
+
 function updatePuffer(start: vscode.Position, end: vscode.Position, content: string) {  // rebuild logic to work with 'del'-key
     if (rangeStart.isAfter(start) || rangeStart.isEqual(new vscode.Position(0, 0))) {
         rangeStart = start;
     }
-    console.log("range_End",end);
+    console.log("range_End", end);
     if (rangeEnd.isEqual(new vscode.Position(0, 0))) {
         rangeEnd = end;
     }
