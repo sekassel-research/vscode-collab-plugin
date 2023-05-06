@@ -194,7 +194,7 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     let editor = vscode.window.activeTextEditor;
     let user = users.get(name);
 
-    if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
+    if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { // splitten
         return;
     }
     let line = editor.document.lineAt(cursor.line);
@@ -245,16 +245,13 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
     const editor = vscode.window.activeTextEditor;
     let user = users.get(name);
 
-    if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
+    if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { // splitten
         return;
     }
     const edit = new vscode.WorkspaceEdit();
     edit.replace(editor.document.uri, new vscode.Range(from, to), content);
     textEdits.push(JSON.stringify({uri: editor.document.uri, range: new vscode.Range(from, to), content}));
     vscode.workspace.applyEdit(edit).then(() => {
-        if (!user) {
-            return;
-        }
         let cursorPosition = new vscode.Position(from.line, from.character + content.length);
         if (content.includes("\n")) {
             cursorPosition = new vscode.Position(to.line + content.length, 0);
