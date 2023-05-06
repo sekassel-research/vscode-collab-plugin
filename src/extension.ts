@@ -22,6 +22,8 @@ const textDocumentChanges$ = new Subject<vscode.TextDocumentContentChangeEvent>(
 let blockCursorUpdate = false;
 let rangeStart = new vscode.Position(0, 0);
 let rangeEnd = new vscode.Position(0, 0);
+let startRangeStart = new vscode.Position(0, 0);
+let startRangeEnd = new vscode.Position(0, 0);
 let pufferContent = "";
 
 
@@ -56,7 +58,6 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 
     vscode.workspace.onDidChangeTextDocument(changes => { // splitte Funktion auf für bessere Übersicht
-        console.log(changes.contentChanges)
         let editor = vscode.window.activeTextEditor;
         if (!editor) {
             return;
@@ -95,7 +96,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 textDocumentChanges$
     .pipe(
-        bufferTime(200), // sammelt Änderungen in einem 200-ms-Zeitfenster | WS-Überlastungsschutz
+        bufferTime(150), // sammelt Änderungen in einem 150-ms-Zeitfenster | WS-Überlastungsschutz
     )
     .subscribe((changes) => {
         let editor = vscode.window.activeTextEditor;
@@ -106,8 +107,7 @@ textDocumentChanges$
             let range = change.range;
             let content = change.text;
 
-            updatePuffer(range.start, range.end, content);
-
+            updateBufferedParams(range.start, range.end, content);
         }
         if ((!rangeStart.isEqual(new vscode.Position(0, 0)) || !rangeEnd.isEqual(new vscode.Position(0, 0)) || pufferContent !== "") && changes.length > 0) {
             let pathName = pathString(editor.document.fileName);
@@ -124,20 +124,30 @@ textDocumentChanges$
         }
     });
 
-function updatePuffer(start: vscode.Position, end: vscode.Position, content: string) {  // rebuild logic to work with 'del'-key
+function updateBufferedParams(start: vscode.Position, end: vscode.Position, content: string) {  // rebuild logic to work with 'del'-key
+    if (rangeStart.isEqual(new vscode.Position(0, 0)) && rangeEnd.isEqual(new vscode.Position(0, 0))) {
+        startRangeStart = start;
+        startRangeEnd = end;
+    }
     if (rangeStart.isAfter(start) || rangeStart.isEqual(new vscode.Position(0, 0))) {
         rangeStart = start;
     }
-    console.log("range_End", end);
     if (rangeEnd.isEqual(new vscode.Position(0, 0))) {
         rangeEnd = end;
     }
-    if (content !== "") {
+    if (content === "") {
+        if (pufferContent.length > 0) {
+            pufferContent = pufferContent.substring(0, pufferContent.length - 1);
+            return;
+        } else {
+            if (rangeStart.isEqual(startRangeStart) && rangeEnd.isEqual(startRangeEnd)) {
+                rangeEnd = rangeEnd.translate(0, 1);
+                startRangeEnd = rangeEnd;
+                return;
+            }
+        }
+    } else {
         pufferContent += content;
-        return;
-    }
-    if (pufferContent.length > 0) {
-        pufferContent = pufferContent.substring(0, pufferContent.length - 1);
         return;
     }
 }
