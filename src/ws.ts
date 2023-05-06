@@ -80,45 +80,37 @@ export function getCursors(name: string, project: string) {
 }
 
 function handleMessage(msg: Message) {
-    if (msg.operation === "userJoined") {
-        let data: Data = msg.data;
-        userJoined(data.name);
-        return;
-    }
-
-    if (msg.operation === "userLeft") {
-        let data: Data = msg.data;
-        userLeft(data.name);
-        return;
-    }
-
-    if (msg.operation === "activeUsers") {
-        addActiveUsers(msg.data);
-        return;
-    }
-
-    if (msg.operation === "cursorMoved") {
-        let data: CursorMovedData = msg.data;
-        markLine(data.pathName, data.cursor, data.selectionEnd, data.name);
-        return;
-    }
-
-    if (msg.operation === "textReplaced") {
-        let data: TextReplacedData = msg.data;
-        getTextChangeQueue().push(data);
-        if (!getTextReceivedQueueProcessing()) {
-            workThroughReceivedTextQueue();
-        }
-        return;
-    }
-
-    if (msg.operation === "getCursors") {
-        sendCurrentCursor();
-    }
-
-    if (msg.operation === "chatMsg") {
-        let data: ChatData = msg.data;
-        getChatViewProvider().receivedMsg(data);
-        return;
+    switch (msg.operation) {
+        case "userJoined":
+            let userJoinedData: Data = msg.data;
+            userJoined(userJoinedData.name);
+            break;
+        case "userLeft":
+            let userLeftData: Data = msg.data;
+            userLeft(userLeftData.name);
+            break;
+        case "activeUsers":
+            addActiveUsers(msg.data);
+            break;
+        case "cursorMoved":
+            let cursorMovedData: CursorMovedData = msg.data;
+            markLine(cursorMovedData.pathName, cursorMovedData.cursor, cursorMovedData.selectionEnd, cursorMovedData.name);
+            break;
+        case "textReplaced":
+            let textReplacedData: TextReplacedData = msg.data;
+            getTextChangeQueue().push(textReplacedData);
+            if (!getTextReceivedQueueProcessing()) {
+                workThroughReceivedTextQueue();
+            }
+            break;
+        case "getCursors":
+            sendCurrentCursor();
+            break;
+        case "chatMsg":
+            let chatData: ChatData = msg.data;
+            getChatViewProvider().receivedMsg(chatData);
+            break;
+        default:
+            console.error("Unknown operation: " + msg.operation);
     }
 }
