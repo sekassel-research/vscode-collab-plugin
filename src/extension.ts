@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import {User} from './class/user';
-import {closeWS, cursorMoved, getCursors, openWS, sendTextReplaced} from './ws';
+import {closeWS, cursorMoved, getCursors, openWS, sendTextDelKey, sendTextReplaced} from './ws';
 import {ChatViewProvider} from './class/chatViewProvider';
 import {ActiveUsersProvider} from './class/activeUsersProvider';
 import {randomUUID} from 'crypto';
@@ -20,6 +20,7 @@ let textReceivedQueueProcessing = false;
 const textDocumentChanges$ = new Subject<vscode.TextDocumentContentChangeEvent>();
 
 let blockCursorUpdate = false;
+let delKeyCounter = 0;
 let rangeStart = new vscode.Position(0, 0);
 let rangeEnd = new vscode.Position(0, 0);
 let startRangeStart = new vscode.Position(0, 0);
@@ -109,16 +110,23 @@ textDocumentChanges$
 
             updateBufferedParams(range.start, range.end, content);
         }
+
+        let pathName = pathString(editor.document.fileName);
+
+
         if ((!rangeStart.isEqual(new vscode.Position(0, 0)) || !rangeEnd.isEqual(new vscode.Position(0, 0)) || pufferContent !== "") && changes.length > 0) {
-            let pathName = pathString(editor.document.fileName);
-            sendTextReplaced(
-                pathName,
-                rangeStart,
-                rangeEnd,
-                pufferContent,
-                username,
-                project
-            );
+            if (delKeyCounter > 0) {
+                sendTextDelKey(pathName, rangeStart, delKeyCounter, username, project);
+            } else {
+                sendTextReplaced(
+                    pathName,
+                    rangeStart,
+                    rangeEnd,
+                    pufferContent,
+                    username,
+                    project
+                );
+            }
             clearPuffer();
             blockCursorUpdate = false;
         }
@@ -141,8 +149,7 @@ function updateBufferedParams(start: vscode.Position, end: vscode.Position, cont
             return;
         } else {
             if (rangeStart.isEqual(startRangeStart) && rangeEnd.isEqual(startRangeEnd)) {
-                rangeEnd = rangeEnd.translate(0, 1);
-                startRangeEnd = rangeEnd;
+                delKeyCounter += 1;
                 return;
             }
         }
@@ -155,7 +162,22 @@ function updateBufferedParams(start: vscode.Position, end: vscode.Position, cont
 function clearPuffer() {
     rangeStart = new vscode.Position(0, 0);
     rangeEnd = new vscode.Position(0, 0);
+    delKeyCounter = 0;
     pufferContent = "";
+}
+
+export function delkeyDelete(pathName: string, from: vscode.Position, counter: number, name: string) {
+    console.log("delKeyDelete")
+    const editor = vscode.window.activeTextEditor;
+    let user = users.get(name);
+    if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { // splitten
+        console.log("abort")
+        return;
+    }
+    console.log("from", from);
+    let to = new vscode.Position(from.line, from.character).translate(0, counter);
+    console.log("to", to);
+    replaceText(pathName, from, to, "", name);
 }
 
 export function userJoined(name: string) {
@@ -248,6 +270,7 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
     if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { // splitten
         return;
     }
+    console.log(from, to);
     const edit = new vscode.WorkspaceEdit();
     edit.replace(editor.document.uri, new vscode.Range(from, to), content);
     textEdits.push(JSON.stringify({uri: editor.document.uri, range: new vscode.Range(from, to), content}));

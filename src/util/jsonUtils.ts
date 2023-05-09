@@ -15,3 +15,7 @@ export function buildTextReplacedMessage(operation: string, pathName: string, fr
 export function buildChatMessage(operation: string, msg: string, name: string, project: string) {
     return JSON.stringify({operation, data: {msg, name, time: new Date(), project}});
 }
+
+export function buildSendTextDelKeyMessage(operation: string, pathName: string, from: vscode.Position, delKeyCounter: number, name: string, project: string) {
+    return JSON.stringify({operation, data: {pathName, from, delKeyCounter, name, project}});
+}

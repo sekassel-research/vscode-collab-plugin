@@ -22,3 +22,9 @@ export interface ChatData extends Data {
     msg: string,
     time: Date
 }
+
+export interface DelKeyData extends Data {
+    pathName: string,
+    from: vscode.Position,
+    delKeyCounter: number
+}
