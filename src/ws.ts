@@ -18,7 +18,7 @@ import {
     buildChatMessage,
     buildCursorMovedMessage,
     buildSendTextDelKeyMessage,
-    buildTextReplacedMessage as buildsendTextReplacedMessage,
+    buildSendTextReplacedMessage,
     buildUserMessage
 } from "./util/jsonUtils";
 
@@ -70,7 +70,7 @@ export function cursorMoved(pathName: string, cursor: vscode.Position, selection
 }
 
 export function sendTextReplaced(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string, project: string) {
-    ws.send(buildsendTextReplacedMessage("textReplaced", pathName, from, to, content, name, project));
+    ws.send(buildSendTextReplacedMessage("textReplaced", pathName, from, to, content, name, project));
 }
 
 export function sendChatMessage(msg: string, name: string, project: string) {

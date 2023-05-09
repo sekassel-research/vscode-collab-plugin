@@ -167,16 +167,12 @@ function clearPuffer() {
 }
 
 export function delkeyDelete(pathName: string, from: vscode.Position, counter: number, name: string) {
-    console.log("delKeyDelete")
     const editor = vscode.window.activeTextEditor;
     let user = users.get(name);
     if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { // splitten
-        console.log("abort")
         return;
     }
-    console.log("from", from);
     let to = new vscode.Position(from.line, from.character).translate(0, counter);
-    console.log("to", to);
     replaceText(pathName, from, to, "", name);
 }
 
@@ -270,10 +266,13 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
     if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { // splitten
         return;
     }
-    console.log(from, to);
     const edit = new vscode.WorkspaceEdit();
-    edit.replace(editor.document.uri, new vscode.Range(from, to), content);
-    textEdits.push(JSON.stringify({uri: editor.document.uri, range: new vscode.Range(from, to), content}));
+    const range =  new vscode.Range(from, to);
+
+    console.log("range",range);
+
+    edit.replace(editor.document.uri, range, content);
+    textEdits.push(JSON.stringify({uri: editor.document.uri, range, content}));
     vscode.workspace.applyEdit(edit).then(() => {
         let cursorPosition = new vscode.Position(from.line, from.character + content.length);
         if (content.includes("\n")) {

@@ -8,7 +8,7 @@ export function buildCursorMovedMessage(operation: string, pathName: string, cur
     return JSON.stringify({operation, data: {pathName, cursor, selectionEnd, name, project}});
 }
 
-export function buildTextReplacedMessage(operation: string, pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string, project: string) {
+export function buildSendTextReplacedMessage(operation: string, pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string, project: string) {
     return JSON.stringify({operation, data: {pathName, from, to, content, name, project}});
 }
 
