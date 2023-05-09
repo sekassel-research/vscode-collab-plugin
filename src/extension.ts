@@ -4,7 +4,9 @@ import {closeWS, cursorMoved, getCursors, openWS, sendTextReplaced} from './ws';
 import {ChatViewProvider} from './class/chatViewProvider';
 import {ActiveUsersProvider} from './class/activeUsersProvider';
 import {randomUUID} from 'crypto';
-import {TextReplacedData} from './interface/data';
+import {Subject} from 'rxjs';
+import {bufferTime} from 'rxjs/operators';
+
 
 const users = new Map<string, User>();
 let chatViewProvider: ChatViewProvider;
@@ -14,10 +16,15 @@ let username = "user_" + randomUUID();
 let project = "default";
 let textEdits: string[] = [];
 let textChangeQueue: any[] = [];
-let sendTextQueue: any[] = [];
-let textQueueProcessing = false;
 let textReceivedQueueProcessing = false;
+const textDocumentChanges$ = new Subject<vscode.TextDocumentContentChangeEvent>();
+
 let blockCursorUpdate = false;
+let rangeStart = new vscode.Position(0, 0);
+let rangeEnd = new vscode.Position(0, 0);
+let startRangeStart = new vscode.Position(0, 0);
+let startRangeEnd = new vscode.Position(0, 0);
+let pufferContent = "";
 
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -50,36 +57,34 @@ export async function activate(context: vscode.ExtensionContext) {
         sendCurrentCursor();
     });
 
-    vscode.workspace.onDidChangeTextDocument(changes => {
+    vscode.workspace.onDidChangeTextDocument(changes => { // splitte Funktion auf für bessere Übersicht
         let editor = vscode.window.activeTextEditor;
         if (!editor) {
             return;
         }
         for (let change of changes.contentChanges) {
-            let pathName = pathString(editor.document.fileName);
             let range = change.range;
             let content = change.text;
             let uri = editor.document.uri;
-
             let ownText = true;
+
             textEdits.filter((edit, index) => {
                 const jsonContent: string = JSON.parse(edit).content;
-                if (edit === JSON.stringify({uri, range, content}) || (jsonContent.includes(content))) {
+                if (
+                    edit === JSON.stringify({uri, range, content}) ||
+                    jsonContent.includes(content)
+                ) {
                     ownText = false;
                     textEdits.splice(index, 1);
                 }
             }); // cheap fix für das Zwischenspeichern von LatexWorkshop
-            const regex = /^\[\d{2}:\d{2}:\d{2}\]\[/;
+            const regex = /^\[\d{2}:\d{2}:\d{2}\]\[/; // format [XX:XX:XX][ | latexworkshop uses root.tex file as temp storage
             if (regex.test(change.text)) {
                 ownText = false;
             }
-
             if (ownText) {
                 blockCursorUpdate = true;
-                textReplaced(pathName, range.start, range.end, content, username, project);
-                setTimeout(() => {
-                    blockCursorUpdate = false;
-                }, 100);
+                textDocumentChanges$.next(change);
             }
         }
     });
@@ -87,6 +92,70 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.onDidChangeActiveTextEditor(() => {
         getCursors(username, project);
     });
+}
+
+textDocumentChanges$
+    .pipe(
+        bufferTime(150), // sammelt Änderungen in einem 150-ms-Zeitfenster | WS-Überlastungsschutz
+    )
+    .subscribe((changes) => {
+        let editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            return;
+        }
+        for (let change of changes) {
+            let range = change.range;
+            let content = change.text;
+
+            updateBufferedParams(range.start, range.end, content);
+        }
+        if ((!rangeStart.isEqual(new vscode.Position(0, 0)) || !rangeEnd.isEqual(new vscode.Position(0, 0)) || pufferContent !== "") && changes.length > 0) {
+            let pathName = pathString(editor.document.fileName);
+            sendTextReplaced(
+                pathName,
+                rangeStart,
+                rangeEnd,
+                pufferContent,
+                username,
+                project
+            );
+            clearPuffer();
+            blockCursorUpdate = false;
+        }
+    });
+
+function updateBufferedParams(start: vscode.Position, end: vscode.Position, content: string) {  // rebuild logic to work with 'del'-key
+    if (rangeStart.isEqual(new vscode.Position(0, 0)) && rangeEnd.isEqual(new vscode.Position(0, 0))) {
+        startRangeStart = start;
+        startRangeEnd = end;
+    }
+    if (rangeStart.isAfter(start) || rangeStart.isEqual(new vscode.Position(0, 0))) {
+        rangeStart = start;
+    }
+    if (rangeEnd.isEqual(new vscode.Position(0, 0))) {
+        rangeEnd = end;
+    }
+    if (content === "") {
+        if (pufferContent.length > 0) {
+            pufferContent = pufferContent.substring(0, pufferContent.length - 1);
+            return;
+        } else {
+            if (rangeStart.isEqual(startRangeStart) && rangeEnd.isEqual(startRangeEnd)) {
+                rangeEnd = rangeEnd.translate(0, 1);
+                startRangeEnd = rangeEnd;
+                return;
+            }
+        }
+    } else {
+        pufferContent += content;
+        return;
+    }
+}
+
+function clearPuffer() {
+    rangeStart = new vscode.Position(0, 0);
+    rangeEnd = new vscode.Position(0, 0);
+    pufferContent = "";
 }
 
 export function userJoined(name: string) {
@@ -172,29 +241,6 @@ export function sendCurrentCursor() {
     cursorMoved(pathName, cursor, selectionEnd, username, project);
 }
 
-function textReplaced(pathName: string, start: vscode.Position, end: vscode.Position, content: string, username: string, project: string) {
-    sendTextQueue.push([pathName, start, end, content, username, project]);
-
-    if (!textQueueProcessing) {
-        processSendTextQueue();
-    }
-}
-
-
-function processSendTextQueue() {
-    textQueueProcessing = true;
-
-    setTimeout(() => {
-        const message = sendTextQueue.shift();
-        if (message) {
-            sendTextReplaced(message[0], message[1], message[2], message[3], message[4], message[5]);
-            processSendTextQueue();
-        } else {
-            textQueueProcessing = false;
-        }
-    }, 30);
-}
-
 export function replaceText(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string) {
     const editor = vscode.window.activeTextEditor;
     let user = users.get(name);
@@ -271,7 +317,7 @@ export function getChatViewProvider() {
     return chatViewProvider;
 }
 
-export function getTextReceivedQueueProcessing(){
+export function getTextReceivedQueueProcessing() {
     return textReceivedQueueProcessing;
 }
 
