@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import {User} from './class/user';
-import {closeWS, cursorMoved, getCursors, openWS, sendTextReplaced} from './ws';
+import {closeWS, cursorMoved, getCursors, openWS, sendTextDelKey, sendTextReplaced} from './ws';
 import {ChatViewProvider} from './class/chatViewProvider';
 import {ActiveUsersProvider} from './class/activeUsersProvider';
 import {randomUUID} from 'crypto';
@@ -20,6 +20,8 @@ let textReceivedQueueProcessing = false;
 const textDocumentChanges$ = new Subject<vscode.TextDocumentContentChangeEvent>();
 
 let blockCursorUpdate = false;
+let delKeyCounter = 0;
+let lineCount = 0;
 let rangeStart = new vscode.Position(0, 0);
 let rangeEnd = new vscode.Position(0, 0);
 let startRangeStart = new vscode.Position(0, 0);
@@ -57,6 +59,8 @@ export async function activate(context: vscode.ExtensionContext) {
         sendCurrentCursor();
     });
 
+    lineCount = getLineCount();
+
     vscode.workspace.onDidChangeTextDocument(changes => { // splitte Funktion auf für bessere Übersicht
         let editor = vscode.window.activeTextEditor;
         if (!editor) {
@@ -78,7 +82,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     textEdits.splice(index, 1);
                 }
             }); // cheap fix für das Zwischenspeichern von LatexWorkshop
-            const regex = /^\[\d{2}:\d{2}:\d{2}\]\[/; // format [XX:XX:XX][ | latexworkshop uses root.tex file as temp storage
+            const regex = /^\[\d{2}:\d{2}:\d{2}\]\[/; // format [XX:XX:XX][ | Latexworkshop uses root.tex file as temp storage
             if (regex.test(change.text)) {
                 ownText = false;
             }
@@ -91,6 +95,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     vscode.window.onDidChangeActiveTextEditor(() => {
         getCursors(username, project);
+        lineCount = getLineCount();
     });
 }
 
@@ -100,6 +105,7 @@ textDocumentChanges$
     )
     .subscribe((changes) => {
         let editor = vscode.window.activeTextEditor;
+        const delLinesCounter = lineCount - getLineCount();
         if (!editor) {
             return;
         }
@@ -109,17 +115,25 @@ textDocumentChanges$
 
             updateBufferedParams(range.start, range.end, content);
         }
+
+        let pathName = pathString(editor.document.fileName);
+
+
         if ((!rangeStart.isEqual(new vscode.Position(0, 0)) || !rangeEnd.isEqual(new vscode.Position(0, 0)) || pufferContent !== "") && changes.length > 0) {
-            let pathName = pathString(editor.document.fileName);
-            sendTextReplaced(
-                pathName,
-                rangeStart,
-                rangeEnd,
-                pufferContent,
-                username,
-                project
-            );
-            clearPuffer();
+            if (delKeyCounter > 1 && (rangeStart.isEqual(startRangeStart) && rangeEnd.isEqual(startRangeEnd))) {
+                const delCharCounter = delKeyCounter - delLinesCounter;
+                sendTextDelKey(pathName, rangeStart, delLinesCounter, delCharCounter, username, project);
+            } else {
+                sendTextReplaced(
+                    pathName,
+                    rangeStart,
+                    rangeEnd,
+                    pufferContent,
+                    username,
+                    project
+                );
+            }
+            clearBufferedParams();
             blockCursorUpdate = false;
         }
     });
@@ -141,8 +155,7 @@ function updateBufferedParams(start: vscode.Position, end: vscode.Position, cont
             return;
         } else {
             if (rangeStart.isEqual(startRangeStart) && rangeEnd.isEqual(startRangeEnd)) {
-                rangeEnd = rangeEnd.translate(0, 1);
-                startRangeEnd = rangeEnd;
+                delKeyCounter += 1;
                 return;
             }
         }
@@ -152,10 +165,30 @@ function updateBufferedParams(start: vscode.Position, end: vscode.Position, cont
     }
 }
 
-function clearPuffer() {
+function clearBufferedParams() {
     rangeStart = new vscode.Position(0, 0);
     rangeEnd = new vscode.Position(0, 0);
+    delKeyCounter = 0;
+    lineCount = getLineCount();
     pufferContent = "";
+}
+
+export function delKeyDelete(pathName: string, from: vscode.Position, delLinesCounter: number, delCharCounter: number, name: string) {
+    const editor = vscode.window.activeTextEditor;
+    let user = users.get(name);
+    if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { // splitten
+        return;
+    }
+    let to = new vscode.Position(from.line, from.character).translate(delLinesCounter, delCharCounter);
+    replaceText(pathName, from, to, "", name);
+}
+
+function getLineCount() {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        return 0;
+    }
+    return editor.document.lineCount;
 }
 
 export function userJoined(name: string) {
@@ -249,8 +282,12 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
         return;
     }
     const edit = new vscode.WorkspaceEdit();
-    edit.replace(editor.document.uri, new vscode.Range(from, to), content);
-    textEdits.push(JSON.stringify({uri: editor.document.uri, range: new vscode.Range(from, to), content}));
+    const range = new vscode.Range(from, to);
+
+    console.log("range", range);
+
+    edit.replace(editor.document.uri, range, content);
+    textEdits.push(JSON.stringify({uri: editor.document.uri, range, content}));
     vscode.workspace.applyEdit(edit).then(() => {
         let cursorPosition = new vscode.Position(from.line, from.character + content.length);
         if (content.includes("\n")) {

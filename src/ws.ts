@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import {
     addActiveUsers,
     clearUsers,
+    delKeyDelete,
     getChatViewProvider,
     getTextChangeQueue,
     getTextReceivedQueueProcessing,
@@ -11,12 +12,13 @@ import {
     userLeft,
     workThroughReceivedTextQueue,
 } from "./extension";
-import {ChatData, CursorMovedData, Data, TextReplacedData} from "./interface/data";
+import {ChatData, CursorMovedData, Data, DelKeyData, TextReplacedData} from "./interface/data";
 import {Message} from "./interface/message";
 import {
     buildChatMessage,
     buildCursorMovedMessage,
-    buildTextReplacedMessage,
+    buildSendTextDelKeyMessage,
+    buildSendTextReplacedMessage,
     buildUserMessage
 } from "./util/jsonUtils";
 
@@ -68,7 +70,7 @@ export function cursorMoved(pathName: string, cursor: vscode.Position, selection
 }
 
 export function sendTextReplaced(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string, project: string) {
-    ws.send(buildTextReplacedMessage("textReplaced", pathName, from, to, content, name, project));
+    ws.send(buildSendTextReplacedMessage("textReplaced", pathName, from, to, content, name, project));
 }
 
 export function sendChatMessage(msg: string, name: string, project: string) {
@@ -77,6 +79,10 @@ export function sendChatMessage(msg: string, name: string, project: string) {
 
 export function getCursors(name: string, project: string) {
     ws.send(buildUserMessage("getCursors", name, project));
+}
+
+export function sendTextDelKey(pathName: string, from: vscode.Position, delLinesCounter: number, delCharCounter: number, name: string, project: string) {
+    ws.send(buildSendTextDelKeyMessage("delKey", pathName, from, delLinesCounter, delCharCounter, name, project));
 }
 
 function handleMessage(msg: Message) {
@@ -109,6 +115,10 @@ function handleMessage(msg: Message) {
         case "chatMsg":
             let chatData: ChatData = msg.data;
             getChatViewProvider().receivedMsg(chatData);
+            break;
+        case "delKey":
+            let delKeyData: DelKeyData = msg.data;
+            delKeyDelete(delKeyData.pathName, delKeyData.from, delKeyData.delLinesCounter, delKeyData.delCharCounter, delKeyData.name);
             break;
         default:
             console.error("Unknown operation: " + msg.operation);
