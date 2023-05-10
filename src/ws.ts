@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import {
     addActiveUsers,
     clearUsers,
-    delkeyDelete,
+    delKeyDelete,
     getChatViewProvider,
     getTextChangeQueue,
     getTextReceivedQueueProcessing,
@@ -81,8 +81,8 @@ export function getCursors(name: string, project: string) {
     ws.send(buildUserMessage("getCursors", name, project));
 }
 
-export function sendTextDelKey(pathName: string, from: vscode.Position, delKeyCounter: number, name: string, project: string) {
-    ws.send(buildSendTextDelKeyMessage("delKey", pathName, from, delKeyCounter, name, project));
+export function sendTextDelKey(pathName: string, from: vscode.Position, delLinesCounter: number, delCharCounter: number, name: string, project: string) {
+    ws.send(buildSendTextDelKeyMessage("delKey", pathName, from, delLinesCounter, delCharCounter, name, project));
 }
 
 function handleMessage(msg: Message) {
@@ -118,7 +118,7 @@ function handleMessage(msg: Message) {
             break;
         case "delKey":
             let delKeyData: DelKeyData = msg.data;
-            delkeyDelete(delKeyData.pathName, delKeyData.from, delKeyData.delKeyCounter, delKeyData.name);
+            delKeyDelete(delKeyData.pathName, delKeyData.from, delKeyData.delLinesCounter, delKeyData.delCharCounter, delKeyData.name);
             break;
         default:
             console.error("Unknown operation: " + msg.operation);

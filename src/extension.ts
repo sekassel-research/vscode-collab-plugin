@@ -21,6 +21,7 @@ const textDocumentChanges$ = new Subject<vscode.TextDocumentContentChangeEvent>(
 
 let blockCursorUpdate = false;
 let delKeyCounter = 0;
+let lineCount = 0;
 let rangeStart = new vscode.Position(0, 0);
 let rangeEnd = new vscode.Position(0, 0);
 let startRangeStart = new vscode.Position(0, 0);
@@ -58,6 +59,8 @@ export async function activate(context: vscode.ExtensionContext) {
         sendCurrentCursor();
     });
 
+    lineCount = getLineCount();
+
     vscode.workspace.onDidChangeTextDocument(changes => { // splitte Funktion auf für bessere Übersicht
         let editor = vscode.window.activeTextEditor;
         if (!editor) {
@@ -79,7 +82,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     textEdits.splice(index, 1);
                 }
             }); // cheap fix für das Zwischenspeichern von LatexWorkshop
-            const regex = /^\[\d{2}:\d{2}:\d{2}\]\[/; // format [XX:XX:XX][ | latexworkshop uses root.tex file as temp storage
+            const regex = /^\[\d{2}:\d{2}:\d{2}\]\[/; // format [XX:XX:XX][ | Latexworkshop uses root.tex file as temp storage
             if (regex.test(change.text)) {
                 ownText = false;
             }
@@ -92,6 +95,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     vscode.window.onDidChangeActiveTextEditor(() => {
         getCursors(username, project);
+        lineCount = getLineCount();
     });
 }
 
@@ -101,6 +105,7 @@ textDocumentChanges$
     )
     .subscribe((changes) => {
         let editor = vscode.window.activeTextEditor;
+        const delLinesCounter = lineCount - getLineCount();
         if (!editor) {
             return;
         }
@@ -115,8 +120,9 @@ textDocumentChanges$
 
 
         if ((!rangeStart.isEqual(new vscode.Position(0, 0)) || !rangeEnd.isEqual(new vscode.Position(0, 0)) || pufferContent !== "") && changes.length > 0) {
-            if (delKeyCounter > 0) {
-                sendTextDelKey(pathName, rangeStart, delKeyCounter, username, project);
+            if (delKeyCounter > 1 && (rangeStart.isEqual(startRangeStart) && rangeEnd.isEqual(startRangeEnd))) {
+                const delCharCounter = delKeyCounter - delLinesCounter;
+                sendTextDelKey(pathName, rangeStart, delLinesCounter, delCharCounter, username, project);
             } else {
                 sendTextReplaced(
                     pathName,
@@ -127,7 +133,7 @@ textDocumentChanges$
                     project
                 );
             }
-            clearPuffer();
+            clearBufferedParams();
             blockCursorUpdate = false;
         }
     });
@@ -159,21 +165,30 @@ function updateBufferedParams(start: vscode.Position, end: vscode.Position, cont
     }
 }
 
-function clearPuffer() {
+function clearBufferedParams() {
     rangeStart = new vscode.Position(0, 0);
     rangeEnd = new vscode.Position(0, 0);
     delKeyCounter = 0;
+    lineCount = getLineCount();
     pufferContent = "";
 }
 
-export function delkeyDelete(pathName: string, from: vscode.Position, counter: number, name: string) {
+export function delKeyDelete(pathName: string, from: vscode.Position, delLinesCounter: number, delCharCounter: number, name: string) {
     const editor = vscode.window.activeTextEditor;
     let user = users.get(name);
     if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { // splitten
         return;
     }
-    let to = new vscode.Position(from.line, from.character).translate(0, counter);
+    let to = new vscode.Position(from.line, from.character).translate(delLinesCounter, delCharCounter);
     replaceText(pathName, from, to, "", name);
+}
+
+function getLineCount() {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        return 0;
+    }
+    return editor.document.lineCount;
 }
 
 export function userJoined(name: string) {
@@ -267,9 +282,9 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
         return;
     }
     const edit = new vscode.WorkspaceEdit();
-    const range =  new vscode.Range(from, to);
+    const range = new vscode.Range(from, to);
 
-    console.log("range",range);
+    console.log("range", range);
 
     edit.replace(editor.document.uri, range, content);
     textEdits.push(JSON.stringify({uri: editor.document.uri, range, content}));
