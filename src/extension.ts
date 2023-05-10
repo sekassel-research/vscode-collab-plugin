@@ -7,18 +7,15 @@ import {randomUUID} from 'crypto';
 import {Subject} from 'rxjs';
 import {bufferTime} from 'rxjs/operators';
 
-
 const users = new Map<string, User>();
 let chatViewProvider: ChatViewProvider;
 let activeUsersProvider: ActiveUsersProvider;
-
 let username = "user_" + randomUUID();
 let project = "default";
 let textEdits: string[] = [];
 let textChangeQueue: any[] = [];
 let textReceivedQueueProcessing = false;
 const textDocumentChanges$ = new Subject<vscode.TextDocumentContentChangeEvent>();
-
 let blockCursorUpdate = false;
 let delKeyCounter = 0;
 let lineCount = 0;
@@ -118,7 +115,6 @@ textDocumentChanges$
 
         let pathName = pathString(editor.document.fileName);
 
-
         if ((!rangeStart.isEqual(new vscode.Position(0, 0)) || !rangeEnd.isEqual(new vscode.Position(0, 0)) || pufferContent !== "") && changes.length > 0) {
             if (delKeyCounter > 1 && (rangeStart.isEqual(startRangeStart) && rangeEnd.isEqual(startRangeEnd))) {
                 const delCharCounter = delKeyCounter - delLinesCounter;
@@ -134,8 +130,8 @@ textDocumentChanges$
                 );
             }
             clearBufferedParams();
-            blockCursorUpdate = false;
         }
+        blockCursorUpdate = false;
     });
 
 function updateBufferedParams(start: vscode.Position, end: vscode.Position, content: string) {  // rebuild logic to work with 'del'-key
