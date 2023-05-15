@@ -4,8 +4,10 @@ import {
     clearUsers,
     delKeyDelete,
     getChatViewProvider,
+    getProjectId,
     getTextChangeQueue,
     getTextReceivedQueueProcessing,
+    getUserName,
     markLine,
     sendCurrentCursor,
     userJoined,
@@ -24,12 +26,14 @@ import {
 
 const webSocket = require('ws');
 
-let ws = new webSocket('ws://192.168.178.159:8080');
+let wsAddress = vscode.workspace.getConfiguration('vscode-collab').get("ws-address");
+
+let ws = new webSocket(wsAddress);
 let wsClose = false;
 
 
 export function openWS(name: string, project: string) {
-    ws = new webSocket('ws://192.168.178.159:8080');
+    let ws = new webSocket(wsAddress);
     ws.on('open', function open() {
 
         ws.on('message', function incoming(data: any) {
@@ -123,4 +127,12 @@ function handleMessage(msg: Message) {
         default:
             console.error("Unknown operation: " + msg.operation);
     }
+}
+
+export function updateWS(newWsAddress: string | unknown) {
+    wsAddress = newWsAddress;
+    const userName = getUserName();
+    const projectId = getProjectId();
+    closeWS(userName, projectId);
+    openWS(userName, projectId);
 }
