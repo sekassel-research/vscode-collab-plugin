@@ -47,10 +47,10 @@
     "configuration": {
       "title": "vscode-collab",
       "properties": {
-        "vscode-collab.test": {
-          "type": "boolean",
-          "default": false,
-          "description": "This is a test setting"
+        "vscode-collab.ws-address": {
+          "type": "string",
+          "default": "ws://localhost:8080",
+          "description": "In this setting the websocket server-address can be changed"
         }
       }
     }

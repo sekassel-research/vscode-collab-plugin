@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import {User} from './class/user';
-import {closeWS, cursorMoved, getCursors, openWS, sendTextDelKey, sendTextReplaced} from './ws';
+import {closeWS, cursorMoved, getCursors, openWS, sendTextDelKey, sendTextReplaced, updateWS} from './ws';
 import {ChatViewProvider} from './class/chatViewProvider';
 import {ActiveUsersProvider} from './class/activeUsersProvider';
 import {randomUUID} from 'crypto';
@@ -94,6 +94,14 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.onDidChangeActiveTextEditor(() => {
         getCursors(username, project);
         lineCount = getLineCount();
+    });
+
+    vscode.workspace.onDidChangeConfiguration(event => {
+        const extensionSettingsChanged = event.affectsConfiguration('vscode-collab');
+        if (extensionSettingsChanged) {
+            const wsAddress = vscode.workspace.getConfiguration('vscode-collab').get("ws-address");
+            updateWS(wsAddress);
+        }
     });
 }
 
