@@ -8,6 +8,8 @@ import {Subject} from 'rxjs';
 import {bufferTime} from 'rxjs/operators';
 
 const users = new Map<string, User>();
+const textDocumentChanges$ = new Subject<vscode.TextDocumentContentChangeEvent>();
+
 let chatViewProvider: ChatViewProvider;
 let activeUsersProvider: ActiveUsersProvider;
 let username = "user_" + randomUUID();
@@ -15,7 +17,6 @@ let project = "default";
 let textEdits: string[] = [];
 let textChangeQueue: any[] = [];
 let textReceivedQueueProcessing = false;
-const textDocumentChanges$ = new Subject<vscode.TextDocumentContentChangeEvent>();
 let blockCursorUpdate = false;
 let delKeyCounter = 0;
 let lineCount = 0;
