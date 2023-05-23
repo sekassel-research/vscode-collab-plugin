@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 import {
     addActiveUsers,
     clearUsers,
@@ -22,19 +22,19 @@ import {
     buildUserMessage
 } from "./util/jsonUtils";
 
-const webSocket = require('ws');
+const webSocket = require("ws");
 
-let wsAddress = vscode.workspace.getConfiguration('vscode-collab').get("ws-address");
+let wsAddress = vscode.workspace.getConfiguration("vscode-collab").get<string>("ws-address") ?? "ws://localhost:8080";
 
 let ws = new webSocket(wsAddress);
 let wsClose = false;
 
 
 export function openWS(name: string, project: string) {
-    let ws = new webSocket(wsAddress);
-    ws.on('open', function open() {
+    ws = new webSocket(wsAddress);
+    ws.on("open", function open() {
 
-        ws.on('message', function incoming(data: any) {
+        ws.on("message", function incoming(data: any) {
             const msg: Message = JSON.parse(Buffer.from(data).toString());
             handleMessage(msg);
         });
@@ -43,7 +43,7 @@ export function openWS(name: string, project: string) {
         getCursors(name, project);
     });
 
-    ws.on('close', function close() {
+    ws.on("close", function close() {
         if (!wsClose) {
             // Starte den Wiederverbindungsprozess nach 10 Sekunden
             clearUsers();
@@ -53,7 +53,7 @@ export function openWS(name: string, project: string) {
         }
     });
 
-    ws.on('error', (error: Error) => {
+    ws.on("error", (error: Error) => {
         clearUsers();
         setTimeout(() => {
             console.error(error);
@@ -64,7 +64,7 @@ export function openWS(name: string, project: string) {
 export function closeWS(name: string, project: string) {
     wsClose = true;
     ws.send(buildUserMessage("userLeft", name, project));
-    ws.close(1000, 'connection was closed by the user');
+    ws.close(1000, "connection was closed by the user");
 }
 
 export function cursorMoved(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string, project: string) {
@@ -124,7 +124,7 @@ function handleMessage(msg: Message) {
     }
 }
 
-export function updateWS(newWsAddress: string | unknown) {
+export function updateWS(newWsAddress: string) {
     wsAddress = newWsAddress;
     const userName = getUserName();
     const projectId = getProjectId();

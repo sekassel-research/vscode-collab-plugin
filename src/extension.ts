@@ -1,17 +1,20 @@
-import * as vscode from 'vscode';
-import {User} from './class/user';
-import {closeWS, cursorMoved, getCursors, openWS, sendTextDelKey, sendTextReplaced, updateWS} from './ws';
-import {ChatViewProvider} from './class/chatViewProvider';
-import {ActiveUsersProvider} from './class/activeUsersProvider';
-import {randomUUID} from 'crypto';
-import {Subject} from 'rxjs';
-import {bufferTime} from 'rxjs/operators';
-import {TextReplacedData} from './interface/data';
+import * as vscode from "vscode";
+import {User} from "./class/user";
+import {closeWS, cursorMoved, getCursors, openWS, sendTextDelKey, sendTextReplaced, updateWS} from "./ws";
+import {ChatViewProvider} from "./class/chatViewProvider";
+import {ActiveUsersProvider} from "./class/activeUsersProvider";
+import {randomUUID} from "crypto";
+import {Subject} from "rxjs";
+import {bufferTime} from "rxjs/operators";
+import {TextReplacedData} from "./interface/data";
 import {buildSendTextReplacedMessage} from "./util/jsonUtils";
 
 const users = new Map<string, User>();
+
 const receivedDocumentChanges$ = new Subject<TextReplacedData>();
 const textDocumentChanges$ = new Subject<vscode.TextDocumentContentChangeEvent>();
+let receivedDocumentChangesBufferTime = vscode.workspace.getConfiguration("vscode-collab").get<number>("receivedDocumentChangesBufferTime") ?? 50;
+let textDocumentChangesBufferTime = vscode.workspace.getConfiguration("vscode-collab").get<number>("textDocumentChangesBufferTime") ?? 150;
 
 let chatViewProvider: ChatViewProvider;
 let activeUsersProvider: ActiveUsersProvider;
@@ -47,7 +50,7 @@ export async function activate(context: vscode.ExtensionContext) {
     chatViewProvider = new ChatViewProvider(context.extensionUri);
     activeUsersProvider = new ActiveUsersProvider(users);
 
-    vscode.window.createTreeView('vscode-collab-activeUsers', {treeDataProvider: activeUsersProvider});
+    vscode.window.createTreeView("vscode-collab-activeUsers", {treeDataProvider: activeUsersProvider});
 
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(ChatViewProvider.viewType, chatViewProvider));
@@ -81,7 +84,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     ownText = false;
                     textEdits.splice(index, 1);
                 }
-            }); // cheap fix für das Zwischenspeichern von LatexWorkshop
+            }); // cheap fix für das Zwischen-Speichern von LatexWorkshop
             const regex = /^\[\d{2}:\d{2}:\d{2}\]\[/; // format [XX:XX:XX][ | Latexworkshop uses root.tex file as temp storage
             if (regex.test(change.text)) {
                 ownText = false;
@@ -99,15 +102,36 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 
     vscode.workspace.onDidChangeConfiguration(event => {
-        const extensionSettingsChanged = event.affectsConfiguration('vscode-collab');
-        if (extensionSettingsChanged) {
-            const wsAddress = vscode.workspace.getConfiguration('vscode-collab').get("ws-address");
-            updateWS(wsAddress);
+        const rootConfiguration = "vscode-collab.";
+        const configuration = event.affectsConfiguration.bind(event);
+
+        switch (true) {
+            case configuration(rootConfiguration + "ws-address"): {
+                const wsAddress = vscode.workspace.getConfiguration("vscode-collab").get<string>("ws-address");
+                if (wsAddress !== undefined) {
+                    updateWS(wsAddress);
+                }
+                break;
+            }
+            case configuration(rootConfiguration + "receivedDocumentChangesBufferTime"): {
+                const newBufferTime = vscode.workspace.getConfiguration("vscode-collab").get<number>("receivedDocumentChangesBufferTime");
+                if (newBufferTime !== undefined) {
+                    receivedDocumentChangesBufferTime = newBufferTime;
+                }
+                break;
+            }
+            case configuration(rootConfiguration + "textDocumentChangesBufferTime"): {
+                const newBufferTime = vscode.workspace.getConfiguration("vscode-collab").get<number>("textDocumentChangesBufferTime");
+                if (newBufferTime !== undefined) {
+                    textDocumentChangesBufferTime = newBufferTime;
+                }
+                break;
+            }
         }
     });
 }
 
-receivedDocumentChanges$.pipe(bufferTime(50)).subscribe(async (changes) => {
+receivedDocumentChanges$.pipe(bufferTime(receivedDocumentChangesBufferTime)).subscribe(async (changes) => {
     for (let change of changes) {
         await replaceText(change.pathName, change.from, change.to, change.content, change.name);
     }
@@ -115,7 +139,7 @@ receivedDocumentChanges$.pipe(bufferTime(50)).subscribe(async (changes) => {
 
 textDocumentChanges$
     .pipe(
-        bufferTime(150), // sammelt Änderungen in einem 150-ms-Zeitfenster | WS-Überlastungsschutz
+        bufferTime(textDocumentChangesBufferTime),
     )
     .subscribe((changes) => {
         let editor = vscode.window.activeTextEditor;
@@ -156,7 +180,7 @@ textDocumentChanges$
         blockCursorUpdate = false;
     });
 
-function updateBufferedParams(start: vscode.Position, end: vscode.Position, content: string) {  // rebuild logic to work with 'del'-key
+function updateBufferedParams(start: vscode.Position, end: vscode.Position, content: string) {  // rebuild logic to work with "del"-key
     if (rangeStart.isEqual(new vscode.Position(0, 0)) && rangeEnd.isEqual(new vscode.Position(0, 0))) {
         startRangeStart = start;
         startRangeEnd = end;
@@ -199,7 +223,7 @@ export function delKeyDelete(pathName: string, from: vscode.Position, delLinesCo
         return;
     }
     let to = new vscode.Position(from.line, from.character).translate(delLinesCounter, delCharCounter);
-    let test:TextReplacedData = JSON.parse(buildSendTextReplacedMessage("textReplaced",pathName, from, to, "", name,project)); // rework
+    let test: TextReplacedData = JSON.parse(buildSendTextReplacedMessage("textReplaced", pathName, from, to, "", name, project)); // rework
     receivedDocumentChanges$.next(test);
 }
 
@@ -274,7 +298,7 @@ export function sendCurrentCursor() {
     let pathName = pathString(editor.document.fileName);
     let selectionEnd = editor.selection.end;
 
-    if (cursor === selectionEnd) { // flippt wenn cursor ist am ende der Markierung
+    if (cursor === selectionEnd) { // flippt, wenn Cursor am Ende der Markierung ist
         selectionEnd = editor.selection.start;
     }
     cursorMoved(pathName, cursor, selectionEnd, username, project);
@@ -310,7 +334,7 @@ async function replaceText(pathName: string, from: vscode.Position, to: vscode.P
 function pathString(path: string) {
     if (vscode.workspace.workspaceFolders !== undefined) {
         const projectRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
-        path = path.replace(projectRoot, '');
+        path = path.replace(projectRoot, "");
         return path;
     }
     return "";
