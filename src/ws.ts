@@ -5,14 +5,12 @@ import {
     delKeyDelete,
     getChatViewProvider,
     getProjectId,
-    getTextChangeQueue,
-    getTextReceivedQueueProcessing,
+    getReceivedDocumentChanges,
     getUserName,
     markLine,
     sendCurrentCursor,
     userJoined,
     userLeft,
-    workThroughReceivedTextQueue,
 } from "./extension";
 import {ChatData, CursorMovedData, Data, DelKeyData, TextReplacedData} from "./interface/data";
 import {Message} from "./interface/message";
@@ -108,10 +106,7 @@ function handleMessage(msg: Message) {
             break;
         case "textReplaced":
             let textReplacedData: TextReplacedData = msg.data;
-            getTextChangeQueue().push(textReplacedData);
-            if (!getTextReceivedQueueProcessing()) {
-                workThroughReceivedTextQueue();
-            }
+            getReceivedDocumentChanges().next(textReplacedData);
             break;
         case "getCursors":
             sendCurrentCursor();

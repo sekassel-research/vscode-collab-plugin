@@ -6,8 +6,11 @@ import {ActiveUsersProvider} from './class/activeUsersProvider';
 import {randomUUID} from 'crypto';
 import {Subject} from 'rxjs';
 import {bufferTime} from 'rxjs/operators';
+import {TextReplacedData} from './interface/data';
+import {buildSendTextReplacedMessage} from "./util/jsonUtils";
 
 const users = new Map<string, User>();
+const receivedDocumentChanges$ = new Subject<TextReplacedData>();
 const textDocumentChanges$ = new Subject<vscode.TextDocumentContentChangeEvent>();
 
 let chatViewProvider: ChatViewProvider;
@@ -15,11 +18,10 @@ let activeUsersProvider: ActiveUsersProvider;
 let username = "user_" + randomUUID();
 let project = "default";
 let textEdits: string[] = [];
-let textChangeQueue: any[] = [];
-let textReceivedQueueProcessing = false;
 let blockCursorUpdate = false;
 let delKeyCounter = 0;
 let lineCount = 0;
+let delta = 0;
 let rangeStart = new vscode.Position(0, 0);
 let rangeEnd = new vscode.Position(0, 0);
 let startRangeStart = new vscode.Position(0, 0);
@@ -105,6 +107,12 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 }
 
+receivedDocumentChanges$.pipe(bufferTime(50)).subscribe(async (changes) => {
+    for (let change of changes) {
+        await replaceText(change.pathName, change.from, change.to, change.content, change.name);
+    }
+});
+
 textDocumentChanges$
     .pipe(
         bufferTime(150), // sammelt Änderungen in einem 150-ms-Zeitfenster | WS-Überlastungsschutz
@@ -124,6 +132,11 @@ textDocumentChanges$
 
         let pathName = pathString(editor.document.fileName);
 
+        if (delta > 0) {
+            rangeStart = rangeStart.translate(rangeStart.line + delta, rangeStart.character);
+            rangeEnd = rangeEnd.translate(rangeEnd.line + delta, rangeEnd.character);
+        }
+
         if ((!rangeStart.isEqual(new vscode.Position(0, 0)) || !rangeEnd.isEqual(new vscode.Position(0, 0)) || pufferContent !== "") && changes.length > 0) {
             if (delKeyCounter > 1 && (rangeStart.isEqual(startRangeStart) && rangeEnd.isEqual(startRangeEnd))) {
                 const delCharCounter = delKeyCounter - delLinesCounter;
@@ -138,8 +151,8 @@ textDocumentChanges$
                     project
                 );
             }
-            clearBufferedParams();
         }
+        clearBufferedParams();
         blockCursorUpdate = false;
     });
 
@@ -174,6 +187,7 @@ function clearBufferedParams() {
     rangeStart = new vscode.Position(0, 0);
     rangeEnd = new vscode.Position(0, 0);
     delKeyCounter = 0;
+    delta = 0;
     lineCount = getLineCount();
     pufferContent = "";
 }
@@ -185,7 +199,8 @@ export function delKeyDelete(pathName: string, from: vscode.Position, delLinesCo
         return;
     }
     let to = new vscode.Position(from.line, from.character).translate(delLinesCounter, delCharCounter);
-    replaceText(pathName, from, to, "", name);
+    let test:TextReplacedData = JSON.parse(buildSendTextReplacedMessage("textReplaced",pathName, from, to, "", name,project)); // rework
+    receivedDocumentChanges$.next(test);
 }
 
 function getLineCount() {
@@ -250,20 +265,6 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     editor.setDecorations(user.getNameTag(), [line.range]);
 }
 
-export function workThroughReceivedTextQueue() {
-    textReceivedQueueProcessing = true;
-
-    setTimeout(() => {
-        const textOperation = textChangeQueue.shift();
-        if (textOperation) {
-            replaceText(textOperation.pathName, textOperation.from, textOperation.to, textOperation.content, textOperation.name);
-            workThroughReceivedTextQueue();
-        } else {
-            textReceivedQueueProcessing = false;
-        }
-    }, 30);
-}
-
 export function sendCurrentCursor() {
     let editor = vscode.window.activeTextEditor;
     if (!editor) {
@@ -279,17 +280,20 @@ export function sendCurrentCursor() {
     cursorMoved(pathName, cursor, selectionEnd, username, project);
 }
 
-export function replaceText(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string) {
+async function replaceText(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string) {
     const editor = vscode.window.activeTextEditor;
     let user = users.get(name);
 
     if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { // splitten
         return;
     }
+    to = new vscode.Position(to.line, to.character);
+
+    if (to.isBefore(editor.selection.active) && content.includes("\n")) {
+        delta += (content.match(/\n/g) || []).length;
+    }
     const edit = new vscode.WorkspaceEdit();
     const range = new vscode.Range(from, to);
-
-    console.log("range", range);
 
     edit.replace(editor.document.uri, range, content);
     textEdits.push(JSON.stringify({uri: editor.document.uri, range, content}));
@@ -300,6 +304,7 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
         }
         markLine(pathName, cursorPosition, cursorPosition, name);
     });
+    return Promise;
 }
 
 function pathString(path: string) {
@@ -344,10 +349,6 @@ export function getUserName() {
     return username;
 }
 
-export function getTextChangeQueue() {
-    return textChangeQueue;
-}
-
 export function getProjectId() {
     return project;
 }
@@ -356,8 +357,8 @@ export function getChatViewProvider() {
     return chatViewProvider;
 }
 
-export function getTextReceivedQueueProcessing() {
-    return textReceivedQueueProcessing;
+export function getReceivedDocumentChanges() {
+    return receivedDocumentChanges$;
 }
 
 export function deactivate() {
