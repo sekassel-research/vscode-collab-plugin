@@ -31,7 +31,7 @@ let wsClose = false;
 
 
 export function openWS(name: string, project: string) {
-    let ws = new webSocket(wsAddress);
+    ws = new webSocket(wsAddress);
     ws.on("open", function open() {
 
         ws.on("message", function incoming(data: any) {
