@@ -51,6 +51,16 @@
           "type": "string",
           "default": "ws://localhost:8080",
           "description": "In this setting the websocket server-address can be changed"
+        },
+        "vscode-collab.textDocumentChangesBufferTime": {
+          "type": "number",
+          "default": 150,
+          "description": "Change the Number to configure the time the outgoing changes will be send"
+        },
+        "vscode-collab.receivedDocumentChangesBufferTime": {
+          "type": "number",
+          "default": 50,
+          "description": "Change the Number to configure the time incoming changes will be applied"
         }
       }
     }
