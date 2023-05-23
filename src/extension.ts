@@ -20,6 +20,7 @@ let textReceivedQueueProcessing = false;
 let blockCursorUpdate = false;
 let delKeyCounter = 0;
 let lineCount = 0;
+let delta = 0;
 let rangeStart = new vscode.Position(0, 0);
 let rangeEnd = new vscode.Position(0, 0);
 let startRangeStart = new vscode.Position(0, 0);
@@ -107,7 +108,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 textDocumentChanges$
     .pipe(
-        bufferTime(150), // sammelt Änderungen in einem 150-ms-Zeitfenster | WS-Überlastungsschutz
+        bufferTime(400), // sammelt Änderungen in einem 150-ms-Zeitfenster | WS-Überlastungsschutz
     )
     .subscribe((changes) => {
         let editor = vscode.window.activeTextEditor;
@@ -124,6 +125,11 @@ textDocumentChanges$
 
         let pathName = pathString(editor.document.fileName);
 
+        if (delta > 0) {
+            rangeStart = rangeStart.translate(rangeStart.line + delta, rangeStart.character);
+            rangeEnd = rangeEnd.translate(rangeEnd.line + delta, rangeEnd.character);
+        }
+
         if ((!rangeStart.isEqual(new vscode.Position(0, 0)) || !rangeEnd.isEqual(new vscode.Position(0, 0)) || pufferContent !== "") && changes.length > 0) {
             if (delKeyCounter > 1 && (rangeStart.isEqual(startRangeStart) && rangeEnd.isEqual(startRangeEnd))) {
                 const delCharCounter = delKeyCounter - delLinesCounter;
@@ -138,8 +144,8 @@ textDocumentChanges$
                     project
                 );
             }
-            clearBufferedParams();
         }
+        clearBufferedParams();
         blockCursorUpdate = false;
     });
 
@@ -174,6 +180,7 @@ function clearBufferedParams() {
     rangeStart = new vscode.Position(0, 0);
     rangeEnd = new vscode.Position(0, 0);
     delKeyCounter = 0;
+    delta = 0;
     lineCount = getLineCount();
     pufferContent = "";
 }
@@ -286,10 +293,13 @@ export function replaceText(pathName: string, from: vscode.Position, to: vscode.
     if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { // splitten
         return;
     }
+    to = new vscode.Position(to.line, to.character);
+
+    if (to.isBefore(editor.selection.active) && content.includes("\n")) {
+        delta += (content.match(/\n/g) || []).length;
+    }
     const edit = new vscode.WorkspaceEdit();
     const range = new vscode.Range(from, to);
-
-    console.log("range", range);
 
     edit.replace(editor.document.uri, range, content);
     textEdits.push(JSON.stringify({uri: editor.document.uri, range, content}));
