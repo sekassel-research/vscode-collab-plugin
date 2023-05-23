@@ -107,7 +107,7 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 }
 
-receivedDocumentChanges$.pipe(bufferTime(400)).subscribe(async (changes) => {
+receivedDocumentChanges$.pipe(bufferTime(50)).subscribe(async (changes) => {
     for (let change of changes) {
         await replaceText(change.pathName, change.from, change.to, change.content, change.name);
     }
@@ -115,7 +115,7 @@ receivedDocumentChanges$.pipe(bufferTime(400)).subscribe(async (changes) => {
 
 textDocumentChanges$
     .pipe(
-        bufferTime(400), // sammelt Änderungen in einem 150-ms-Zeitfenster | WS-Überlastungsschutz
+        bufferTime(150), // sammelt Änderungen in einem 150-ms-Zeitfenster | WS-Überlastungsschutz
     )
     .subscribe((changes) => {
         let editor = vscode.window.activeTextEditor;
