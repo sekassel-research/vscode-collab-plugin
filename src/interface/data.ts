@@ -26,6 +26,6 @@ export interface ChatData extends Data {
 export interface DelKeyData extends Data {
     pathName: string,
     from: vscode.Position,
-    delLinesCounter :number,
-    delCharCounter:number
+    delLinesCounter: number,
+    delCharCounter: number
 }
