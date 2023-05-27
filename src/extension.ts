@@ -131,11 +131,14 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 }
 
-receivedDocumentChanges$.pipe(bufferTime(receivedDocumentChangesBufferTime)).subscribe(async (changes) => {
-    for (let change of changes) {
-        await replaceText(change.pathName, change.from, change.to, change.content, change.name);
-    }
-});
+receivedDocumentChanges$
+    .pipe(
+        bufferTime(receivedDocumentChangesBufferTime))
+    .subscribe(async (changes) => {
+        for (const change of changes) {
+            await replaceText(change.pathName, change.from, change.to, change.content, change.name);
+        }
+    });
 
 textDocumentChanges$
     .pipe(
@@ -308,29 +311,29 @@ async function replaceText(pathName: string, from: vscode.Position, to: vscode.P
     const editor = vscode.window.activeTextEditor;
     const user = users.get(name);
 
-    if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { // splitten
+    if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
         return;
     }
+
     const range = new vscode.Range(from, to);
     textEdits.push(JSON.stringify({uri: editor.document.uri, range, content}));
 
     const edit = new vscode.WorkspaceEdit();
     edit.replace(editor.document.uri, range, content);
+
     vscode.workspace.applyEdit(edit).then((fulfilled) => {
         if (fulfilled) {
-            console.log("fulfilled");
             let cursorPosition = new vscode.Position(from.line, from.character + content.length);
             if (content.includes("\n")) {
                 cursorPosition = new vscode.Position(to.line + content.length, 0);
             }
             markLine(pathName, cursorPosition, cursorPosition, name);
         } else {
-            console.log("failed");
-            const back: TextReplacedData = JSON.parse(buildSendTextReplacedMessage("textReplaced", pathName, from, to, content, name, project)); // probably to slow
+            const back: TextReplacedData = {pathName, from, to, content, name, project};
             receivedDocumentChanges$.next(back);
         }
-    }, (reason) => console.log("rejected ", reason));
-    return Promise;
+        return Promise;
+    });
 }
 
 function pathString(path: string) {
