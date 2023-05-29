@@ -36,6 +36,7 @@ export function openWS(name: string, project: string) {
 
         ws.on("message", function incoming(data: any) {
             const msg: Message = JSON.parse(Buffer.from(data).toString());
+            console.log(msg);
             handleMessage(msg);
         });
 

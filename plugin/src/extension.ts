@@ -29,7 +29,7 @@ let rangeStart = new vscode.Position(0, 0);
 let rangeEnd = new vscode.Position(0, 0);
 let startRangeStart = new vscode.Position(0, 0);
 let startRangeEnd = new vscode.Position(0, 0);
-let pufferContent = "";
+let bufferContent = "";
 
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -164,7 +164,7 @@ textDocumentChanges$
             rangeEnd = rangeEnd.translate(rangeEnd.line + delta, rangeEnd.character);
         }
 
-        if ((!rangeStart.isEqual(new vscode.Position(0, 0)) || !rangeEnd.isEqual(new vscode.Position(0, 0)) || pufferContent !== "") && changes.length > 0) {
+        if ((!rangeStart.isEqual(new vscode.Position(0, 0)) || !rangeEnd.isEqual(new vscode.Position(0, 0)) || bufferContent !== "") && changes.length > 0) {
             if (delKeyCounter > 1 && (rangeStart.isEqual(startRangeStart) && rangeEnd.isEqual(startRangeEnd))) {
                 const delCharCounter = delKeyCounter - delLinesCounter;
                 sendTextDelKey(pathName, rangeStart, delLinesCounter, delCharCounter, username, project);
@@ -173,7 +173,7 @@ textDocumentChanges$
                     pathName,
                     rangeStart,
                     rangeEnd,
-                    pufferContent,
+                    bufferContent,
                     username,
                     project
                 );
@@ -195,8 +195,8 @@ function updateBufferedParams(start: vscode.Position, end: vscode.Position, cont
         rangeEnd = end;
     }
     if (content === "") {
-        if (pufferContent.length > 0) {
-            pufferContent = pufferContent.substring(0, pufferContent.length - 1);
+        if (bufferContent.length > 0) {
+            bufferContent = bufferContent.substring(0, bufferContent.length - 1);
             return;
         } else {
             if (rangeStart.isEqual(startRangeStart) && rangeEnd.isEqual(startRangeEnd)) {
@@ -205,7 +205,7 @@ function updateBufferedParams(start: vscode.Position, end: vscode.Position, cont
             }
         }
     } else {
-        pufferContent += content;
+        bufferContent += content;
         return;
     }
 }
@@ -216,7 +216,7 @@ function clearBufferedParams() {
     delKeyCounter = 0;
     delta = 0;
     lineCount = getLineCount();
-    pufferContent = "";
+    bufferContent = "";
 }
 
 export function delKeyDelete(pathName: string, from: vscode.Position, delLinesCounter: number, delCharCounter: number, name: string) {

@@ -4,8 +4,7 @@
   "description": "",
   "main": "ws.ts",
   "scripts": {
-    "start": "ts-node src/ws.ts --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "ts-node src/ws.ts --watch"
   },
   "keywords": [],
   "author": "",
