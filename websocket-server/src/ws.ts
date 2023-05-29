@@ -11,7 +11,7 @@ const msgOperations = ["userLeft", "cursorMoved", "chatMsg", "textReplaced", "ge
 
 wss.on('connection', function connection(ws) {
     ws.on('message', (data: any) => {
-        console.log(Buffer.from(data).toString()+"\n");
+        console.log(Buffer.from(data).toString() + "\n");
         const msg: message = JSON.parse(Buffer.from(data).toString());
         handleMessage(msg, ws);
     });
@@ -58,6 +58,8 @@ function broadcastMessage(msg: message, ws: WebSocket) {
     let name = data.name;
     checkForRoom(project, name, ws);
 
+    msg.time = new Date().getTime();
+
     wss.clients.forEach(function each(client) {
         if (client.readyState === WebSocket.OPEN) {
             client.send(JSON.stringify(msg));
@@ -76,13 +78,13 @@ function checkForRoom(project: string, name: string, ws: WebSocket) {
 function removeWs(ws: WebSocket) {
     for (const key of rooms.keys()) {
         const room = rooms.get(key)
-        if (room){
+        if (room) {
             for (const user of room) {
                 if (user.getWs() === ws) {
                     room.delete(user);
                 }
             }
-    
+
             if (room.size == 0) {
                 rooms.delete(key);
             }
