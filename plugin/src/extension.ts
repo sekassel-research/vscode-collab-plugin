@@ -13,6 +13,8 @@ const users = new Map<string, User>();
 
 const receivedDocumentChanges$ = new Subject<TextReplacedData>();
 const textDocumentChanges$ = new Subject<vscode.TextDocumentContentChangeEvent>();
+let receivedDocumentPipe:any;
+let textDocumentPipe:any;
 let receivedDocumentChangesBufferTime = vscode.workspace.getConfiguration("vscode-collab").get<number>("receivedDocumentChangesBufferTime") ?? 50;
 let textDocumentChangesBufferTime = vscode.workspace.getConfiguration("vscode-collab").get<number>("textDocumentChangesBufferTime") ?? 150;
 
@@ -63,6 +65,9 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 
     lineCount = getLineCount();
+    
+    updateReceivedDocumentPipe();
+    updateTextDocumentPipe();
 
     vscode.workspace.onDidChangeTextDocument(changes => { // splitte Funktion auf für bessere Übersicht
         let editor = vscode.window.activeTextEditor;
@@ -117,6 +122,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 const newBufferTime = vscode.workspace.getConfiguration("vscode-collab").get<number>("receivedDocumentChangesBufferTime");
                 if (newBufferTime !== undefined) {
                     receivedDocumentChangesBufferTime = newBufferTime;
+                    updateReceivedDocumentPipe();
                 }
                 break;
             }
@@ -124,6 +130,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 const newBufferTime = vscode.workspace.getConfiguration("vscode-collab").get<number>("textDocumentChangesBufferTime");
                 if (newBufferTime !== undefined) {
                     textDocumentChangesBufferTime = newBufferTime;
+                    updateTextDocumentPipe();
                 }
                 break;
             }
@@ -131,7 +138,11 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 }
 
-receivedDocumentChanges$
+function updateReceivedDocumentPipe(){
+    if (receivedDocumentPipe) {
+        receivedDocumentPipe.unsubscribe();
+      }
+      receivedDocumentPipe = receivedDocumentChanges$
     .pipe(
         bufferTime(receivedDocumentChangesBufferTime))
     .subscribe(async (changes) => {
@@ -139,8 +150,14 @@ receivedDocumentChanges$
             await replaceText(change.pathName, change.from, change.to, change.content, change.name);
         }
     });
+}
 
-textDocumentChanges$
+function updateTextDocumentPipe(){
+    if (textDocumentPipe) {
+        textDocumentPipe.unsubscribe();
+      }
+
+    textDocumentPipe = textDocumentChanges$
     .pipe(
         bufferTime(textDocumentChangesBufferTime),
     )
@@ -182,6 +199,8 @@ textDocumentChanges$
         clearBufferedParams();
         blockCursorUpdate = false;
     });
+}
+
 
 function updateBufferedParams(start: vscode.Position, end: vscode.Position, content: string) {  // rebuild logic to work with "del"-key
     if (rangeStart.isEqual(new vscode.Position(0, 0)) && rangeEnd.isEqual(new vscode.Position(0, 0))) {
