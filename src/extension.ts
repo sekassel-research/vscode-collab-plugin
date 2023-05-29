@@ -131,11 +131,14 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 }
 
-receivedDocumentChanges$.pipe(bufferTime(receivedDocumentChangesBufferTime)).subscribe(async (changes) => {
-    for (let change of changes) {
-        await replaceText(change.pathName, change.from, change.to, change.content, change.name);
-    }
-});
+receivedDocumentChanges$
+    .pipe(
+        bufferTime(receivedDocumentChangesBufferTime))
+    .subscribe(async (changes) => {
+        for (const change of changes) {
+            await replaceText(change.pathName, change.from, change.to, change.content, change.name);
+        }
+    });
 
 textDocumentChanges$
     .pipe(
@@ -306,29 +309,31 @@ export function sendCurrentCursor() {
 
 async function replaceText(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string) {
     const editor = vscode.window.activeTextEditor;
-    let user = users.get(name);
+    const user = users.get(name);
 
-    if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { // splitten
+    if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
         return;
     }
-    to = new vscode.Position(to.line, to.character);
 
-    if (to.isBefore(editor.selection.active) && content.includes("\n")) {
-        delta += (content.match(/\n/g) || []).length;
-    }
-    const edit = new vscode.WorkspaceEdit();
     const range = new vscode.Range(from, to);
-
-    edit.replace(editor.document.uri, range, content);
     textEdits.push(JSON.stringify({uri: editor.document.uri, range, content}));
-    vscode.workspace.applyEdit(edit).then(() => {
-        let cursorPosition = new vscode.Position(from.line, from.character + content.length);
-        if (content.includes("\n")) {
-            cursorPosition = new vscode.Position(to.line + content.length, 0);
+
+    const edit = new vscode.WorkspaceEdit();
+    edit.replace(editor.document.uri, range, content);
+
+    vscode.workspace.applyEdit(edit).then((fulfilled) => {
+        if (fulfilled) {
+            let cursorPosition = new vscode.Position(from.line, from.character + content.length);
+            if (content.includes("\n")) {
+                cursorPosition = new vscode.Position(to.line + content.length, 0);
+            }
+            markLine(pathName, cursorPosition, cursorPosition, name);
+        } else {
+            const back: TextReplacedData = {pathName, from, to, content, name, project};
+            receivedDocumentChanges$.next(back);
         }
-        markLine(pathName, cursorPosition, cursorPosition, name);
+        return Promise;
     });
-    return Promise;
 }
 
 function pathString(path: string) {
