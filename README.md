@@ -23,7 +23,20 @@
   To get a local copy of the current code, clone it using git:
 
     $ git clone https://github.com/sekassel-research/vscode-collab-plugin.git
-    $ cd vscode-collab-plugin
+    $ cd vscode-collab-plugin/plugin
+
+  To work on this extension you need to run the following commands:
+
+    $ npm install 
+  
+   After that you can work on the extension.
+   
+### Set up Websocket-Server
+
+  To get a local copy of the current code, clone it using git:
+
+    $ git clone https://github.com/sekassel-research/vscode-collab-plugin.git
+    $ cd vscode-collab-plugin/websocket-server
 
   To work on this extension you need to run the following commands:
 
