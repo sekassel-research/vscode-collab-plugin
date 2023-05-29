@@ -1,7 +1,7 @@
 import WebSocket, {WebSocketServer} from 'ws';
 import {message} from "./interface/message";
 import {data} from "./interface/data";
-import {User} from "./user";
+import {User} from "./class/user";
 
 const wss = new WebSocketServer({port: 8080,});
 const rooms = new Map<string, Set<User>>();
