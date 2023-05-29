@@ -23,7 +23,7 @@ wss.on('connection', function connection(ws) {
 });
 
 wss.on('error', (error) => {
-    console.error(`Error: ${error}`);
+    console.log(`Error: ${error}`);
 });
 
 
@@ -58,10 +58,7 @@ function broadcastMessage(msg: message, ws: WebSocket) {
     let name = data.name;
     checkForRoom(project, name, ws);
 
-    let room = rooms.get(project)
-
     wss.clients.forEach(function each(client) {
-        // @ts-ignore
         if (client.readyState === WebSocket.OPEN) {
             client.send(JSON.stringify(msg));
         }
@@ -76,19 +73,19 @@ function checkForRoom(project: string, name: string, ws: WebSocket) {
     rooms.get(project).add(new User(name, ws));
 }
 
-function removeWs(ws: WebSocket) {  // leere String,Sets komplett entfernen
+function removeWs(ws: WebSocket) {
     for (const key of rooms.keys()) {
         const room = rooms.get(key)
-        // @ts-ignore
-        for (const user of room) {
-            if (user.getWs() === ws) {
-                // @ts-ignore
-                room.delete(user);
+        if (room){
+            for (const user of room) {
+                if (user.getWs() === ws) {
+                    room.delete(user);
+                }
             }
-        }
-        // @ts-ignore
-        if (room.size == 0) {
-            rooms.delete(key);
+    
+            if (room.size == 0) {
+                rooms.delete(key);
+            }
         }
     }
 }
