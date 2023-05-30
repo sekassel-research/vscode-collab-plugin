@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 export interface Data {
-    name: string
+    userId: string
     project: string
 }
 

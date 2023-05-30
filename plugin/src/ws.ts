@@ -6,7 +6,7 @@ import {
     getChatViewProvider,
     getProjectId,
     getReceivedDocumentChanges,
-    getUserName,
+    getUserId,
     markLine,
     sendCurrentCursor,
     userJoined,
@@ -30,18 +30,17 @@ let ws: any = null;
 let wsClose = false;
 
 
-export function openWS(name: string, project: string) {
+export function openWS(userId: string, project: string) {
     ws = new webSocket(wsAddress);
     ws.on("open", function open() {
-
         ws.on("message", function incoming(data: any) {
             const msg: Message = JSON.parse(Buffer.from(data).toString());
             console.log(msg);
             handleMessage(msg);
         });
 
-        ws.send(buildUserMessage("userJoined", name, project));
-        getCursors(name, project);
+        ws.send(buildUserMessage("userJoined", userId, project));
+        getCursors(userId, project);
     });
 
     ws.on("close", function close() {
@@ -49,7 +48,7 @@ export function openWS(name: string, project: string) {
             // Starte den Wiederverbindungsprozess nach 10 Sekunden
             clearUsers();
             setTimeout(() => {
-                openWS(name, project);
+                openWS(userId, project);
             }, 10000);
         }
     });
@@ -62,48 +61,48 @@ export function openWS(name: string, project: string) {
     });
 }
 
-export function closeWS(name: string, project: string) {
+export function closeWS(userId: string, project: string) {
     wsClose = true;
-    ws.send(buildUserMessage("userLeft", name, project));
+    ws.send(buildUserMessage("userLeft", userId, project));
     ws.close(1000, "connection was closed by the user");
 }
 
-export function cursorMoved(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, name: string, project: string) {
-    ws.send(buildCursorMovedMessage("cursorMoved", pathName, cursor, selectionEnd, name, project));
+export function cursorMoved(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, userId: string, project: string) {
+    ws.send(buildCursorMovedMessage("cursorMoved", pathName, cursor, selectionEnd, userId, project));
 }
 
-export function sendTextReplaced(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string, project: string) {
-    ws.send(buildSendTextReplacedMessage("textReplaced", pathName, from, to, content, name, project));
+export function sendTextReplaced(pathName: string, from: vscode.Position, to: vscode.Position, content: string, userId: string, project: string) {
+    ws.send(buildSendTextReplacedMessage("textReplaced", pathName, from, to, content, userId, project));
 }
 
-export function sendChatMessage(msg: string, name: string, project: string) {
-    ws.send(buildChatMessage("chatMsg", msg, name, project));
+export function sendChatMessage(msg: string, userId: string, project: string) {
+    ws.send(buildChatMessage("chatMsg", msg, userId, project));
 }
 
-export function getCursors(name: string, project: string) {
-    ws.send(buildUserMessage("getCursors", name, project));
+export function getCursors(userId: string, project: string) {
+    ws.send(buildUserMessage("getCursors", userId, project));
 }
 
-export function sendTextDelKey(pathName: string, from: vscode.Position, delLinesCounter: number, delCharCounter: number, name: string, project: string) {
-    ws.send(buildSendTextDelKeyMessage("delKey", pathName, from, delLinesCounter, delCharCounter, name, project));
+export function sendTextDelKey(pathName: string, from: vscode.Position, delLinesCounter: number, delCharCounter: number, userId: string, project: string) {
+    ws.send(buildSendTextDelKeyMessage("delKey", pathName, from, delLinesCounter, delCharCounter, userId, project));
 }
 
 function handleMessage(msg: Message) {
     switch (msg.operation) {
         case "userJoined":
             let userJoinedData: Data = msg.data;
-            userJoined(userJoinedData.name);
+            userJoined(userJoinedData.userId);
             break;
         case "userLeft":
             let userLeftData: Data = msg.data;
-            userLeft(userLeftData.name);
+            userLeft(userLeftData.userId);
             break;
         case "activeUsers":
             addActiveUsers(msg.data);
             break;
         case "cursorMoved":
             let cursorMovedData: CursorMovedData = msg.data;
-            markLine(cursorMovedData.pathName, cursorMovedData.cursor, cursorMovedData.selectionEnd, cursorMovedData.name);
+            markLine(cursorMovedData.pathName, cursorMovedData.cursor, cursorMovedData.selectionEnd, cursorMovedData.userId);
             break;
         case "textReplaced":
             let textReplacedData: TextReplacedData = msg.data;
@@ -118,7 +117,7 @@ function handleMessage(msg: Message) {
             break;
         case "delKey":
             let delKeyData: DelKeyData = msg.data;
-            delKeyDelete(delKeyData.pathName, delKeyData.from, delKeyData.delLinesCounter, delKeyData.delCharCounter, delKeyData.name);
+            delKeyDelete(delKeyData.pathName, delKeyData.from, delKeyData.delLinesCounter, delKeyData.delCharCounter, delKeyData.userId);
             break;
         default:
             console.error("Unknown operation: " + msg.operation);
@@ -127,7 +126,7 @@ function handleMessage(msg: Message) {
 
 export function updateWS(newWsAddress: string) {
     wsAddress = newWsAddress;
-    const userName = getUserName();
+    const userName = getUserId();
     const projectId = getProjectId();
     closeWS(userName, projectId);
     openWS(userName, projectId);

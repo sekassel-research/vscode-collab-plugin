@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import {getProjectId, getUserName, getUsers, jumpToLine} from '../extension';
+import {getProjectId, getUserId, getUsers, jumpToLine} from '../extension';
 import {ChatData} from '../interface/data';
 import {sendChatMessage} from '../ws';
 
@@ -37,14 +37,14 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         webviewView.webview.onDidReceiveMessage(data => {
             switch (data.type) {
                 case 'sendMsg': {
-                    sendChatMessage(data.content, getUserName(), getProjectId());
+                    sendChatMessage(data.content, getUserId(), getProjectId());
                     break;
                 }
                 case 'initChat': {
                     if (!this._view) {
                         return;
                     }
-                    this._view.webview.postMessage({type: "chat", chat: this.chat, userName: getUserName()});
+                    this._view.webview.postMessage({type: "chat", chat: this.chat, userName: getUserId()});
                     break;
                 }
                 case 'jumpToLine': {
@@ -71,10 +71,10 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     }
 
     public receivedMsg(data: ChatData) {
-        if (!getUsers().has(data.name)) {
+        if (!getUsers().has(data.userId)) {
             return;
         }
-        const webViewChatMessage = {type: 'receivedMsg', name: data.name, time: data.time, msg: data.msg};
+        const webViewChatMessage = {type: 'receivedMsg', userId: data.userId, time: data.time, msg: data.msg};
         this.addMsg(webViewChatMessage);
 
         if (this._view) {
@@ -82,7 +82,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             this._view.webview.postMessage(webViewChatMessage);
         }
         if (!this._view?.visible) {
-            vscode.window.setStatusBarMessage("User: " + data.name + " send a Message", 5000);
+            vscode.window.setStatusBarMessage("User: " + data.userId + " send a Message", 5000);
         }
     }
 
