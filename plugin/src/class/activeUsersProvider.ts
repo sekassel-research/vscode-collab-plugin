@@ -13,6 +13,11 @@ export class ActiveUsersProvider implements vscode.TreeDataProvider<UserMapItem>
     }
 
     getTreeItem(element: UserMapItem): vscode.TreeItem {
+        element.command = {
+            command: 'extension.userMapItemClick',
+            title: 'Eintrag klicken',
+            arguments: [element],
+        };
         return element;
     }
 
@@ -22,8 +27,12 @@ export class ActiveUsersProvider implements vscode.TreeDataProvider<UserMapItem>
 }
 
 
-class UserMapItem extends vscode.TreeItem {
+export class UserMapItem extends vscode.TreeItem {
     constructor(public readonly key: string, public readonly value: User) {
         super(key, vscode.TreeItemCollapsibleState.None);
+    }
+
+    handleClick() {
+        return this.key;
     }
 }

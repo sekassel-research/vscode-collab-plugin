@@ -6,6 +6,11 @@ export class User {
     nameTag: vscode.TextEditorDecorationType;
     selection: vscode.TextEditorDecorationType;
     cursor: vscode.TextEditorDecorationType;
+    position!: {
+        path: string,
+        cursor: vscode.Position,
+        selectionEnd: vscode.Position
+    };
 
 
     constructor(name: string) {
@@ -53,6 +58,14 @@ export class User {
 
     public getCursor() {
         return this.cursor;
+    }
+
+    public getPosition() {
+        return this.position;
+    }
+
+    public setPosition(path:string,cursor:vscode.Position,selectionEnd:vscode.Position) {
+        this.position = {path,cursor,selectionEnd};
     }
 }
 

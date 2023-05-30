@@ -1,8 +1,9 @@
 import * as vscode from "vscode";
+import * as path from 'path';
 import {User} from "./class/user";
 import {closeWS, cursorMoved, getCursors, openWS, sendTextDelKey, sendTextReplaced, updateWS} from "./ws";
 import {ChatViewProvider} from "./class/chatViewProvider";
-import {ActiveUsersProvider} from "./class/activeUsersProvider";
+import {ActiveUsersProvider, UserMapItem} from "./class/activeUsersProvider";
 import {randomUUID} from "crypto";
 import {Subject} from "rxjs";
 import {bufferTime} from "rxjs/operators";
@@ -13,8 +14,8 @@ const users = new Map<string, User>();
 
 const receivedDocumentChanges$ = new Subject<TextReplacedData>();
 const textDocumentChanges$ = new Subject<vscode.TextDocumentContentChangeEvent>();
-let receivedDocumentPipe:any;
-let textDocumentPipe:any;
+let receivedDocumentPipe: any;
+let textDocumentPipe: any;
 let receivedDocumentChangesBufferTime = vscode.workspace.getConfiguration("vscode-collab").get<number>("receivedDocumentChangesBufferTime") ?? 50;
 let textDocumentChangesBufferTime = vscode.workspace.getConfiguration("vscode-collab").get<number>("textDocumentChangesBufferTime") ?? 150;
 
@@ -45,6 +46,10 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(ChatViewProvider.viewType, chatViewProvider));
 
+    vscode.commands.registerCommand('extension.userMapItemClick', (item: UserMapItem) => {
+        jumpToUser(item.handleClick());
+    });
+
     vscode.window.onDidChangeTextEditorSelection(() => {
         if (blockCursorUpdate) {
             return;
@@ -53,7 +58,7 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 
     lineCount = getLineCount();
-    
+
     updateReceivedDocumentPipe();
     updateTextDocumentPipe();
 
@@ -126,67 +131,67 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 }
 
-function updateReceivedDocumentPipe(){
+function updateReceivedDocumentPipe() {
     if (receivedDocumentPipe) {
         receivedDocumentPipe.unsubscribe();
-      }
-      receivedDocumentPipe = receivedDocumentChanges$
-    .pipe(
-        bufferTime(receivedDocumentChangesBufferTime))
-    .subscribe(async (changes) => {
-        for (const change of changes) {
-            await replaceText(change.pathName, change.from, change.to, change.content, change.name);
-        }
-    });
+    }
+    receivedDocumentPipe = receivedDocumentChanges$
+        .pipe(
+            bufferTime(receivedDocumentChangesBufferTime))
+        .subscribe(async (changes) => {
+            for (const change of changes) {
+                await replaceText(change.pathName, change.from, change.to, change.content, change.name);
+            }
+        });
 }
 
-function updateTextDocumentPipe(){
+function updateTextDocumentPipe() {
     if (textDocumentPipe) {
         textDocumentPipe.unsubscribe();
-      }
+    }
 
     textDocumentPipe = textDocumentChanges$
-    .pipe(
-        bufferTime(textDocumentChangesBufferTime),
-    )
-    .subscribe((changes) => {
-        let editor = vscode.window.activeTextEditor;
-        const delLinesCounter = lineCount - getLineCount();
-        if (!editor) {
-            return;
-        }
-        for (let change of changes) {
-            let range = change.range;
-            let content = change.text;
-
-            updateBufferedParams(range.start, range.end, content);
-        }
-
-        let pathName = pathString(editor.document.fileName);
-
-        if (delta > 0) {
-            rangeStart = rangeStart.translate(rangeStart.line + delta, rangeStart.character);
-            rangeEnd = rangeEnd.translate(rangeEnd.line + delta, rangeEnd.character);
-        }
-
-        if ((!rangeStart.isEqual(new vscode.Position(0, 0)) || !rangeEnd.isEqual(new vscode.Position(0, 0)) || bufferContent !== "") && changes.length > 0) {
-            if (delKeyCounter > 1 && (rangeStart.isEqual(startRangeStart) && rangeEnd.isEqual(startRangeEnd))) {
-                const delCharCounter = delKeyCounter - delLinesCounter;
-                sendTextDelKey(pathName, rangeStart, delLinesCounter, delCharCounter, username, project);
-            } else {
-                sendTextReplaced(
-                    pathName,
-                    rangeStart,
-                    rangeEnd,
-                    bufferContent,
-                    username,
-                    project
-                );
+        .pipe(
+            bufferTime(textDocumentChangesBufferTime),
+        )
+        .subscribe((changes) => {
+            let editor = vscode.window.activeTextEditor;
+            const delLinesCounter = lineCount - getLineCount();
+            if (!editor) {
+                return;
             }
-        }
-        clearBufferedParams();
-        blockCursorUpdate = false;
-    });
+            for (let change of changes) {
+                let range = change.range;
+                let content = change.text;
+
+                updateBufferedParams(range.start, range.end, content);
+            }
+
+            let pathName = pathString(editor.document.fileName);
+
+            if (delta > 0) {
+                rangeStart = rangeStart.translate(rangeStart.line + delta, rangeStart.character);
+                rangeEnd = rangeEnd.translate(rangeEnd.line + delta, rangeEnd.character);
+            }
+
+            if ((!rangeStart.isEqual(new vscode.Position(0, 0)) || !rangeEnd.isEqual(new vscode.Position(0, 0)) || bufferContent !== "") && changes.length > 0) {
+                if (delKeyCounter > 1 && (rangeStart.isEqual(startRangeStart) && rangeEnd.isEqual(startRangeEnd))) {
+                    const delCharCounter = delKeyCounter - delLinesCounter;
+                    sendTextDelKey(pathName, rangeStart, delLinesCounter, delCharCounter, username, project);
+                } else {
+                    sendTextReplaced(
+                        pathName,
+                        rangeStart,
+                        rangeEnd,
+                        bufferContent,
+                        username,
+                        project
+                    );
+                }
+            }
+            clearBufferedParams();
+            blockCursorUpdate = false;
+        });
 }
 
 
@@ -229,7 +234,7 @@ function clearBufferedParams() {
 export function delKeyDelete(pathName: string, from: vscode.Position, delLinesCounter: number, delCharCounter: number, name: string) {
     const editor = vscode.window.activeTextEditor;
     let user = users.get(name);
-    if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { // splitten
+    if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { 
         return;
     }
     let to = new vscode.Position(from.line, from.character).translate(delLinesCounter, delCharCounter);
@@ -281,8 +286,13 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     let editor = vscode.window.activeTextEditor;
     let user = users.get(name);
 
-    if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { // splitten
+    if (!editor || !user || name === username) {
         return;
+    }
+    user.setPosition(pathName, cursor, selectionEnd);
+
+    if (pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
+        return; // remove cursor if cursor here
     }
     let line = editor.document.lineAt(cursor.line);
 
@@ -350,6 +360,36 @@ function pathString(path: string) {
         return path;
     }
     return "";
+}
+
+
+function jumpToUser(userId: string) {
+    const editor = vscode.window.activeTextEditor;
+    const user = users.get(userId);
+    if (user && editor) {
+        console.log("in user && editor");
+        const position = user.getPosition();
+        console.log(position.path.replace("\\", "/"), editor.document.fileName.replace("\\", "/"));
+        if (position.path.replace("\\", "/") !== editor.document.fileName.replace("\\", "/")) {
+            console.log("path ", position.path);
+            const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri);
+            if (workspaceFolder) {
+                const rootPath = workspaceFolder.uri.fsPath;
+                const filePath = path.join(rootPath, position.path);
+                console.log(filePath);
+                vscode.workspace.openTextDocument(vscode.Uri.file(filePath)).then((document) => {
+                    vscode.window.showTextDocument(document).then((textEditor) => {
+                        const range = new vscode.Range(position.cursor, position.cursor);
+                        textEditor.revealRange(range);
+                    });
+                });
+            }
+        } else {
+            console.log("in else");
+            const range = new vscode.Range(position.cursor, position.cursor);
+            editor.revealRange(range);
+        }
+    }
 }
 
 export function jumpToLine(lineNumber: number) {

@@ -18,8 +18,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "vscode-collab-plugin.helloWorld",
-        "title": "Hello World"
+        "command": "extension.userMapItemClick",
+        "title": "User Map Item Click"
       }
     ],
     "viewsContainers": {
