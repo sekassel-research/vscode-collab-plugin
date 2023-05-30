@@ -3,7 +3,10 @@ import {message} from "./interface/message";
 import {data} from "./interface/data";
 import {User} from "./interface/user";
 
-const wss = new WebSocketServer({port: 8080,});
+const wss = new WebSocketServer({
+    port: +(process.env.PORT || 8080),
+    path: process.env.WS_PATH,
+});
 const rooms = new Map<string, Set<User>>();
 
 const msgOperations = ["userLeft", "cursorMoved", "chatMsg", "textReplaced", "getCursors", "delKey"]
