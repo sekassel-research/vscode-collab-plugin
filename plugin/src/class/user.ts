@@ -12,7 +12,6 @@ export class User {
         selectionEnd: vscode.Position
     };
 
-
     constructor(name: string) {
         let color = stringToColor(name);
 

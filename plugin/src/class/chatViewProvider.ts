@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import {getProjectId, getUserName, getUsers, jumpToLine} from '../extension';
+import {getProjectId, getUserId, getUsers, jumpToLine} from '../extension';
 import {ChatData} from '../interface/data';
 import {sendChatMessage} from '../ws';
 
@@ -37,14 +37,14 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         webviewView.webview.onDidReceiveMessage(data => {
             switch (data.type) {
                 case 'sendMsg': {
-                    sendChatMessage(data.content, getUserName(), getProjectId());
+                    sendChatMessage(data.content, getUserId(), getProjectId());
                     break;
                 }
                 case 'initChat': {
                     if (!this._view) {
                         return;
                     }
-                    this._view.webview.postMessage({type: "chat", chat: this.chat, userName: getUserName()});
+                    this._view.webview.postMessage({type: "chat", chat: this.chat, userName: getUserId()});
                     break;
                 }
                 case 'jumpToLine': {

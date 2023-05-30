@@ -6,7 +6,7 @@ import {
     getChatViewProvider,
     getProjectId,
     getReceivedDocumentChanges,
-    getUserName,
+    getUserId,
     markLine,
     sendCurrentCursor,
     userJoined,
@@ -33,7 +33,6 @@ let wsClose = false;
 export function openWS(name: string, project: string) {
     ws = new webSocket(wsAddress);
     ws.on("open", function open() {
-
         ws.on("message", function incoming(data: any) {
             const msg: Message = JSON.parse(Buffer.from(data).toString());
             console.log(msg);
@@ -127,7 +126,7 @@ function handleMessage(msg: Message) {
 
 export function updateWS(newWsAddress: string) {
     wsAddress = newWsAddress;
-    const userName = getUserName();
+    const userName = getUserId();
     const projectId = getProjectId();
     closeWS(userName, projectId);
     openWS(userName, projectId);

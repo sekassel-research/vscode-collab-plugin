@@ -21,8 +21,10 @@ let textDocumentChangesBufferTime = vscode.workspace.getConfiguration("vscode-co
 
 let chatViewProvider: ChatViewProvider;
 let activeUsersProvider: ActiveUsersProvider;
-let username = process.env.USER_ID || process.env.USER || 'user_' + randomUUID();
-let project = process.env.PROJECT_ID || process.env.PROJECT || 'default';
+let userId = process.env.USER_ID || process.env.USER || 'user_' + randomUUID();
+let userName = process.env.USER_NAME || "default_userName";
+let userDisplayName = process.env.USER_DISPLAY_NAME || "default_userDisplayName";
+let project = process.env.PROJECT_ID || process.env.PROJECT || 'default_project';
 let textEdits: string[] = [];
 let blockCursorUpdate = false;
 let delKeyCounter = 0;
@@ -36,7 +38,7 @@ let bufferContent = "";
 
 
 export async function activate(context: vscode.ExtensionContext) {
-    openWS(username, project);
+    openWS(userId, project);
 
     chatViewProvider = new ChatViewProvider(context.extensionUri);
     activeUsersProvider = new ActiveUsersProvider(users);
@@ -95,7 +97,7 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 
     vscode.window.onDidChangeActiveTextEditor(() => {
-        getCursors(username, project);
+        getCursors(userId, project);
         lineCount = getLineCount();
     });
 
@@ -177,14 +179,14 @@ function updateTextDocumentPipe() {
             if ((!rangeStart.isEqual(new vscode.Position(0, 0)) || !rangeEnd.isEqual(new vscode.Position(0, 0)) || bufferContent !== "") && changes.length > 0) {
                 if (delKeyCounter > 1 && (rangeStart.isEqual(startRangeStart) && rangeEnd.isEqual(startRangeEnd))) {
                     const delCharCounter = delKeyCounter - delLinesCounter;
-                    sendTextDelKey(pathName, rangeStart, delLinesCounter, delCharCounter, username, project);
+                    sendTextDelKey(pathName, rangeStart, delLinesCounter, delCharCounter, userId, project);
                 } else {
                     sendTextReplaced(
                         pathName,
                         rangeStart,
                         rangeEnd,
                         bufferContent,
-                        username,
+                        userId,
                         project
                     );
                 }
@@ -234,7 +236,7 @@ function clearBufferedParams() {
 export function delKeyDelete(pathName: string, from: vscode.Position, delLinesCounter: number, delCharCounter: number, name: string) {
     const editor = vscode.window.activeTextEditor;
     let user = users.get(name);
-    if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { 
+    if (!editor || !user || name === userId || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { 
         return;
     }
     let to = new vscode.Position(from.line, from.character).translate(delLinesCounter, delCharCounter);
@@ -286,7 +288,7 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     let editor = vscode.window.activeTextEditor;
     let user = users.get(name);
 
-    if (!editor || !user || name === username) {
+    if (!editor || !user || name === userId) {
         return;
     }
     user.setPosition(pathName, cursor, selectionEnd);
@@ -321,14 +323,14 @@ export function sendCurrentCursor() {
     if (cursor === selectionEnd) { // flippt, wenn Cursor am Ende der Markierung ist
         selectionEnd = editor.selection.start;
     }
-    cursorMoved(pathName, cursor, selectionEnd, username, project);
+    cursorMoved(pathName, cursor, selectionEnd, userId, project);
 }
 
 async function replaceText(pathName: string, from: vscode.Position, to: vscode.Position, content: string, name: string) {
     const editor = vscode.window.activeTextEditor;
     const user = users.get(name);
 
-    if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
+    if (!editor || !user || name === userId || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
         return;
     }
 
@@ -413,8 +415,16 @@ export function getUsers() {
     return users;
 }
 
+export function getUserId() {
+    return userId;
+}
+
 export function getUserName() {
-    return username;
+    return userName;
+}
+
+export function getUserDisplayName() {
+    return userDisplayName;
 }
 
 export function getProjectId() {
@@ -431,6 +441,6 @@ export function getReceivedDocumentChanges() {
 
 export function deactivate() {
     return new Promise(() => {
-        closeWS(username, project);
+        closeWS(userId, project);
     });
 }
