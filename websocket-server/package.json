@@ -4,12 +4,14 @@
   "description": "",
   "main": "ws.ts",
   "scripts": {
+    "build": "tsc",
     "start": "ts-node src/ws.ts --watch"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "tslib": "^2.5.2",
     "ws": "^8.11.0"
   },
   "devDependencies": {
