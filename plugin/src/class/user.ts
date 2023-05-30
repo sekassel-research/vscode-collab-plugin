@@ -12,8 +12,8 @@ export class User {
         selectionEnd: vscode.Position
     };
 
-    constructor(name: string) {
-        let color = stringToColor(name);
+    constructor(userId: string) {
+        let color = stringToColor(userId);
 
         this.colorIndicator = vscode.window.createTextEditorDecorationType({
             after: {
@@ -25,11 +25,11 @@ export class User {
                 height: "10px"
             }
         });
-
+        // nameTag depends on settings so this need an switch case /if clause...
         this.nameTag = vscode.window.createTextEditorDecorationType({
             after: {
                 margin: "0 0 0 0.25em",
-                contentText: name,
+                contentText: userId,
             }
         });
 
@@ -64,7 +64,7 @@ export class User {
     }
 
     public setPosition(path:string,cursor:vscode.Position,selectionEnd:vscode.Position) {
-        this.position = {path,cursor,selectionEnd};
+        this.position = {path, cursor, selectionEnd};
     }
 }
 

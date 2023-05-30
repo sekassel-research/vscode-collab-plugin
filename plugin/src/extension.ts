@@ -142,7 +142,7 @@ function updateReceivedDocumentPipe() {
             bufferTime(receivedDocumentChangesBufferTime))
         .subscribe(async (changes) => {
             for (const change of changes) {
-                await replaceText(change.pathName, change.from, change.to, change.content, change.name);
+                await replaceText(change.pathName, change.from, change.to, change.content, change.userId);
             }
         });
 }
@@ -348,7 +348,7 @@ async function replaceText(pathName: string, from: vscode.Position, to: vscode.P
             }
             markLine(pathName, cursorPosition, cursorPosition, name);
         } else {
-            const back: TextReplacedData = {pathName, from, to, content, name, project};
+            const back: TextReplacedData = {pathName, from, to, content, userId: name, project};
             receivedDocumentChanges$.next(back);
         }
         return Promise;

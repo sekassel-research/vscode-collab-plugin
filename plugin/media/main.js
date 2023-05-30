@@ -75,8 +75,8 @@
 
             const user = document.createElement('user');
             user.className = 'userName';
-            user.appendChild(document.createTextNode(message.name));
-            if (message.name === userName) {
+            user.appendChild(document.createTextNode(message.userId));
+            if (message.userId === userName) {
                 chatMsg.style.border = "1px solid #1139EE";
                 chatMsg.style.backgroundColor = "#4169E1";
             } else {

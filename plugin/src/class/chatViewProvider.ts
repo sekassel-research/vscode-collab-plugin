@@ -71,10 +71,10 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     }
 
     public receivedMsg(data: ChatData) {
-        if (!getUsers().has(data.name)) {
+        if (!getUsers().has(data.userId)) {
             return;
         }
-        const webViewChatMessage = {type: 'receivedMsg', name: data.name, time: data.time, msg: data.msg};
+        const webViewChatMessage = {type: 'receivedMsg', name: data.userId, time: data.time, msg: data.msg};
         this.addMsg(webViewChatMessage);
 
         if (this._view) {
@@ -82,7 +82,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             this._view.webview.postMessage(webViewChatMessage);
         }
         if (!this._view?.visible) {
-            vscode.window.setStatusBarMessage("User: " + data.name + " send a Message", 5000);
+            vscode.window.setStatusBarMessage("User: " + data.userId + " send a Message", 5000);
         }
     }
 
