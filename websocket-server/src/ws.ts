@@ -52,7 +52,7 @@ function sendUserList(msg: Message, ws: WebSocket) {
 
     if (users) {
         for (const user of users) {
-            userNames.push(user.name);
+            userNames.push(user.userId);
         }
     }
     ws.send(JSON.stringify({operation: "activeUsers", data: userNames}))
@@ -61,8 +61,8 @@ function sendUserList(msg: Message, ws: WebSocket) {
 function broadcastMessage(msg: Message, ws: WebSocket) {
     let data: Data = msg.data;
     let project = data.project;
-    let name = data.name;
-    checkForRoom(project, name, ws);
+    let userId = data.userId;
+    checkForRoom(project, userId, ws);
 
     msg.time = new Date().getTime();
 
@@ -73,13 +73,13 @@ function broadcastMessage(msg: Message, ws: WebSocket) {
     });
 }
 
-function checkForRoom(project: string, name: string, ws: WebSocket) {
+function checkForRoom(project: string, userId: string, ws: WebSocket) {
     let room = rooms.get(project);
     if (!room) {
         room = new Set<User>();
         rooms.set(project, room)
     }
-    room.add({name, ws});
+    room.add({userId: userId, ws});
 }
 
 function removeWs(ws: WebSocket) {
