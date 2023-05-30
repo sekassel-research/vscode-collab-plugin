@@ -64,7 +64,7 @@ export async function activate(context: vscode.ExtensionContext) {
     updateReceivedDocumentPipe();
     updateTextDocumentPipe();
 
-    vscode.workspace.onDidChangeTextDocument(changes => { // splitte Funktion auf für bessere Übersicht
+    vscode.workspace.onDidChangeTextDocument(changes => { // split this function to make it easier to read
         let editor = vscode.window.activeTextEditor;
         if (!editor) {
             return;
@@ -84,7 +84,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     ownText = false;
                     textEdits.splice(index, 1);
                 }
-            }); // cheap fix für das Zwischen-Speichern von LatexWorkshop
+            }); // cheap fix for the temp-storage of LatexWorkshop
             const regex = /^\[\d{2}:\d{2}:\d{2}\]\[/; // format [XX:XX:XX][ | Latexworkshop uses root.tex file as temp storage
             if (regex.test(change.text)) {
                 ownText = false;
