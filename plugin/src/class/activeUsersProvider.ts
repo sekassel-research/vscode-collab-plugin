@@ -14,8 +14,8 @@ export class ActiveUsersProvider implements vscode.TreeDataProvider<UserMapItem>
 
     getTreeItem(element: UserMapItem): vscode.TreeItem {
         element.command = {
-            command: 'extension.userMapItemClick',
-            title: 'Eintrag klicken',
+            command: 'vscode-collab-plugin.userMapItemClick',
+            title: 'click entry',
             arguments: [element],
         };
         return element;
