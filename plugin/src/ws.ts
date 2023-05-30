@@ -65,7 +65,7 @@ export function openWS(userId: string, userName: string, userDisplayName: string
 
 export function closeWS(userId: string, project: string) {
     wsClose = true;
-    ws.send(buildUserMessage("userLeft", userId, "","", project));
+    ws.send(buildUserMessage("userLeft", userId, project));
     ws.close(1000, "connection was closed by the user");
 }
 
@@ -82,7 +82,7 @@ export function sendChatMessage(msg: string, userId: string, project: string) {
 }
 
 export function getCursors(userId: string, project: string) {
-    ws.send(buildUserMessage("getCursors", userId,"","", project));
+    ws.send(buildUserMessage("getCursors", userId, project));
 }
 
 export function sendTextDelKey(pathName: string, from: vscode.Position, delLinesCounter: number, delCharCounter: number, userId: string, project: string) {

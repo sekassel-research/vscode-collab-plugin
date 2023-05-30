@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-export function buildUserMessage(operation: string, userId: string, userName: string, userDisplayName: string, project: string) {
+export function buildUserMessage(operation: string, userId: string, project: string, userName?: string, userDisplayName?: string) {
     return JSON.stringify({operation, data: {userId, userName, userDisplayName, project}});
 }
 
