@@ -5,7 +5,8 @@
   "main": "ws.ts",
   "scripts": {
     "build": "tsc",
-    "start": "ts-node src/ws.ts --watch"
+    "start": "node dist/ws.js",
+    "start:dev": "ts-node src/ws.ts --watch"
   },
   "keywords": [],
   "author": "",
