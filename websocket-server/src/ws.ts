@@ -66,11 +66,11 @@ function broadcastMessage(msg: Message, ws: WebSocket) {
 
     msg.time = new Date().getTime();
 
-    wss.clients.forEach(function each(client) {
+    wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
             client.send(JSON.stringify(msg));
         }
-    })
+    });
 }
 
 function checkForRoom(project: string, name: string, ws: WebSocket) {
