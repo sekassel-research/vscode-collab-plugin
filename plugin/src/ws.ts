@@ -26,7 +26,7 @@ const webSocket = require("ws");
 
 let wsAddress = vscode.workspace.getConfiguration("vscode-collab").get<string>("ws-address") ?? "ws://localhost:8080";
 
-let ws = new webSocket(wsAddress);
+let ws: any = null;
 let wsClose = false;
 
 
