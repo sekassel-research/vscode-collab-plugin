@@ -24,7 +24,7 @@ wss.on('connection', function connection(ws) {
 
     ws.on('close', (code, reason) => {
         removeWs(ws);
-        console.log(`Verbindung geschlossen: Code ${code}, Grund: ${reason}`);
+        console.log(`Connection closed: code ${code}, reason: ${reason}`);
     });
 });
 
