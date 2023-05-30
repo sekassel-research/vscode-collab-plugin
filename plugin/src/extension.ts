@@ -20,8 +20,8 @@ let textDocumentChangesBufferTime = vscode.workspace.getConfiguration("vscode-co
 
 let chatViewProvider: ChatViewProvider;
 let activeUsersProvider: ActiveUsersProvider;
-let username = "user_" + randomUUID();
-let project = "default";
+let username = process.env.USER_ID || process.env.USER || 'user_' + randomUUID();
+let project = process.env.PROJECT_ID || process.env.PROJECT || 'default';
 let textEdits: string[] = [];
 let blockCursorUpdate = false;
 let delKeyCounter = 0;
@@ -35,18 +35,6 @@ let bufferContent = "";
 
 
 export async function activate(context: vscode.ExtensionContext) {
-    await initUserName().then((envUsername) => {
-        if (envUsername !== undefined) {
-            username = envUsername;
-        }
-    });
-
-    await initProjectName().then((envProject) => {
-        if (envProject !== undefined) {
-            project = envProject;
-        }
-    });
-
     openWS(username, project);
 
     chatViewProvider = new ChatViewProvider(context.extensionUri);
@@ -379,14 +367,6 @@ export function clearUsers() {
         removeMarking(user);
     });
     users.clear();
-}
-
-async function initUserName(): Promise<string | undefined> {
-    return process.env.username;
-}
-
-async function initProjectName(): Promise<string | undefined> {
-    return process.env.projectname;
 }
 
 export function getUsers() {
