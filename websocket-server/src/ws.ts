@@ -11,6 +11,9 @@ const rooms = new Map<string, Set<User>>();
 
 const msgOperations = ["userLeft", "cursorMoved", "chatMsg", "textReplaced", "getCursors", "delKey"]
 
+wss.on('listening', () => {
+    console.log(`WebSocket server running on ws://localhost:${wss.options.port}.`);
+});
 
 wss.on('connection', function connection(ws) {
     ws.on('message', (data: any) => {
