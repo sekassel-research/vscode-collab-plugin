@@ -48,7 +48,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(ChatViewProvider.viewType, chatViewProvider));
 
-    vscode.commands.registerCommand('extension.userMapItemClick', (item: UserMapItem) => {
+    vscode.commands.registerCommand('vscode-collab-plugin.userMapItemClick', (item: UserMapItem) => {
         jumpToUser(item.handleClick());
     });
 
