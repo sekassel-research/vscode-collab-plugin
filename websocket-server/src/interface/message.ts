@@ -1,5 +1,5 @@
-export interface message{
+export interface Message {
     time: number;
     operation: string;
-    data: any
+    data: any;
 }

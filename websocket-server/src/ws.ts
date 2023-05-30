@@ -1,6 +1,6 @@
 import WebSocket, {WebSocketServer} from 'ws';
-import {message} from "./interface/message";
-import {data} from "./interface/data";
+import {Message} from "./interface/message";
+import {Data} from "./interface/data";
 import {User} from "./interface/user";
 
 const wss = new WebSocketServer({
@@ -18,7 +18,7 @@ wss.on('listening', () => {
 wss.on('connection', function connection(ws) {
     ws.on('message', (data: any) => {
         console.log(Buffer.from(data).toString() + "\n");
-        const msg: message = JSON.parse(Buffer.from(data).toString());
+        const msg: Message = JSON.parse(Buffer.from(data).toString());
         handleMessage(msg, ws);
     });
 
@@ -33,7 +33,7 @@ wss.on('error', (error) => {
 });
 
 
-function handleMessage(msg: message, ws: WebSocket) {
+function handleMessage(msg: Message, ws: WebSocket) {
     if (msg.operation == "userJoined") {
         broadcastMessage(msg, ws);
         return sendUserList(msg, ws);
@@ -44,8 +44,8 @@ function handleMessage(msg: message, ws: WebSocket) {
     console.error('unhandled message: %s', msg)
 }
 
-function sendUserList(msg: message, ws: WebSocket) {
-    let data: data = msg.data;
+function sendUserList(msg: Message, ws: WebSocket) {
+    let data: Data = msg.data;
     let project = data.project;
     let users = rooms.get(project);
     let userNames = [];
@@ -58,8 +58,8 @@ function sendUserList(msg: message, ws: WebSocket) {
     ws.send(JSON.stringify({operation: "activeUsers", data: userNames}))
 }
 
-function broadcastMessage(msg: message, ws: WebSocket) {
-    let data: data = msg.data;
+function broadcastMessage(msg: Message, ws: WebSocket) {
+    let data: Data = msg.data;
     let project = data.project;
     let name = data.name;
     checkForRoom(project, name, ws);

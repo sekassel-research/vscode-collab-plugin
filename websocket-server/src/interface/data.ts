@@ -1,4 +1,4 @@
-export interface data{
-    name:string
-    project:string
+export interface Data {
+    name: string;
+    project: string;
 }
