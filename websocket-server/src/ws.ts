@@ -1,7 +1,7 @@
 import WebSocket, {WebSocketServer} from 'ws';
 import {message} from "./interface/message";
 import {data} from "./interface/data";
-import {User} from "./class/user";
+import {User} from "./interface/user";
 
 const wss = new WebSocketServer({port: 8080,});
 const rooms = new Map<string, Set<User>>();
@@ -46,7 +46,7 @@ function sendUserList(msg: message, ws: WebSocket) {
 
     if (users) {
         for (const user of users) {
-            userNames.push(user.getName());
+            userNames.push(user.name);
         }
     }
     ws.send(JSON.stringify({operation: "activeUsers", data: userNames}))
@@ -68,11 +68,12 @@ function broadcastMessage(msg: message, ws: WebSocket) {
 }
 
 function checkForRoom(project: string, name: string, ws: WebSocket) {
-    if (!rooms.get(project)) {
-        rooms.set(project, new Set())
+    let room = rooms.get(project);
+    if (!room) {
+        room = new Set<User>();
+        rooms.set(project, room)
     }
-    // @ts-ignore
-    rooms.get(project).add(new User(name, ws));
+    room.add({name, ws});
 }
 
 function removeWs(ws: WebSocket) {
@@ -80,7 +81,7 @@ function removeWs(ws: WebSocket) {
         const room = rooms.get(key)
         if (room) {
             for (const user of room) {
-                if (user.getWs() === ws) {
+                if (user.ws === ws) {
                     room.delete(user);
                 }
             }
