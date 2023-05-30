@@ -35,6 +35,7 @@ wss.on('error', (error) => {
 
 function handleMessage(msg: Message, ws: WebSocket) {
     if (msg.operation == "userJoined") {
+        userJoined(msg, ws);
         broadcastMessage(msg, ws);
         return sendUserList(msg, ws);
     }
@@ -42,6 +43,15 @@ function handleMessage(msg: Message, ws: WebSocket) {
         return broadcastMessage(msg, ws);
     }
     console.error('unhandled message: %s', msg)
+}
+
+function userJoined(msg: Message, ws: WebSocket) {
+    let data: Data = msg.data;
+    let project = data.project;
+    let userId = data.userId;
+    let userName = data.userName;
+    let userDisplayName = data.userDisplayName;
+    checkForRoom(project, userId, userName, userDisplayName, ws);
 }
 
 function sendUserList(msg: Message, ws: WebSocket) {
@@ -52,18 +62,13 @@ function sendUserList(msg: Message, ws: WebSocket) {
 
     if (users) {
         for (const user of users) {
-            userNames.push(user.userId);
+            userNames.push({userId: user.userId, userName: user.userName, userDisplayName: user.userDisplayName});
         }
     }
     ws.send(JSON.stringify({operation: "activeUsers", data: userNames}))
 }
 
 function broadcastMessage(msg: Message, ws: WebSocket) {
-    let data: Data = msg.data;
-    let project = data.project;
-    let userId = data.userId;
-    checkForRoom(project, userId, ws);
-
     msg.time = new Date().getTime();
 
     wss.clients.forEach(client => {
@@ -73,13 +78,13 @@ function broadcastMessage(msg: Message, ws: WebSocket) {
     });
 }
 
-function checkForRoom(project: string, userId: string, ws: WebSocket) {
+function checkForRoom(project: string, userId: string, userName: string, userDisplayName: string, ws: WebSocket) {
     let room = rooms.get(project);
     if (!room) {
         room = new Set<User>();
         rooms.set(project, room)
     }
-    room.add({userId: userId, ws});
+    room.add({userId: userId, userName: userName, userDisplayName: userDisplayName, ws});
 }
 
 function removeWs(ws: WebSocket) {

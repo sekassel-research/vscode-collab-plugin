@@ -6,7 +6,9 @@ import {
     getChatViewProvider,
     getProjectId,
     getReceivedDocumentChanges,
+    getUserDisplayName,
     getUserId,
+    getUserName,
     markLine,
     sendCurrentCursor,
     userJoined,
@@ -30,7 +32,7 @@ let ws: any = null;
 let wsClose = false;
 
 
-export function openWS(userId: string, project: string) {
+export function openWS(userId: string, userName: string, userDisplayName: string, project: string) {
     ws = new webSocket(wsAddress);
     ws.on("open", function open() {
         ws.on("message", function incoming(data: any) {
@@ -39,7 +41,7 @@ export function openWS(userId: string, project: string) {
             handleMessage(msg);
         });
 
-        ws.send(buildUserMessage("userJoined", userId, project));
+        ws.send(buildUserMessage("userJoined", userId,userName,userDisplayName, project));
         getCursors(userId, project);
     });
 
@@ -48,7 +50,7 @@ export function openWS(userId: string, project: string) {
             // Starte den Wiederverbindungsprozess nach 10 Sekunden
             clearUsers();
             setTimeout(() => {
-                openWS(userId, project);
+                openWS(userId,userName,userDisplayName, project);
             }, 10000);
         }
     });
@@ -63,7 +65,7 @@ export function openWS(userId: string, project: string) {
 
 export function closeWS(userId: string, project: string) {
     wsClose = true;
-    ws.send(buildUserMessage("userLeft", userId, project));
+    ws.send(buildUserMessage("userLeft", userId, "","", project));
     ws.close(1000, "connection was closed by the user");
 }
 
@@ -80,7 +82,7 @@ export function sendChatMessage(msg: string, userId: string, project: string) {
 }
 
 export function getCursors(userId: string, project: string) {
-    ws.send(buildUserMessage("getCursors", userId, project));
+    ws.send(buildUserMessage("getCursors", userId,"","", project));
 }
 
 export function sendTextDelKey(pathName: string, from: vscode.Position, delLinesCounter: number, delCharCounter: number, userId: string, project: string) {
@@ -126,8 +128,10 @@ function handleMessage(msg: Message) {
 
 export function updateWS(newWsAddress: string) {
     wsAddress = newWsAddress;
-    const userName = getUserId();
+    const userId = getUserId();
+    const userName = getUserName();
+    const userDisplayName = getUserDisplayName();
     const projectId = getProjectId();
-    closeWS(userName, projectId);
-    openWS(userName, projectId);
+    closeWS(userId, projectId);
+    openWS(userId,userName,userDisplayName, projectId);
 }

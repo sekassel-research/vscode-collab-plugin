@@ -38,7 +38,7 @@ let bufferContent = "";
 
 
 export async function activate(context: vscode.ExtensionContext) {
-    openWS(userId, project);
+    openWS(userId, userName, userDisplayName, project);
 
     chatViewProvider = new ChatViewProvider(context.extensionUri);
     activeUsersProvider = new ActiveUsersProvider(users);
@@ -236,7 +236,7 @@ function clearBufferedParams() {
 export function delKeyDelete(pathName: string, from: vscode.Position, delLinesCounter: number, delCharCounter: number, id: string) {
     const editor = vscode.window.activeTextEditor;
     let user = users.get(id);
-    if (!editor || !user || userId === id || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { 
+    if (!editor || !user || userId === id || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
         return;
     }
     let to = new vscode.Position(from.line, from.character).translate(delLinesCounter, delCharCounter);
@@ -253,7 +253,7 @@ function getLineCount() {
 }
 
 export function userJoined(userId: string) {
-    users.set(userId, new User(userId));
+    users.set(userId, new User(userId, userName, userDisplayName));
     vscode.window.setStatusBarMessage("User: " + userId + " joined", 5000);
     activeUsersProvider.refresh();
 }
@@ -268,8 +268,8 @@ export function userLeft(userId: string) {
 }
 
 export function addActiveUsers(data: []) { //update the activeUsers logic to support id,name and displayName
-    for (const userName of data) {
-        users.set(userName, new User(userName));
+    for (const {userId, userName, userDisplayName} of data) {
+        users.set(userId, new User(userId, userName, userDisplayName));
     }
     activeUsersProvider.refresh();
 }
