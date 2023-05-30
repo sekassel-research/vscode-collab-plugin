@@ -74,7 +74,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         if (!getUsers().has(data.userId)) {
             return;
         }
-        const webViewChatMessage = {type: 'receivedMsg', name: data.userId, time: data.time, msg: data.msg};
+        const webViewChatMessage = {type: 'receivedMsg', userId: data.userId, time: data.time, msg: data.msg};
         this.addMsg(webViewChatMessage);
 
         if (this._view) {
