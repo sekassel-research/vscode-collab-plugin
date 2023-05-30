@@ -1,8 +1,9 @@
 import * as vscode from "vscode";
+import * as path from 'path';
 import {User} from "./class/user";
 import {closeWS, cursorMoved, getCursors, openWS, sendTextDelKey, sendTextReplaced, updateWS} from "./ws";
 import {ChatViewProvider} from "./class/chatViewProvider";
-import {ActiveUsersProvider,UserMapItem} from "./class/activeUsersProvider";
+import {ActiveUsersProvider, UserMapItem} from "./class/activeUsersProvider";
 import {randomUUID} from "crypto";
 import {Subject} from "rxjs";
 import {bufferTime} from "rxjs/operators";
@@ -45,8 +46,8 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(ChatViewProvider.viewType, chatViewProvider));
 
-        vscode.commands.registerCommand('extension.userMapItemClick', (item: UserMapItem) => {
-        console.log(item.handleClick());
+    vscode.commands.registerCommand('extension.userMapItemClick', (item: UserMapItem) => {
+        jumpToUser(item.handleClick());
     });
 
     vscode.window.onDidChangeTextEditorSelection(() => {
@@ -233,7 +234,7 @@ function clearBufferedParams() {
 export function delKeyDelete(pathName: string, from: vscode.Position, delLinesCounter: number, delCharCounter: number, name: string) {
     const editor = vscode.window.activeTextEditor;
     let user = users.get(name);
-    if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { // splitten
+    if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { 
         return;
     }
     let to = new vscode.Position(from.line, from.character).translate(delLinesCounter, delCharCounter);
@@ -285,8 +286,13 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     let editor = vscode.window.activeTextEditor;
     let user = users.get(name);
 
-    if (!editor || !user || name === username || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { // splitten
+    if (!editor || !user || name === username) {
         return;
+    }
+    user.setPosition(pathName, cursor, selectionEnd);
+
+    if (pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
+        return; // remove cursor if cursor here
     }
     let line = editor.document.lineAt(cursor.line);
 
@@ -354,6 +360,36 @@ function pathString(path: string) {
         return path;
     }
     return "";
+}
+
+
+function jumpToUser(userId: string) {
+    const editor = vscode.window.activeTextEditor;
+    const user = users.get(userId);
+    if (user && editor) {
+        console.log("in user && editor");
+        const position = user.getPosition();
+        console.log(position.path.replace("\\", "/"), editor.document.fileName.replace("\\", "/"));
+        if (position.path.replace("\\", "/") !== editor.document.fileName.replace("\\", "/")) {
+            console.log("path ", position.path);
+            const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri);
+            if (workspaceFolder) {
+                const rootPath = workspaceFolder.uri.fsPath;
+                const filePath = path.join(rootPath, position.path);
+                console.log(filePath);
+                vscode.workspace.openTextDocument(vscode.Uri.file(filePath)).then((document) => {
+                    vscode.window.showTextDocument(document).then((textEditor) => {
+                        const range = new vscode.Range(position.cursor, position.cursor);
+                        textEditor.revealRange(range);
+                    });
+                });
+            }
+        } else {
+            console.log("in else");
+            const range = new vscode.Range(position.cursor, position.cursor);
+            editor.revealRange(range);
+        }
+    }
 }
 
 export function jumpToLine(lineNumber: number) {
