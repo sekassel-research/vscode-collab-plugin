@@ -6,13 +6,15 @@ import {
     getChatViewProvider,
     getProjectId,
     getReceivedDocumentChanges,
+    getUserDisplayName,
     getUserId,
+    getUserName,
     markLine,
     sendCurrentCursor,
     userJoined,
     userLeft,
 } from "./extension";
-import {ChatData, CursorMovedData, Data, DelKeyData, TextReplacedData} from "./interface/data";
+import {ChatData, CursorMovedData, Data, DelKeyData, TextReplacedData, UserJoinedData} from "./interface/data";
 import {Message} from "./interface/message";
 import {
     buildChatMessage,
@@ -30,7 +32,7 @@ let ws: any = null;
 let wsClose = false;
 
 
-export function openWS(userId: string, project: string) {
+export function openWS(userId: string, userName: string, userDisplayName: string, project: string) {
     ws = new webSocket(wsAddress);
     ws.on("open", function open() {
         ws.on("message", function incoming(data: any) {
@@ -39,16 +41,16 @@ export function openWS(userId: string, project: string) {
             handleMessage(msg);
         });
 
-        ws.send(buildUserMessage("userJoined", userId, project));
+        ws.send(buildUserMessage("userJoined", userId, project, userName, userDisplayName));
         getCursors(userId, project);
     });
 
     ws.on("close", function close() {
         if (!wsClose) {
-            // Starte den Wiederverbindungsprozess nach 10 Sekunden
+            // tries to reconnect after 10 seconds
             clearUsers();
             setTimeout(() => {
-                openWS(userId, project);
+                openWS(userId, userName, userDisplayName, project);
             }, 10000);
         }
     });
@@ -90,8 +92,8 @@ export function sendTextDelKey(pathName: string, from: vscode.Position, delLines
 function handleMessage(msg: Message) {
     switch (msg.operation) {
         case "userJoined":
-            let userJoinedData: Data = msg.data;
-            userJoined(userJoinedData.userId);
+            let userJoinedData: UserJoinedData = msg.data;
+            userJoined(userJoinedData.userId, userJoinedData.userName, userJoinedData.userDisplayName);
             break;
         case "userLeft":
             let userLeftData: Data = msg.data;
@@ -126,8 +128,10 @@ function handleMessage(msg: Message) {
 
 export function updateWS(newWsAddress: string) {
     wsAddress = newWsAddress;
-    const userName = getUserId();
+    const userId = getUserId();
+    const userName = getUserName();
+    const userDisplayName = getUserDisplayName();
     const projectId = getProjectId();
-    closeWS(userName, projectId);
-    openWS(userName, projectId);
+    closeWS(userId, projectId);
+    openWS(userId, userName, userDisplayName, projectId);
 }

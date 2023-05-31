@@ -21,9 +21,10 @@ let textDocumentChangesBufferTime = vscode.workspace.getConfiguration("vscode-co
 
 let chatViewProvider: ChatViewProvider;
 let activeUsersProvider: ActiveUsersProvider;
-let userId = process.env.USER_ID || process.env.USER || 'user_' + randomUUID();
-let userName = process.env.USER_NAME || "default_userName";
-let userDisplayName = process.env.USER_DISPLAY_NAME || "default_userDisplayName";
+let uuid = randomUUID();
+let userId = process.env.USER_ID || process.env.USER || 'userId_' + uuid;
+let userName = process.env.USER_NAME || "userName_" + uuid;
+let userDisplayName = process.env.USER_DISPLAY_NAME || "userDisplayName_" + uuid;
 let project = process.env.PROJECT_ID || process.env.PROJECT || 'default_project';
 let textEdits: string[] = [];
 let blockCursorUpdate = false;
@@ -38,7 +39,7 @@ let bufferContent = "";
 
 
 export async function activate(context: vscode.ExtensionContext) {
-    openWS(userId, project);
+    openWS(userId, userName, userDisplayName, project);
 
     chatViewProvider = new ChatViewProvider(context.extensionUri);
     activeUsersProvider = new ActiveUsersProvider(users);
@@ -236,7 +237,7 @@ function clearBufferedParams() {
 export function delKeyDelete(pathName: string, from: vscode.Position, delLinesCounter: number, delCharCounter: number, id: string) {
     const editor = vscode.window.activeTextEditor;
     let user = users.get(id);
-    if (!editor || !user || userId === id || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) { 
+    if (!editor || !user || userId === id || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
         return;
     }
     let to = new vscode.Position(from.line, from.character).translate(delLinesCounter, delCharCounter);
@@ -252,9 +253,9 @@ function getLineCount() {
     return editor.document.lineCount;
 }
 
-export function userJoined(userId: string) {
-    users.set(userId, new User(userId));
-    vscode.window.setStatusBarMessage("User: " + userId + " joined", 5000);
+export function userJoined(id: string, name: string, displayName: string) {
+    users.set(id, new User(id, name, displayName));
+    vscode.window.setStatusBarMessage("User: " + id + " joined", 5000);
     activeUsersProvider.refresh();
 }
 
@@ -268,8 +269,8 @@ export function userLeft(userId: string) {
 }
 
 export function addActiveUsers(data: []) { //update the activeUsers logic to support id,name and displayName
-    for (const userName of data) {
-        users.set(userName, new User(userName));
+    for (const {userId, userName, userDisplayName} of data) {
+        users.set(userId, new User(userId, userName, userDisplayName));
     }
     activeUsersProvider.refresh();
 }
@@ -369,16 +370,12 @@ function jumpToUser(userId: string) {
     const editor = vscode.window.activeTextEditor;
     const user = users.get(userId);
     if (user && editor) {
-        console.log("in user && editor");
         const position = user.getPosition();
-        console.log(position.path.replace("\\", "/"), editor.document.fileName.replace("\\", "/"));
         if (position.path.replace("\\", "/") !== editor.document.fileName.replace("\\", "/")) {
-            console.log("path ", position.path);
             const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri);
             if (workspaceFolder) {
                 const rootPath = workspaceFolder.uri.fsPath;
                 const filePath = path.join(rootPath, position.path);
-                console.log(filePath);
                 vscode.workspace.openTextDocument(vscode.Uri.file(filePath)).then((document) => {
                     vscode.window.showTextDocument(document).then((textEditor) => {
                         const range = new vscode.Range(position.cursor, position.cursor);
@@ -387,7 +384,6 @@ function jumpToUser(userId: string) {
                 });
             }
         } else {
-            console.log("in else");
             const range = new vscode.Range(position.cursor, position.cursor);
             editor.revealRange(range);
         }

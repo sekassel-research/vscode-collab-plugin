@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
-export function buildUserMessage(operation: string, userId: string, project: string) {
-    return JSON.stringify({operation, data: {userId: userId, project}});
+export function buildUserMessage(operation: string, userId: string, project: string, userName?: string, userDisplayName?: string) {
+    return JSON.stringify({operation, data: {userId, project, userName, userDisplayName}});
 }
 
 export function buildCursorMovedMessage(operation: string, pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, userId: string, project: string) {

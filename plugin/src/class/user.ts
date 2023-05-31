@@ -2,6 +2,9 @@ import * as vscode from 'vscode';
 import {stringToColor} from '../util/colourGen';
 
 export class User {
+    id:string;
+    name:string;
+    displayName:string;
     colorIndicator: vscode.TextEditorDecorationType;
     nameTag: vscode.TextEditorDecorationType;
     selection: vscode.TextEditorDecorationType;
@@ -12,7 +15,10 @@ export class User {
         selectionEnd: vscode.Position
     };
 
-    constructor(userId: string) {
+    constructor(userId: string,userName:string,userDisplayName:string) {
+        this.id = userId;
+        this.name = userName;
+        this.displayName = userDisplayName;
         let color = stringToColor(userId);
 
         this.colorIndicator = vscode.window.createTextEditorDecorationType({

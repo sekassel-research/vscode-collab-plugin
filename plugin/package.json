@@ -18,7 +18,7 @@
   "contributes": {
     "commands": [
       {
-        "command": "extension.userMapItemClick",
+        "command": "vscode-collab-plugin.userMapItemClick",
         "title": "User Map Item Click"
       }
     ],

@@ -5,6 +5,11 @@ export interface Data {
     project: string
 }
 
+export interface UserJoinedData extends Data {
+    userName: string
+    userDisplayName: string
+}
+
 export interface CursorMovedData extends Data {
     pathName: string,
     cursor: vscode.Position;
