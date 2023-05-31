@@ -21,9 +21,10 @@ let textDocumentChangesBufferTime = vscode.workspace.getConfiguration("vscode-co
 
 let chatViewProvider: ChatViewProvider;
 let activeUsersProvider: ActiveUsersProvider;
-let userId = process.env.USER_ID || process.env.USER || 'user_' + randomUUID();
-let userName = process.env.USER_NAME || "default_userName";
-let userDisplayName = process.env.USER_DISPLAY_NAME || "default_userDisplayName";
+let uuid = randomUUID();
+let userId = process.env.USER_ID || process.env.USER || 'userId_' + uuid;
+let userName = process.env.USER_NAME || "userName_" + uuid;
+let userDisplayName = process.env.USER_DISPLAY_NAME || "userDisplayName_" + uuid;
 let project = process.env.PROJECT_ID || process.env.PROJECT || 'default_project';
 let textEdits: string[] = [];
 let blockCursorUpdate = false;
