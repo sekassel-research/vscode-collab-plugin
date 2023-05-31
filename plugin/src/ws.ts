@@ -14,7 +14,7 @@ import {
     userJoined,
     userLeft,
 } from "./extension";
-import {ChatData, CursorMovedData, Data, DelKeyData, TextReplacedData} from "./interface/data";
+import {ChatData, CursorMovedData, Data, DelKeyData, TextReplacedData, UserJoinedData} from "./interface/data";
 import {Message} from "./interface/message";
 import {
     buildChatMessage,
@@ -41,16 +41,16 @@ export function openWS(userId: string, userName: string, userDisplayName: string
             handleMessage(msg);
         });
 
-        ws.send(buildUserMessage("userJoined", userId,userName,userDisplayName, project));
+        ws.send(buildUserMessage("userJoined", userId, project, userName, userDisplayName));
         getCursors(userId, project);
     });
 
     ws.on("close", function close() {
         if (!wsClose) {
-            // Starte den Wiederverbindungsprozess nach 10 Sekunden
+            // tries to reconnect after 10 seconds
             clearUsers();
             setTimeout(() => {
-                openWS(userId,userName,userDisplayName, project);
+                openWS(userId, userName, userDisplayName, project);
             }, 10000);
         }
     });
@@ -92,8 +92,8 @@ export function sendTextDelKey(pathName: string, from: vscode.Position, delLines
 function handleMessage(msg: Message) {
     switch (msg.operation) {
         case "userJoined":
-            let userJoinedData: Data = msg.data;
-            userJoined(userJoinedData.userId);
+            let userJoinedData: UserJoinedData = msg.data;
+            userJoined(userJoinedData.userId, userJoinedData.userName, userJoinedData.userDisplayName);
             break;
         case "userLeft":
             let userLeftData: Data = msg.data;
@@ -133,5 +133,5 @@ export function updateWS(newWsAddress: string) {
     const userDisplayName = getUserDisplayName();
     const projectId = getProjectId();
     closeWS(userId, projectId);
-    openWS(userId,userName,userDisplayName, projectId);
+    openWS(userId, userName, userDisplayName, projectId);
 }

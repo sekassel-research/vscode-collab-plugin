@@ -253,9 +253,9 @@ function getLineCount() {
     return editor.document.lineCount;
 }
 
-export function userJoined(userId: string) {
-    users.set(userId, new User(userId, userName, userDisplayName));
-    vscode.window.setStatusBarMessage("User: " + userId + " joined", 5000);
+export function userJoined(id: string, name: string, displayName: string) {
+    users.set(id, new User(id, name, displayName));
+    vscode.window.setStatusBarMessage("User: " + id + " joined", 5000);
     activeUsersProvider.refresh();
 }
 
@@ -370,16 +370,12 @@ function jumpToUser(userId: string) {
     const editor = vscode.window.activeTextEditor;
     const user = users.get(userId);
     if (user && editor) {
-        console.log("in user && editor");
         const position = user.getPosition();
-        console.log(position.path.replace("\\", "/"), editor.document.fileName.replace("\\", "/"));
         if (position.path.replace("\\", "/") !== editor.document.fileName.replace("\\", "/")) {
-            console.log("path ", position.path);
             const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri);
             if (workspaceFolder) {
                 const rootPath = workspaceFolder.uri.fsPath;
                 const filePath = path.join(rootPath, position.path);
-                console.log(filePath);
                 vscode.workspace.openTextDocument(vscode.Uri.file(filePath)).then((document) => {
                     vscode.window.showTextDocument(document).then((textEditor) => {
                         const range = new vscode.Range(position.cursor, position.cursor);
@@ -388,7 +384,6 @@ function jumpToUser(userId: string) {
                 });
             }
         } else {
-            console.log("in else");
             const range = new vscode.Range(position.cursor, position.cursor);
             editor.revealRange(range);
         }
