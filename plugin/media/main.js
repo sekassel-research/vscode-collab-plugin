@@ -7,6 +7,7 @@
 
     let chat = [];
     let user;
+    let displayMode;
 
     const body = document.getElementById('body');
     const msgInput = document.getElementById('submitMsg');
@@ -40,10 +41,12 @@
                 displayMode = message.displayMode;
                 chat = message.chat;
                 updateChat();
+                break;
             }
             case "displayMode": {
                 displayMode = message.displayMode;
                 updateChat();
+                break;
             }
         }
     });
