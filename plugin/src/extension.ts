@@ -272,15 +272,30 @@ function getLineCount() {
 
 export function userJoined(id: string, name: string, displayName: string) {
     users.set(id, new User(id, name, displayName));
-    vscode.window.setStatusBarMessage("User: " + id + " joined", 5000);
+    let label = id;
+    if(userDisplayMode === "name"){
+        label = name;
+    }
+    if(userDisplayMode === "displayName"){
+        label = displayName;
+    }
+    vscode.window.setStatusBarMessage("User: " + label + " joined", 5000);
     activeUsersProvider.refresh();
 }
 
-export function userLeft(userId: string) {
-    if (users.has(userId)) {
-        removeMarking(users.get(userId));
-        users.delete(userId);
-        vscode.window.setStatusBarMessage("User: " + userId + " left", 5000);
+export function userLeft(id: string) {
+    const user = users.get(id);
+    if (user) {
+        let label = id;
+        if(userDisplayMode === "name"){
+            label = user.name;
+        }
+        if(userDisplayMode === "displayName"){
+            label = user.displayName;
+        }
+        removeMarking(user);
+        users.delete(id);
+        vscode.window.setStatusBarMessage("User: " + label + " left", 5000);
         activeUsersProvider.refresh();
     }
 }
