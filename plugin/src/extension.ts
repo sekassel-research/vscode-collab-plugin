@@ -137,6 +137,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     userDisplayMode = newDisplayMode;
                     activeUsersProvider.setDisplayMode(userDisplayMode);
                     activeUsersProvider.refresh();
+                    chatViewProvider.chatUpdateDisplayMode(userDisplayMode);
                     for (const user of users) {
                         const path = user[1].position.path;
                         const cursor = user[1].position.cursor;
@@ -273,10 +274,10 @@ function getLineCount() {
 export function userJoined(id: string, name: string, displayName: string) {
     users.set(id, new User(id, name, displayName));
     let label = id;
-    if(userDisplayMode === "name"){
+    if (userDisplayMode === "name") {
         label = name;
     }
-    if(userDisplayMode === "displayName"){
+    if (userDisplayMode === "displayName") {
         label = displayName;
     }
     vscode.window.setStatusBarMessage("User: " + label + " joined", 5000);
@@ -287,10 +288,10 @@ export function userLeft(id: string) {
     const user = users.get(id);
     if (user) {
         let label = id;
-        if(userDisplayMode === "name"){
+        if (userDisplayMode === "name") {
             label = user.name;
         }
-        if(userDisplayMode === "displayName"){
+        if (userDisplayMode === "displayName") {
             label = user.displayName;
         }
         removeMarking(user);
@@ -457,6 +458,10 @@ export function getUserDisplayName() {
 
 export function getProjectId() {
     return project;
+}
+
+export function getUserDisplayMode() {
+    return userDisplayMode;
 }
 
 export function getChatViewProvider() {
