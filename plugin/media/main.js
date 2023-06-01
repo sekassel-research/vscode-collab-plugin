@@ -6,7 +6,7 @@
     const vscode = acquireVsCodeApi();
 
     let chat = [];
-    let userName = "";
+    let user;
 
     const body = document.getElementById('body');
     const msgInput = document.getElementById('submitMsg');
@@ -36,8 +36,13 @@
                 break;
             }
             case 'chat': {
-                userName = message.userName;
+                user = message.user;
+                displayMode = message.displayMode;
                 chat = message.chat;
+                updateChat();
+            }
+            case "displayMode": {
+                displayMode = message.displayMode;
                 updateChat();
             }
         }
@@ -75,8 +80,15 @@
 
             const user = document.createElement('user');
             user.className = 'userName';
-            user.appendChild(document.createTextNode(message.userId));
-            if (message.userId === userName) {
+            if (displayMode === "id") {
+                user.appendChild(document.createTextNode(message.userId));
+            }
+            if (displayMode === "name") {
+                user.appendChild(document.createTextNode(message.userName));
+            } else {
+                user.appendChild(document.createTextNode(message.userDisplayName));
+            }
+            if (message.userId === user.id) {
                 chatMsg.style.border = "1px solid #1139EE";
                 chatMsg.style.backgroundColor = "#4169E1";
             } else {

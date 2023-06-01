@@ -1,5 +1,13 @@
 import * as vscode from 'vscode';
-import {getProjectId, getUserId, getUsers, jumpToLine} from '../extension';
+import {
+    getProjectId,
+    getUserDisplayMode,
+    getUserDisplayName,
+    getUserId,
+    getUserName,
+    getUsers,
+    jumpToLine
+} from '../extension';
 import {ChatData} from '../interface/data';
 import {sendChatMessage} from '../ws';
 
@@ -44,7 +52,12 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                     if (!this._view) {
                         return;
                     }
-                    this._view.webview.postMessage({type: "chat", chat: this.chat, userName: getUserId()});
+                    this._view.webview.postMessage({
+                        type: "chat",
+                        chat: this.chat,
+                        displayMode: getUserDisplayMode(),
+                        user: {id: getUserId(), name: getUserName(), displayName: getUserDisplayName()}
+                    });
                     break;
                 }
                 case 'jumpToLine': {
@@ -74,15 +87,35 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         if (!getUsers().has(data.userId)) {
             return;
         }
-        const webViewChatMessage = {type: 'receivedMsg', userId: data.userId, time: data.time, msg: data.msg};
-        this.addMsg(webViewChatMessage);
+        const user = getUsers().get(data.userId);
+        if (user) {
+            const webViewChatMessage = {
+                type: 'receivedMsg',
+                userId: user.id,
+                userName: user.name,
+                userDisplayName: user.displayName,
+                time: data.time,
+                msg: data.msg
+            };
+            this.addMsg(webViewChatMessage);
 
+            if (this._view) {
+                //this._view.show?.(true); // `show` is not implemented in 1.49 but is for 1.50 insiders
+                this._view.webview.postMessage(webViewChatMessage);
+            }
+            if (!this._view?.visible) {
+                vscode.window.setStatusBarMessage("User: " + data.userId + " send a Message", 5000);
+            }
+        }
+    }
+
+    public chatUpdateDisplayMode() {
         if (this._view) {
             //this._view.show?.(true); // `show` is not implemented in 1.49 but is for 1.50 insiders
-            this._view.webview.postMessage(webViewChatMessage);
-        }
-        if (!this._view?.visible) {
-            vscode.window.setStatusBarMessage("User: " + data.userId + " send a Message", 5000);
+            this._view.webview.postMessage({
+                type: "displayMode",
+                displayMode: getUserDisplayMode(),
+            });
         }
     }
 
