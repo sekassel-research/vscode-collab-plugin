@@ -137,7 +137,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     userDisplayMode = newDisplayMode;
                     activeUsersProvider.setDisplayMode(userDisplayMode);
                     activeUsersProvider.refresh();
-                    chatUpdateDisplayMode();
+                    chatViewProvider.chatUpdateDisplayMode();
                     for (const user of users) {
                         const path = user[1].position.path;
                         const cursor = user[1].position.cursor;
@@ -477,8 +477,3 @@ export function deactivate() {
         closeWS(userId, project);
     });
 }
-
-function chatUpdateDisplayMode() {
-    throw new Error("Function not implemented.");
-}
-
