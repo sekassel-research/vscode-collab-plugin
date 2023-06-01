@@ -137,7 +137,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     userDisplayMode = newDisplayMode;
                     activeUsersProvider.setDisplayMode(userDisplayMode);
                     activeUsersProvider.refresh();
-                    chatViewProvider.chatUpdateDisplayMode();
+                    chatViewProvider.chatUpdateDisplayMode(userDisplayMode);
                     for (const user of users) {
                         const path = user[1].position.path;
                         const cursor = user[1].position.cursor;

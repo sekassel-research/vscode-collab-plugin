@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import {
     getProjectId,
     getUserDisplayMode,
-    getUserDisplayName,
     getUserId,
     getUserName,
     getUsers,
@@ -18,10 +17,12 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     private _view?: vscode.WebviewView;
 
     private chat: object[] = [];
+    private displayMode;
 
     constructor(
-        private readonly _extensionUri: vscode.Uri,
+        private readonly _extensionUri: vscode.Uri, displayMode: string = 'name'
     ) {
+        this.displayMode = displayMode;
     }
 
     public resolveWebviewView(
@@ -56,7 +57,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                         type: "chat",
                         chat: this.chat,
                         displayMode: getUserDisplayMode(),
-                        user: {id: getUserId(), name: getUserName(), displayName: getUserDisplayName()}
+                        user: {id: getUserId(), name: getUserName(), displayName: this.displayMode}
                     });
                     break;
                 }
@@ -104,17 +105,25 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 this._view.webview.postMessage(webViewChatMessage);
             }
             if (!this._view?.visible) {
-                vscode.window.setStatusBarMessage("User: " + data.userId + " send a Message", 5000);
+                let label = user.id;
+                if (this.displayMode === "name") {
+                    label = user.name;
+                }
+                if (this.displayMode === "displayName") {
+                    label = user.displayName;
+                }
+                vscode.window.setStatusBarMessage("User: " + label + " send a Message", 5000);
             }
         }
     }
 
-    public chatUpdateDisplayMode() {
+    public chatUpdateDisplayMode(displayMode:string) {
+        this.displayMode = displayMode;
         if (this._view) {
             //this._view.show?.(true); // `show` is not implemented in 1.49 but is for 1.50 insiders
             this._view.webview.postMessage({
                 type: "displayMode",
-                displayMode: getUserDisplayMode(),
+                displayMode: displayMode,
             });
         }
     }
