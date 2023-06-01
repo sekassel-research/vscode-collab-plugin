@@ -52,6 +52,16 @@
           "default": "ws://localhost:8080",
           "description": "In this setting the websocket server-address can be changed"
         },
+        "vscode-collab.displayMode": {
+          "type": "string",
+          "default": "name",
+          "enum": [
+            "id",
+            "name",
+            "displayName"
+          ],
+          "description": "Here you can select whether to display the users' ID, name, or display name."
+        },
         "vscode-collab.textDocumentChangesBufferTime": {
           "type": "number",
           "default": 150,
