@@ -85,7 +85,8 @@
             }
             if (displayMode === "name") {
                 user.appendChild(document.createTextNode(message.userName));
-            } else {
+            } 
+            if (displayMode === "displayName")  {
                 user.appendChild(document.createTextNode(message.userDisplayName));
             }
             if (message.userId === user.id) {
