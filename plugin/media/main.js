@@ -70,31 +70,31 @@
         const ul = document.querySelector('.chatBody');
         ul.textContent = '';
         for (const message of chat) {
-            const chatMsg = document.createElement('div');
-            chatMsg.className = 'chatMsg';
+            const chatContainer = document.createElement('div');
+            chatContainer.className = 'chatMsg';
 
             // RegEx-Ausdruck zur Extraktion der Zeilennummer und des "Line"/"Zeile"-Präfixes
             const regex = /(Line|Zeile)\s*(\d+)/gi;
 
-            chatMsg.title = new Date(message.time).toLocaleString('de-DE');
+            chatContainer.title = new Date(message.time).toLocaleString('de-DE');
 
-            const user = document.createElement('user');
-            user.className = 'userName';
+            const userElement = document.createElement('user');
+            userElement.className = 'userName';
             if (displayMode === "id") {
-                user.appendChild(document.createTextNode(message.userId));
+                userElement.appendChild(document.createTextNode(message.userId));
             }
             if (displayMode === "name") {
-                user.appendChild(document.createTextNode(message.userName));
-            } 
-            if (displayMode === "displayName")  {
-                user.appendChild(document.createTextNode(message.userDisplayName));
+                userElement.appendChild(document.createTextNode(message.userName));
+            }
+            if (displayMode === "displayName") {
+                userElement.appendChild(document.createTextNode(message.userDisplayName));
             }
             if (message.userId === user.id) {
-                chatMsg.style.border = "1px solid #1139EE";
-                chatMsg.style.backgroundColor = "#4169E1";
+                chatContainer.style.border = "1px solid #1139EE";
+                chatContainer.style.backgroundColor = "#4169E1";
             } else {
-                chatMsg.style.border = "1px solid lightblue";
-                chatMsg.style.backgroundColor = "#3B494F";
+                chatContainer.style.border = "1px solid lightblue";
+                chatContainer.style.backgroundColor = "#3B494F";
             }
 
             const content = document.createElement('content');
@@ -103,10 +103,10 @@
             // Ersetzen von "Line" oder "Zeile" gefolgt von Leerzeichen und Ziffern durch Links
             content.innerHTML = message.msg.replace(regex, '<a href="#" class="lineLink">$&</a>');
 
-            chatMsg.appendChild(user);
-            chatMsg.appendChild(content);
+            chatContainer.appendChild(userElement);
+            chatContainer.appendChild(content);
 
-            ul.appendChild(chatMsg);
+            ul.appendChild(chatContainer);
         }
 
         // Hinzufügen eines Event-Listeners für alle Links mit der Klasse "lineLink"
