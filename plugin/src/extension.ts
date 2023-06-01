@@ -18,6 +18,7 @@ let receivedDocumentPipe: any;
 let textDocumentPipe: any;
 let receivedDocumentChangesBufferTime = vscode.workspace.getConfiguration("vscode-collab").get<number>("receivedDocumentChangesBufferTime") ?? 50;
 let textDocumentChangesBufferTime = vscode.workspace.getConfiguration("vscode-collab").get<number>("textDocumentChangesBufferTime") ?? 150;
+let userDisplayMode = vscode.workspace.getConfiguration("vscode-collab").get<string>("displayMode") ?? "name";
 
 let chatViewProvider: ChatViewProvider;
 let activeUsersProvider: ActiveUsersProvider;
@@ -42,7 +43,7 @@ export async function activate(context: vscode.ExtensionContext) {
     openWS(userId, userName, userDisplayName, project);
 
     chatViewProvider = new ChatViewProvider(context.extensionUri);
-    activeUsersProvider = new ActiveUsersProvider(users);
+    activeUsersProvider = new ActiveUsersProvider(users, userDisplayMode);
 
     vscode.window.createTreeView("vscode-collab-activeUsers", {treeDataProvider: activeUsersProvider});
 
@@ -127,6 +128,14 @@ export async function activate(context: vscode.ExtensionContext) {
                 if (newBufferTime !== undefined) {
                     textDocumentChangesBufferTime = newBufferTime;
                     updateTextDocumentPipe();
+                }
+                break;
+            }
+            case configuration(rootConfiguration + "displayMode"): {
+                const newDisplayMode = vscode.workspace.getConfiguration("vscode-collab").get<string>("displayMode") ?? "name";
+                if (newDisplayMode !== undefined) {
+                    activeUsersProvider.setDisplayMode(newDisplayMode);
+                    activeUsersProvider.refresh();
                 }
                 break;
             }

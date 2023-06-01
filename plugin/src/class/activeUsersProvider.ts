@@ -1,18 +1,12 @@
 import * as vscode from 'vscode';
 import {User} from './user';
 
-enum DisplayMode {
-    id,
-    name,
-    displayName
-}
-
 export class ActiveUsersProvider implements vscode.TreeDataProvider<UserMapItem> {
     private _onDidChangeTreeData: vscode.EventEmitter<UserMapItem | undefined> = new vscode.EventEmitter<UserMapItem | undefined>();
     readonly onDidChangeTreeData: vscode.Event<UserMapItem | undefined> = this._onDidChangeTreeData.event;
-    private displayMode: DisplayMode;
+    private displayMode: string;
 
-    constructor(private map: Map<string, User>, displayMode: DisplayMode = DisplayMode.name) {
+    constructor(private map: Map<string, User>, displayMode: string = 'name') {
         this.displayMode = displayMode;
     }
 
@@ -20,7 +14,7 @@ export class ActiveUsersProvider implements vscode.TreeDataProvider<UserMapItem>
         this._onDidChangeTreeData.fire(undefined);
     }
 
-    setDisplayMode(mode: DisplayMode): void {
+    setDisplayMode(mode: string): void {
         this.displayMode = mode;
     }
 
@@ -37,13 +31,13 @@ export class ActiveUsersProvider implements vscode.TreeDataProvider<UserMapItem>
         return Array.from(this.map.entries()).map(([userId, value]) => {
             let label: string;
             switch (this.displayMode) {
-                case DisplayMode.name:
+                case 'name':
                     label = value.name;
                     break;
-                case DisplayMode.displayName:
+                case 'displayName':
                     label = value.displayName;
                     break;
-                case DisplayMode.id:
+                case 'id':
                 default:
                     label = value.id;
                     break;
