@@ -2,11 +2,13 @@ import * as vscode from 'vscode';
 import {stringToColor} from '../util/colourGen';
 
 export class User {
-    id:string;
-    name:string;
-    displayName:string;
+    id: string;
+    name: string;
+    displayName: string;
     colorIndicator: vscode.TextEditorDecorationType;
+    idTag: vscode.TextEditorDecorationType;
     nameTag: vscode.TextEditorDecorationType;
+    displayNameTag: vscode.TextEditorDecorationType;
     selection: vscode.TextEditorDecorationType;
     cursor: vscode.TextEditorDecorationType;
     position!: {
@@ -15,7 +17,7 @@ export class User {
         selectionEnd: vscode.Position
     };
 
-    constructor(userId: string,userName:string,userDisplayName:string) {
+    constructor(userId: string, userName: string, userDisplayName: string) {
         this.id = userId;
         this.name = userName;
         this.displayName = userDisplayName;
@@ -31,11 +33,24 @@ export class User {
                 height: "10px"
             }
         });
-        // nameTag depends on settings so this need an switch case /if clause...
-        this.nameTag = vscode.window.createTextEditorDecorationType({
+        this.idTag = vscode.window.createTextEditorDecorationType({
             after: {
                 margin: "0 0 0 0.25em",
                 contentText: userId,
+            }
+        });
+
+        this.nameTag = vscode.window.createTextEditorDecorationType({
+            after: {
+                margin: "0 0 0 0.25em",
+                contentText: userName,
+            }
+        });
+
+        this.displayNameTag = vscode.window.createTextEditorDecorationType({
+            after: {
+                margin: "0 0 0 0.25em",
+                contentText: userDisplayName,
             }
         });
 
@@ -53,8 +68,14 @@ export class User {
         return this.colorIndicator;
     }
 
-    public getNameTag() {
-        return this.nameTag;
+    public getNameTag(displayMode: string) {
+        if (displayMode === "id") {
+            return this.idTag;
+        }
+        if (displayMode === "name") {
+            return this.nameTag;
+        }
+        return this.displayNameTag;
     }
 
     public getSelection() {
@@ -69,7 +90,7 @@ export class User {
         return this.position;
     }
 
-    public setPosition(path:string,cursor:vscode.Position,selectionEnd:vscode.Position) {
+    public setPosition(path: string, cursor: vscode.Position, selectionEnd: vscode.Position) {
         this.position = {path, cursor, selectionEnd};
     }
 }

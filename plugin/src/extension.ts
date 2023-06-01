@@ -134,8 +134,16 @@ export async function activate(context: vscode.ExtensionContext) {
             case configuration(rootConfiguration + "displayMode"): {
                 const newDisplayMode = vscode.workspace.getConfiguration("vscode-collab").get<string>("displayMode") ?? "name";
                 if (newDisplayMode !== undefined) {
-                    activeUsersProvider.setDisplayMode(newDisplayMode);
+                    userDisplayMode = newDisplayMode;
+                    activeUsersProvider.setDisplayMode(userDisplayMode);
                     activeUsersProvider.refresh();
+                    for (const user of users) {
+                        const path = user[1].position.path;
+                        const cursor = user[1].position.cursor;
+                        const selectionEnd = user[1].position.selectionEnd;
+                        const id = user[0];
+                        markLine(path, cursor, selectionEnd, id);
+                    }
                 }
                 break;
             }
@@ -288,7 +296,7 @@ function removeMarking(user: User | undefined) {
     let editor = vscode.window.activeTextEditor;
     if (user && editor) {
         editor.setDecorations(user.getColorIndicator(), []);
-        editor.setDecorations(user.getNameTag(), []);
+        editor.setDecorations(user.getNameTag(userDisplayMode), []);
         editor.setDecorations(user.getSelection(), []);
         editor.setDecorations(user.getCursor(), []);
     }
@@ -318,7 +326,7 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     };
     editor.setDecorations(user.getCursor(), [markerPosition]);
 
-    editor.setDecorations(user.getNameTag(), [line.range]);
+    editor.setDecorations(user.getNameTag(userDisplayMode), [line.range]);
 }
 
 export function sendCurrentCursor() {
