@@ -99,6 +99,10 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 
     vscode.window.onDidChangeActiveTextEditor(() => {
+        let editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            return;
+        }
         getCursors(userId, project);
         lineCount = getLineCount();
     });
@@ -345,9 +349,9 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     editor.setDecorations(user.getNameTag(userDisplayMode), [line.range]);
 }
 
-export function sendCurrentCursor() {
+export function sendCurrentCursor(id?:string) {
     let editor = vscode.window.activeTextEditor;
-    if (!editor) {
+    if (!editor || userId === id) {
         return;
     }
     let cursor = editor.selection.active;

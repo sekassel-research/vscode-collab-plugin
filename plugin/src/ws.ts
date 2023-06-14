@@ -111,7 +111,8 @@ function handleMessage(msg: Message) {
             getReceivedDocumentChanges().next(textReplacedData);
             break;
         case "getCursors":
-            sendCurrentCursor();
+            let getCursorData: Data = msg.data;
+            sendCurrentCursor(getCursorData.userId);
             break;
         case "chatMsg":
             let chatData: ChatData = msg.data;
