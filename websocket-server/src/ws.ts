@@ -2,14 +2,14 @@ import WebSocket, {WebSocketServer} from 'ws';
 import {Message} from "./interface/message";
 import {Data} from "./interface/data";
 import {User} from "./interface/user";
+import path from 'path';
 
 const wss = new WebSocketServer({
     port: +(process.env.PORT || 8080),
     path: process.env.WS_PATH,
 });
-const rooms = new Map<string, Set<User>>();
 
-const msgOperations = ["userLeft", "cursorMoved", "chatMsg", "textReplaced", "getCursors", "delKey"]
+const rooms = new Map<string, Set<User>>();
 
 wss.on('listening', () => {
     console.log(`WebSocket server running on ws://localhost:${wss.options.port}.`);
@@ -32,18 +32,31 @@ wss.on('error', (error) => {
     console.log(`Error: ${error}`);
 });
 
-
 function handleMessage(msg: Message, ws: WebSocket) {
-    if (msg.operation == "userJoined") {
-        userJoined(msg, ws);
-        broadcastMessage(msg, ws);
-        return sendUserList(msg, ws);
+    switch (msg.operation) {
+        case "userJoined":
+            userJoined(msg, ws);
+            broadcastMessage(msg, ws);
+            return sendUserList(msg, ws);
+        case "userLeft":
+        case "chatMsg":
+        case "getCursors":
+            return broadcastMessage(msg, ws);
+        case "cursorMoved":
+        case "delKey":
+            checkForFile(msg, ws);
+            return broadcastMessage(msg, ws);
+        case "textReplaced":
+            checkForFile(msg, ws);
+            return broadcastMessage(msg, ws);
+        case "sendFile":
+            createFileID(msg);
+            break;
+        default:
+            console.error('unhandled message: %s', msg);
     }
-    if (msgOperations.includes(msg.operation)) {
-        return broadcastMessage(msg, ws);
-    }
-    console.error('unhandled message: %s', msg)
 }
+
 
 function userJoined(msg: Message, ws: WebSocket) {
     let data: Data = msg.data;
@@ -90,16 +103,35 @@ function checkForRoom(project: string, userId: string, userName: string, userDis
 function removeWs(ws: WebSocket) {
     for (const key of rooms.keys()) {
         const room = rooms.get(key)
-        if (room) {
-            for (const user of room) {
-                if (user.ws === ws) {
-                    room.delete(user);
-                }
-            }
+        removeUser(room, key, ws)
+    }
+}
 
-            if (room.size == 0) {
-                rooms.delete(key);
-            }
+function removeUser(room: Set<User> | undefined, projectName: string, ws: WebSocket) {
+    if (!room) {
+        return
+    }
+    for (const user of room) {
+        if (user.ws === ws) {
+            room.delete(user);
         }
     }
+    if (room.size == 0) {
+        rooms.delete(projectName);
+        // TODO Clear Array | Iterate over array and remove all Index which start with projectName
+    }
+}
+
+async function checkForFile(msg: Message, ws: WebSocket) {
+    // TODO Check If Array Contains Project/FilePath | If Not SendFileRequest
+    sendFileRequest(ws)
+}
+
+function sendFileRequest(ws: WebSocket) {
+    const msg = JSON.stringify({operation: "sendFile"});
+    ws.send(msg);
+}
+
+function createFileID(msg:Message){
+    // TODO Add File To Array And Broadcast This Array To All In Project
 }

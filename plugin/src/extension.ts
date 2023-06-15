@@ -1,12 +1,12 @@
 import * as vscode from "vscode";
 import * as path from 'path';
 import {User} from "./class/user";
-import {closeWS, cursorMoved, getCursors, openWS, sendTextDelKey, sendTextReplaced, updateWS} from "./ws";
+import {closeWS, cursorMoved, getCursors, openWS, sendFile, sendTextDelKey, sendTextReplaced, updateWS} from "./ws";
 import {ChatViewProvider} from "./class/chatViewProvider";
 import {ActiveUsersProvider, UserMapItem} from "./class/activeUsersProvider";
 import {randomUUID} from "crypto";
 import {Subject} from "rxjs";
-import {bufferTime} from "rxjs/operators";
+import {bufferTime, filter} from "rxjs/operators";
 import {TextReplacedData} from "./interface/data";
 import {buildSendTextReplacedMessage} from "./util/jsonUtils";
 
@@ -162,7 +162,9 @@ function updateReceivedDocumentPipe() {
     }
     receivedDocumentPipe = receivedDocumentChanges$
         .pipe(
-            bufferTime(receivedDocumentChangesBufferTime))
+            bufferTime(receivedDocumentChangesBufferTime),
+            filter(changes => changes.length > 0)
+        )
         .subscribe(async (changes) => {
             for (const change of changes) {
                 await replaceText(change.pathName, change.from, change.to, change.content, change.userId);
@@ -174,10 +176,10 @@ function updateTextDocumentPipe() {
     if (textDocumentPipe) {
         textDocumentPipe.unsubscribe();
     }
-
     textDocumentPipe = textDocumentChanges$
         .pipe(
             bufferTime(textDocumentChangesBufferTime),
+            filter(changes => changes.length > 0),
         )
         .subscribe((changes) => {
             let editor = vscode.window.activeTextEditor;
@@ -349,7 +351,7 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     editor.setDecorations(user.getNameTag(userDisplayMode), [line.range]);
 }
 
-export function sendCurrentCursor(id?:string) {
+export function sendCurrentCursor(id?: string) {
     let editor = vscode.window.activeTextEditor;
     if (!editor || userId === id) {
         return;
@@ -442,6 +444,16 @@ export function clearUsers() {
         removeMarking(user);
     });
     users.clear();
+}
+
+export function getFile() {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        return;
+    }
+    let pathName = pathString(editor.document.fileName);
+    let content = editor.document.getText();
+    sendFile(pathName, content, userId, project);
 }
 
 export function getUsers() {

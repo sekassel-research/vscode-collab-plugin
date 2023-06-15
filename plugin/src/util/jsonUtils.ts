@@ -19,3 +19,7 @@ export function buildChatMessage(operation: string, msg: string, userId: string,
 export function buildSendTextDelKeyMessage(operation: string, pathName: string, from: vscode.Position, delLinesCounter: number, delCharCounter: number, userId: string, project: string) {
     return JSON.stringify({operation, data: {pathName, from, delLinesCounter, delCharCounter, userId, project}});
 }
+
+export function buildSendFileMessage(operation: string, pathName: string, content: string, userId: string, project: string) {
+    return JSON.stringify({operation, data: {pathName, content, userId, project}});
+}

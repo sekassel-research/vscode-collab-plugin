@@ -4,6 +4,7 @@ import {
     clearUsers,
     delKeyDelete,
     getChatViewProvider,
+    getFile,
     getProjectId,
     getReceivedDocumentChanges,
     getUserDisplayName,
@@ -19,6 +20,7 @@ import {Message} from "./interface/message";
 import {
     buildChatMessage,
     buildCursorMovedMessage,
+    buildSendFileMessage,
     buildSendTextDelKeyMessage,
     buildSendTextReplacedMessage,
     buildUserMessage
@@ -89,6 +91,10 @@ export function sendTextDelKey(pathName: string, from: vscode.Position, delLines
     ws.send(buildSendTextDelKeyMessage("delKey", pathName, from, delLinesCounter, delCharCounter, userId, project));
 }
 
+export function sendFile(pathName: string, content: string, userId: string, project: string) {
+    ws.send(buildSendFileMessage("sendFile", pathName, content, userId, project));
+}
+
 function handleMessage(msg: Message) {
     switch (msg.operation) {
         case "userJoined":
@@ -121,6 +127,9 @@ function handleMessage(msg: Message) {
         case "delKey":
             let delKeyData: DelKeyData = msg.data;
             delKeyDelete(delKeyData.pathName, delKeyData.from, delKeyData.delLinesCounter, delKeyData.delCharCounter, delKeyData.userId);
+            break;
+        case "sendFile":
+            getFile();
             break;
         default:
             console.error("Unknown operation: " + msg.operation);
