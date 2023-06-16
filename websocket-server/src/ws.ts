@@ -3,6 +3,9 @@ import {Message} from "./interface/message";
 import {Data} from "./interface/data";
 import {User} from "./interface/user";
 import path from 'path';
+import {randomUUID} from "crypto";
+
+const crdsMap = new Map<string, []>
 
 const wss = new WebSocketServer({
     port: +(process.env.PORT || 8080),
@@ -36,19 +39,19 @@ function handleMessage(msg: Message, ws: WebSocket) {
     switch (msg.operation) {
         case "userJoined":
             userJoined(msg, ws);
-            broadcastMessage(msg, ws);
+            broadcastMessage(msg);
             return sendUserList(msg, ws);
         case "userLeft":
         case "chatMsg":
         case "getCursors":
-            return broadcastMessage(msg, ws);
+            return broadcastMessage(msg);
         case "cursorMoved":
         case "delKey":
             checkForFile(msg, ws);
-            return broadcastMessage(msg, ws);
+            return broadcastMessage(msg);
         case "textReplaced":
             checkForFile(msg, ws);
-            return broadcastMessage(msg, ws);
+            return broadcastMessage(msg);
         case "sendFile":
             createFileID(msg);
             break;
@@ -81,7 +84,7 @@ function sendUserList(msg: Message, ws: WebSocket) {
     ws.send(JSON.stringify({operation: "activeUsers", data: userNames}))
 }
 
-function broadcastMessage(msg: Message, ws: WebSocket) {
+function broadcastMessage(msg: Message) {
     msg.time = new Date().getTime();
 
     wss.clients.forEach(client => {
@@ -123,7 +126,11 @@ function removeUser(room: Set<User> | undefined, projectName: string, ws: WebSoc
 }
 
 async function checkForFile(msg: Message, ws: WebSocket) {
-    // TODO Check If Array Contains Project/FilePath | If Not SendFileRequest
+    const key = path.join(msg.data.project, msg.data.pathName);
+    if (crdsMap.get(key)) {
+        return;
+    }
+    crdsMap.set(key, [])
     sendFileRequest(ws)
 }
 
@@ -132,6 +139,18 @@ function sendFileRequest(ws: WebSocket) {
     ws.send(msg);
 }
 
-function createFileID(msg:Message){
-    // TODO Add File To Array And Broadcast This Array To All In Project
+function createFileID(msg: Message) {
+    const project = msg.data.project;
+    const pathName = msg.data.pathName
+    const key = path.join(project, pathName);
+    const idArray = msg.data.content.split("\n")
+    for (let i = 0; i < idArray.length; i++) {
+        idArray[i] = randomUUID();
+    }
+    sendIdArray(project, pathName, idArray);
+}
+
+function sendIdArray(pathName: string, project: string, idArray: []) {
+    const msg: Message = {operation: "idArray", data: {pathName, project, idArray}, time: new Date().getTime()}
+    broadcastMessage(msg);
 }

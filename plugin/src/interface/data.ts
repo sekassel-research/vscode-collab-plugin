@@ -34,3 +34,8 @@ export interface DelKeyData extends Data {
     delLinesCounter: number,
     delCharCounter: number
 }
+
+export interface IdArrayData extends Data {
+    pathName: string,
+    idArray: [],
+}
