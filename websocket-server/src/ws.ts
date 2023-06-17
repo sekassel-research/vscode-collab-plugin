@@ -127,7 +127,7 @@ function removeUser(room: Set<User> | undefined, projectName: string, ws: WebSoc
 
 async function checkForFile(msg: Message, ws: WebSocket) {
     const key = path.join(msg.data.project, msg.data.pathName);
-    if (crdsMap.get(key)) {
+    if (!crdsMap.get(key)) {
         return;
     }
     crdsMap.set(key, [])
@@ -140,17 +140,21 @@ function sendFileRequest(ws: WebSocket) {
 }
 
 function createFileID(msg: Message) {
-    const project = msg.data.project;
-    const pathName = msg.data.pathName
-    const key = path.join(project, pathName);
-    const idArray = msg.data.content.split("\n")
-    for (let i = 0; i < idArray.length; i++) {
-        idArray[i] = randomUUID();
+    try{
+        const project = msg.data.project;
+        const pathName = msg.data.pathName
+        const key = path.join(project, pathName);
+        const idArray = msg.data.content.split("\n")
+        for (let i = 0; i < idArray.length; i++) {
+            idArray[i] = randomUUID();
+        }
+        sendIdArray(pathName, project, idArray);
+    } catch (error){
+        console.error(error)
     }
-    sendIdArray(project, pathName, idArray);
 }
 
 function sendIdArray(pathName: string, project: string, idArray: []) {
-    const msg: Message = {operation: "idArray", data: {pathName, project, idArray}, time: new Date().getTime()}
+    const msg: Message = {operation: "idArray", data: {project, pathName, idArray}, time: new Date().getTime()}
     broadcastMessage(msg);
 }

@@ -9,6 +9,7 @@ import {Subject} from "rxjs";
 import {bufferTime, filter} from "rxjs/operators";
 import {TextReplacedData} from "./interface/data";
 import {buildSendTextReplacedMessage} from "./util/jsonUtils";
+import { Position } from "./interface/position";
 
 const users = new Map<string, User>();
 
@@ -37,6 +38,8 @@ let rangeEnd = new vscode.Position(0, 0);
 let startRangeStart = new vscode.Position(0, 0);
 let startRangeEnd = new vscode.Position(0, 0);
 let bufferContent = "";
+
+let idArray:[string];
 
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -202,14 +205,16 @@ function updateTextDocumentPipe() {
             }
 
             if ((!rangeStart.isEqual(new vscode.Position(0, 0)) || !rangeEnd.isEqual(new vscode.Position(0, 0)) || bufferContent !== "") && changes.length > 0) {
+                const start:Position = {line:idArray[rangeStart.line],character:rangeStart.character};
                 if (delKeyCounter > 1 && (rangeStart.isEqual(startRangeStart) && rangeEnd.isEqual(startRangeEnd))) {
                     const delCharCounter = delKeyCounter - delLinesCounter;
-                    sendTextDelKey(pathName, rangeStart, delLinesCounter, delCharCounter, userId, project);
+                    sendTextDelKey(pathName, start, delLinesCounter, delCharCounter, userId, project);
                 } else {
+                    const end:Position = {line:idArray[rangeEnd.line],character:rangeEnd.character};
                     sendTextReplaced(
                         pathName,
-                        rangeStart,
-                        rangeEnd,
+                        start,
+                        end,
                         bufferContent,
                         userId,
                         project
@@ -258,13 +263,14 @@ function clearBufferedParams() {
     bufferContent = "";
 }
 
-export function delKeyDelete(pathName: string, from: vscode.Position, delLinesCounter: number, delCharCounter: number, id: string) {
+export function delKeyDelete(pathName: string, from: Position, delLinesCounter: number, delCharCounter: number, id: string) {
     const editor = vscode.window.activeTextEditor;
     let user = users.get(id);
     if (!editor || !user || userId === id || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
         return;
     }
-    let to = new vscode.Position(from.line, from.character).translate(delLinesCounter, delCharCounter);
+    let toVsPosition = new vscode.Position(idArray.lastIndexOf(from.line), from.character).translate(delLinesCounter, delCharCounter);
+    let to: Position = {line: idArray[toVsPosition.line], character: toVsPosition.character};
     let test: TextReplacedData = JSON.parse(buildSendTextReplacedMessage("textReplaced", pathName, from, to, "", id, project)); // rework
     receivedDocumentChanges$.next(test);
 }
@@ -356,25 +362,32 @@ export function sendCurrentCursor(id?: string) {
     if (!editor || userId === id) {
         return;
     }
-    let cursor = editor.selection.active;
-    let pathName = pathString(editor.document.fileName);
-    let selectionEnd = editor.selection.end;
-
-    if (cursor === selectionEnd) { // flipps, if cursor is the end of the selection
-        selectionEnd = editor.selection.start;
+    if(idArray === undefined){
+        getFile();
     }
+    let cursorVsPosition = editor.selection.active;
+    let pathName = pathString(editor.document.fileName);
+    let selectionEndVsPosition = editor.selection.end;
+
+    if (cursorVsPosition === selectionEndVsPosition) { // flipps, if cursor is the end of the selection
+        selectionEndVsPosition = editor.selection.start;
+    }
+    const cursor:Position = {line: idArray[cursorVsPosition.line], character: cursorVsPosition.character};
+    const selectionEnd:Position = {line: idArray[selectionEndVsPosition.line], character: selectionEndVsPosition.character};
     cursorMoved(pathName, cursor, selectionEnd, userId, project);
 }
 
-async function replaceText(pathName: string, from: vscode.Position, to: vscode.Position, content: string, id: string) {
+async function replaceText(pathName: string, from: Position, to: Position, content: string, id: string) {
     const editor = vscode.window.activeTextEditor;
     const user = users.get(id);
 
     if (!editor || !user || userId === id || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
         return;
     }
+    const fromPosition = new vscode.Position(idArray.lastIndexOf(from.line),from.character);
+    const toPosition = new vscode.Position(idArray.lastIndexOf(to.line),to.character);
 
-    const range = new vscode.Range(from, to);
+    const range = new vscode.Range(fromPosition, toPosition);
     textEdits.push(JSON.stringify({uri: editor.document.uri, range, content}));
 
     const edit = new vscode.WorkspaceEdit();
@@ -382,9 +395,9 @@ async function replaceText(pathName: string, from: vscode.Position, to: vscode.P
 
     vscode.workspace.applyEdit(edit).then((fulfilled) => {
         if (fulfilled) {
-            let cursorPosition = new vscode.Position(from.line, from.character + content.length);
+            let cursorPosition = new vscode.Position(idArray.lastIndexOf(from.line), from.character + content.length);
             if (content.includes("\n")) {
-                cursorPosition = new vscode.Position(to.line + content.length, 0);
+                cursorPosition = new vscode.Position(idArray.lastIndexOf(to.line) + content.length, 0);
             }
             markLine(pathName, cursorPosition, cursorPosition, id);
         } else {
@@ -454,6 +467,14 @@ export function getFile() {
     let pathName = pathString(editor.document.fileName);
     let content = editor.document.getText();
     sendFile(pathName, content, userId, project);
+}
+
+export function updateIdArray(pathName: string, array: [string]) {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
+        return;
+    }
+    idArray = array;
 }
 
 export function getUsers() {

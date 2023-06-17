@@ -12,10 +12,11 @@ import {
     getUserName,
     markLine,
     sendCurrentCursor,
+    updateIdArray,
     userJoined,
     userLeft,
 } from "./extension";
-import {ChatData, CursorMovedData, Data, DelKeyData, TextReplacedData, UserJoinedData} from "./interface/data";
+import {ChatData, CursorMovedData, Data, DelKeyData, IdArrayData, TextReplacedData, UserJoinedData} from "./interface/data";
 import {Message} from "./interface/message";
 import {
     buildChatMessage,
@@ -25,6 +26,7 @@ import {
     buildSendTextReplacedMessage,
     buildUserMessage
 } from "./util/jsonUtils";
+import { Position } from "./interface/position";
 
 const webSocket = require("ws");
 
@@ -71,11 +73,11 @@ export function closeWS(userId: string, project: string) {
     ws.close(1000, "connection was closed by the user");
 }
 
-export function cursorMoved(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, userId: string, project: string) {
+export function cursorMoved(pathName: string, cursor: Position, selectionEnd: Position, userId: string, project: string) {
     ws.send(buildCursorMovedMessage("cursorMoved", pathName, cursor, selectionEnd, userId, project));
 }
 
-export function sendTextReplaced(pathName: string, from: vscode.Position, to: vscode.Position, content: string, userId: string, project: string) {
+export function sendTextReplaced(pathName: string, from: Position, to: Position, content: string, userId: string, project: string) {
     ws.send(buildSendTextReplacedMessage("textReplaced", pathName, from, to, content, userId, project));
 }
 
@@ -87,7 +89,7 @@ export function getCursors(userId: string, project: string) {
     ws.send(buildUserMessage("getCursors", userId, project));
 }
 
-export function sendTextDelKey(pathName: string, from: vscode.Position, delLinesCounter: number, delCharCounter: number, userId: string, project: string) {
+export function sendTextDelKey(pathName: string, from: Position, delLinesCounter: number, delCharCounter: number, userId: string, project: string) {
     ws.send(buildSendTextDelKeyMessage("delKey", pathName, from, delLinesCounter, delCharCounter, userId, project));
 }
 
@@ -131,6 +133,11 @@ function handleMessage(msg: Message) {
         case "sendFile":
             getFile();
             break;
+        case "idArray":
+            let idArrayData : IdArrayData = msg.data;
+            console.log("msg.data:",msg.data);
+            updateIdArray(idArrayData.pathName, idArrayData.idArray);
+            break;
         default:
             console.error("Unknown operation: " + msg.operation);
     }
@@ -145,3 +152,4 @@ export function updateWS(newWsAddress: string) {
     closeWS(userId, projectId);
     openWS(userId, userName, userDisplayName, projectId);
 }
+
