@@ -398,8 +398,12 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
             if (content.includes("\n")) {
                 cursorPosition = new vscode.Position(idArray.lastIndexOf(to.line) + content.length, 0);
             }
-            idArray.splice(idArray.lastIndexOf(from.line),0,...lineIds);
             markLine(pathName, cursorPosition, cursorPosition, id);
+            if(content!== ""){
+                idArray.splice(idArray.lastIndexOf(from.line),0,...lineIds);
+            } else{
+                idArray.splice(idArray.lastIndexOf(from.line)+1, idArray.lastIndexOf(to.line) - idArray.lastIndexOf(from.line) + 2);
+            }
         } else {
             const back: TextReplacedData = {pathName, from, to, content, userId: id, project};
             receivedDocumentChanges$.next(back);
