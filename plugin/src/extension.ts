@@ -102,12 +102,7 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 
     vscode.window.onDidChangeActiveTextEditor(() => {
-        let editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            return;
-        }
-        getCursors(userId, project);
-        lineCount = getLineCount();
+        onActiveEditor();
     });
 
     vscode.workspace.onDidChangeConfiguration(event => {
@@ -475,6 +470,16 @@ export function updateIdArray(pathName: string, array: [string]) {
         return;
     }
     idArray = array;
+}
+
+export function onActiveEditor(){
+    let editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        return;
+    }
+    getFile();
+    getCursors(userId, project);
+    lineCount = getLineCount();
 }
 
 export function getUsers() {

@@ -11,6 +11,7 @@ import {
     getUserId,
     getUserName,
     markLine,
+    onActiveEditor,
     sendCurrentCursor,
     updateIdArray,
     userJoined,
@@ -46,7 +47,7 @@ export function openWS(userId: string, userName: string, userDisplayName: string
         });
 
         ws.send(buildUserMessage("userJoined", userId, project, userName, userDisplayName));
-        getCursors(userId, project);
+        onActiveEditor();
     });
 
     ws.on("close", function close() {
