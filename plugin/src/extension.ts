@@ -32,7 +32,6 @@ let textEdits: string[] = [];
 let blockCursorUpdate = false;
 let delKeyCounter = 0;
 let lineCount = 0;
-let delta = 0;
 let rangeStart = new vscode.Position(0, 0);
 let rangeEnd = new vscode.Position(0, 0);
 let startRangeStart = new vscode.Position(0, 0);
@@ -40,7 +39,7 @@ let startRangeEnd = new vscode.Position(0, 0);
 let bufferContent = "";
 
 let idArray: string[];
-let newIds: string[];
+let newLineIds: string[];
 
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -195,11 +194,6 @@ function updateTextDocumentPipe() {
 
             let pathName = pathString(editor.document.fileName);
 
-            if (delta > 0) {
-                rangeStart = rangeStart.translate(rangeStart.line + delta, rangeStart.character);
-                rangeEnd = rangeEnd.translate(rangeEnd.line + delta, rangeEnd.character);
-            }
-
             if ((!rangeStart.isEqual(new vscode.Position(0, 0)) || !rangeEnd.isEqual(new vscode.Position(0, 0)) || bufferContent !== "") && changes.length > 0) {
                 const start: Position = {line: idArray[rangeStart.line], character: rangeStart.character};
                 if (delKeyCounter > 1 && (rangeStart.isEqual(startRangeStart) && rangeEnd.isEqual(startRangeEnd))) {
@@ -212,6 +206,7 @@ function updateTextDocumentPipe() {
                         start,
                         end,
                         bufferContent,
+                        newLineIds,
                         userId,
                         project
                     );
@@ -254,10 +249,9 @@ function clearBufferedParams() {
     rangeStart = new vscode.Position(0, 0);
     rangeEnd = new vscode.Position(0, 0);
     delKeyCounter = 0;
-    delta = 0;
     lineCount = getLineCount();
     bufferContent = "";
-    newIds = [];
+    newLineIds = [];
 }
 
 export function delKeyDelete(pathName: string, from: Position, delLinesCounter: number, delCharCounter: number, id: string) {
