@@ -39,7 +39,7 @@ let startRangeEnd = new vscode.Position(0, 0);
 let bufferContent = "";
 
 let idArray: string[];
-let newLineIds: string[];
+let newLineIds: string[] = [];
 
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -190,6 +190,11 @@ function updateTextDocumentPipe() {
                 let content = change.text;
 
                 updateBufferedParams(range.start, range.end, content);
+            }
+            const regex = /\n/g;
+            const enterCount = bufferContent.match(regex)?.length ?? 0;
+            for(let i = 0; i<enterCount;i++){
+                newLineIds.push(randomUUID());
             }
 
             let pathName = pathString(editor.document.fileName);
