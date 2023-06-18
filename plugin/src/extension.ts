@@ -268,7 +268,7 @@ export function delKeyDelete(pathName: string, from: Position, delLinesCounter: 
     }
     let toVsPosition = new vscode.Position(idArray.lastIndexOf(from.line), from.character).translate(delLinesCounter, delCharCounter);
     let to: Position = {line: idArray[toVsPosition.line], character: toVsPosition.character};
-    let test: TextReplacedData = JSON.parse(buildSendTextReplacedMessage("textReplaced", pathName, from, to, "", id, project)); // rework
+    let test: TextReplacedData = JSON.parse(buildSendTextReplacedMessage("textReplaced", pathName, from, to, "",[], id, project)); // rework
     receivedDocumentChanges$.next(test);
 }
 

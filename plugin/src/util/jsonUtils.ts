@@ -9,8 +9,8 @@ export function buildCursorMovedMessage(operation: string, pathName: string, cur
     return JSON.stringify({operation, data: {pathName, cursor, selectionEnd, userId, project}});
 }
 
-export function buildSendTextReplacedMessage(operation: string, pathName: string, from: Position, to: Position, content: string, userId: string, project: string) {
-    return JSON.stringify({operation, data: {pathName, from, to, content, userId, project}});
+export function buildSendTextReplacedMessage(operation: string, pathName: string, from: Position, to: Position, content: string, newIds:string[], userId: string, project: string) {
+    return JSON.stringify({operation, data: {pathName, from, to, content, newIds, userId, project}});
 }
 
 export function buildChatMessage(operation: string, msg: string, userId: string, project: string) {

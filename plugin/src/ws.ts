@@ -86,8 +86,8 @@ export function cursorMoved(pathName: string, cursor: Position, selectionEnd: Po
     ws.send(buildCursorMovedMessage("cursorMoved", pathName, cursor, selectionEnd, userId, project));
 }
 
-export function sendTextReplaced(pathName: string, from: Position, to: Position, content: string, userId: string, project: string) {
-    ws.send(buildSendTextReplacedMessage("textReplaced", pathName, from, to, content, userId, project));
+export function sendTextReplaced(pathName: string, from: Position, to: Position, content: string, newIds:string[], userId: string, project: string) {
+    ws.send(buildSendTextReplacedMessage("textReplaced", pathName, from, to, content,newIds, userId, project));
 }
 
 export function sendChatMessage(msg: string, userId: string, project: string) {
