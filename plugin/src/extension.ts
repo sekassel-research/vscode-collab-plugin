@@ -376,7 +376,7 @@ export function sendCurrentCursor(id?: string) {
     cursorMoved(pathName, cursor, selectionEnd, userId, project);
 }
 
-async function replaceText(pathName: string, from: Position, to: Position, content: string, id: string) {
+async function replaceText(pathName: string, from: Position, to: Position, content: string, lineIds:string[], id: string) {
     const editor = vscode.window.activeTextEditor;
     const user = users.get(id);
 
@@ -398,6 +398,7 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
             if (content.includes("\n")) {
                 cursorPosition = new vscode.Position(idArray.lastIndexOf(to.line) + content.length, 0);
             }
+            idArray.splice(idArray.lastIndexOf(from.line),0,...lineIds);
             markLine(pathName, cursorPosition, cursorPosition, id);
         } else {
             const back: TextReplacedData = {pathName, from, to, content, userId: id, project};
