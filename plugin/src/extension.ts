@@ -39,7 +39,8 @@ let startRangeStart = new vscode.Position(0, 0);
 let startRangeEnd = new vscode.Position(0, 0);
 let bufferContent = "";
 
-let idArray: [string];
+let idArray: string[];
+let newIds: string[];
 
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -256,6 +257,7 @@ function clearBufferedParams() {
     delta = 0;
     lineCount = getLineCount();
     bufferContent = "";
+    newIds = [];
 }
 
 export function delKeyDelete(pathName: string, from: Position, delLinesCounter: number, delCharCounter: number, id: string) {
