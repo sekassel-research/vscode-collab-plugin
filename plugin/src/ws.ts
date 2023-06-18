@@ -17,7 +17,15 @@ import {
     userJoined,
     userLeft,
 } from "./extension";
-import {ChatData, CursorMovedData, Data, DelKeyData, IdArrayData, TextReplacedData, UserJoinedData} from "./interface/data";
+import {
+    ChatData,
+    CursorMovedData,
+    Data,
+    DelKeyData,
+    IdArrayData,
+    TextReplacedData,
+    UserJoinedData
+} from "./interface/data";
 import {Message} from "./interface/message";
 import {
     buildChatMessage,
@@ -27,7 +35,7 @@ import {
     buildSendTextReplacedMessage,
     buildUserMessage
 } from "./util/jsonUtils";
-import { Position } from "./interface/position";
+import {Position} from "./interface/position";
 
 const webSocket = require("ws");
 
@@ -135,8 +143,8 @@ function handleMessage(msg: Message) {
             getFile();
             break;
         case "idArray":
-            let idArrayData : IdArrayData = msg.data;
-            console.log("msg.data:",msg.data);
+            let idArrayData: IdArrayData = msg.data;
+            console.log("msg.data:", msg.data);
             updateIdArray(idArrayData.pathName, idArrayData.idArray);
             break;
         default:

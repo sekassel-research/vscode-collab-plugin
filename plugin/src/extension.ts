@@ -9,7 +9,7 @@ import {Subject} from "rxjs";
 import {bufferTime, filter} from "rxjs/operators";
 import {TextReplacedData} from "./interface/data";
 import {buildSendTextReplacedMessage} from "./util/jsonUtils";
-import { Position } from "./interface/position";
+import {Position} from "./interface/position";
 
 const users = new Map<string, User>();
 
@@ -39,7 +39,7 @@ let startRangeStart = new vscode.Position(0, 0);
 let startRangeEnd = new vscode.Position(0, 0);
 let bufferContent = "";
 
-let idArray:[string];
+let idArray: [string];
 
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -200,12 +200,12 @@ function updateTextDocumentPipe() {
             }
 
             if ((!rangeStart.isEqual(new vscode.Position(0, 0)) || !rangeEnd.isEqual(new vscode.Position(0, 0)) || bufferContent !== "") && changes.length > 0) {
-                const start:Position = {line:idArray[rangeStart.line],character:rangeStart.character};
+                const start: Position = {line: idArray[rangeStart.line], character: rangeStart.character};
                 if (delKeyCounter > 1 && (rangeStart.isEqual(startRangeStart) && rangeEnd.isEqual(startRangeEnd))) {
                     const delCharCounter = delKeyCounter - delLinesCounter;
                     sendTextDelKey(pathName, start, delLinesCounter, delCharCounter, userId, project);
                 } else {
-                    const end:Position = {line:idArray[rangeEnd.line],character:rangeEnd.character};
+                    const end: Position = {line: idArray[rangeEnd.line], character: rangeEnd.character};
                     sendTextReplaced(
                         pathName,
                         start,
@@ -357,7 +357,7 @@ export function sendCurrentCursor(id?: string) {
     if (!editor || userId === id) {
         return;
     }
-    if(idArray === undefined){
+    if (idArray === undefined) {
         getFile();
     }
     let cursorVsPosition = editor.selection.active;
@@ -367,8 +367,11 @@ export function sendCurrentCursor(id?: string) {
     if (cursorVsPosition === selectionEndVsPosition) { // flipps, if cursor is the end of the selection
         selectionEndVsPosition = editor.selection.start;
     }
-    const cursor:Position = {line: idArray[cursorVsPosition.line], character: cursorVsPosition.character};
-    const selectionEnd:Position = {line: idArray[selectionEndVsPosition.line], character: selectionEndVsPosition.character};
+    const cursor: Position = {line: idArray[cursorVsPosition.line], character: cursorVsPosition.character};
+    const selectionEnd: Position = {
+        line: idArray[selectionEndVsPosition.line],
+        character: selectionEndVsPosition.character
+    };
     cursorMoved(pathName, cursor, selectionEnd, userId, project);
 }
 
@@ -379,8 +382,8 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
     if (!editor || !user || userId === id || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
         return;
     }
-    const fromPosition = new vscode.Position(idArray.lastIndexOf(from.line),from.character);
-    const toPosition = new vscode.Position(idArray.lastIndexOf(to.line),to.character);
+    const fromPosition = new vscode.Position(idArray.lastIndexOf(from.line), from.character);
+    const toPosition = new vscode.Position(idArray.lastIndexOf(to.line), to.character);
 
     const range = new vscode.Range(fromPosition, toPosition);
     textEdits.push(JSON.stringify({uri: editor.document.uri, range, content}));
@@ -472,7 +475,7 @@ export function updateIdArray(pathName: string, array: [string]) {
     idArray = array;
 }
 
-export function onActiveEditor(){
+export function onActiveEditor() {
     getCursors(userId, project);
     let editor = vscode.window.activeTextEditor;
     if (!editor) {
