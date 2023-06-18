@@ -473,12 +473,12 @@ export function updateIdArray(pathName: string, array: [string]) {
 }
 
 export function onActiveEditor(){
+    getCursors(userId, project);
     let editor = vscode.window.activeTextEditor;
     if (!editor) {
         return;
     }
     getFile();
-    getCursors(userId, project);
     lineCount = getLineCount();
 }
 
