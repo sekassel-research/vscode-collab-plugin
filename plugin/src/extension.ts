@@ -326,27 +326,29 @@ function removeMarking(user: User | undefined) {
     }
 }
 
-export function markLine(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, id: string) {
+export function markLine(pathName: string, cursor: Position, selectionEnd: Position, id: string) {
     let editor = vscode.window.activeTextEditor;
     let user = users.get(id);
 
     if (!editor || !user || userId === id) {
         return;
     }
+    const cursorVsPosition = new vscode.Position(idArray.lastIndexOf(cursor.line),cursor.character);
+    const selectionEndVsPosition = new vscode.Position(idArray.lastIndexOf(selectionEnd.line),selectionEnd.character);
     user.setPosition(pathName, cursor, selectionEnd);
 
     if (pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
         return; // remove old cursor if there is an old cursor
     }
-    let line = editor.document.lineAt(cursor.line);
+    let line = editor.document.lineAt(cursorVsPosition.line);
 
     editor.setDecorations(user.getColorIndicator(), [line.range]);
 
-    let selection = new vscode.Range(cursor, selectionEnd);
+    let selection = new vscode.Range(cursorVsPosition, selectionEndVsPosition);
     editor.setDecorations(user.getSelection(), [selection]);
 
     let markerPosition = {
-        range: new vscode.Range(cursor, cursor),
+        range: new vscode.Range(cursorVsPosition, cursorVsPosition),
     };
     editor.setDecorations(user.getCursor(), [markerPosition]);
 
@@ -394,9 +396,9 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
 
     vscode.workspace.applyEdit(edit).then((fulfilled) => {
         if (fulfilled) {
-            let cursorPosition = new vscode.Position(idArray.lastIndexOf(from.line), from.character + content.length);
+            let cursorPosition:Position = {line:from.line, character: from.character + content.length};
             if (content.includes("\n")) {
-                cursorPosition = new vscode.Position(idArray.lastIndexOf(to.line) + content.length, 0);
+                cursorPosition = {line:to.line + content.length, character: 0};
             }
             markLine(pathName, cursorPosition, cursorPosition, id);
             if (content !== "") {
@@ -427,6 +429,7 @@ function jumpToUser(userId: string) {
     const user = users.get(userId);
     if (user && editor) {
         const position = user.getPosition();
+        const cursor = new vscode.Position(idArray.lastIndexOf(position.cursor.line),position.cursor.character);
         if (position.path.replace("\\", "/") !== editor.document.fileName.replace("\\", "/")) {
             const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri);
             if (workspaceFolder) {
@@ -434,13 +437,13 @@ function jumpToUser(userId: string) {
                 const filePath = path.join(rootPath, position.path);
                 vscode.workspace.openTextDocument(vscode.Uri.file(filePath)).then((document) => {
                     vscode.window.showTextDocument(document).then((textEditor) => {
-                        const range = new vscode.Range(position.cursor, position.cursor);
+                        const range = new vscode.Range(cursor, cursor);
                         textEditor.revealRange(range);
                     });
                 });
             }
         } else {
-            const range = new vscode.Range(position.cursor, position.cursor);
+            const range = new vscode.Range(cursor, cursor);
             editor.revealRange(range);
         }
     }

@@ -125,7 +125,7 @@ function removeUser(room: Set<User> | undefined, projectName: string, ws: WebSoc
     }
 }
 
-async function checkForFile(msg: Message, ws: WebSocket) {
+function checkForFile(msg: Message, ws: WebSocket) {
     const key = path.join(msg.data.project, msg.data.pathName);
     if (crdsMap.get(key)) {
         return;
