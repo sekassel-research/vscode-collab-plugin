@@ -165,7 +165,7 @@ function updateReceivedDocumentPipe() {
         )
         .subscribe(async (changes) => {
             for (const change of changes) {
-                await replaceText(change.pathName, change.from, change.to, change.content, change.userId);
+                await replaceText(change.pathName, change.from, change.to, change.content, change.lineIds, change.userId);
             }
         });
 }
@@ -193,7 +193,7 @@ function updateTextDocumentPipe() {
             }
             const regex = /\n/g;
             const enterCount = bufferContent.match(regex)?.length ?? 0;
-            for(let i = 0; i<enterCount;i++){
+            for (let i = 0; i < enterCount; i++) {
                 newLineIds.push(randomUUID());
             }
 
@@ -267,7 +267,7 @@ export function delKeyDelete(pathName: string, from: Position, delLinesCounter: 
     }
     let toVsPosition = new vscode.Position(idArray.lastIndexOf(from.line), from.character).translate(delLinesCounter, delCharCounter);
     let to: Position = {line: idArray[toVsPosition.line], character: toVsPosition.character};
-    let test: TextReplacedData = JSON.parse(buildSendTextReplacedMessage("textReplaced", pathName, from, to, "",[], id, project)); // rework
+    let test: TextReplacedData = JSON.parse(buildSendTextReplacedMessage("textReplaced", pathName, from, to, "", [], id, project)); // rework
     receivedDocumentChanges$.next(test);
 }
 
@@ -376,7 +376,7 @@ export function sendCurrentCursor(id?: string) {
     cursorMoved(pathName, cursor, selectionEnd, userId, project);
 }
 
-async function replaceText(pathName: string, from: Position, to: Position, content: string, lineIds:string[], id: string) {
+async function replaceText(pathName: string, from: Position, to: Position, content: string, lineIds: string[], id: string) {
     const editor = vscode.window.activeTextEditor;
     const user = users.get(id);
 
@@ -399,13 +399,13 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
                 cursorPosition = new vscode.Position(idArray.lastIndexOf(to.line) + content.length, 0);
             }
             markLine(pathName, cursorPosition, cursorPosition, id);
-            if(content!== ""){
-                idArray.splice(idArray.lastIndexOf(from.line),0,...lineIds);
-            } else{
-                idArray.splice(idArray.lastIndexOf(from.line)+1, idArray.lastIndexOf(to.line) - idArray.lastIndexOf(from.line) + 2);
+            if (content !== "") {
+                idArray.splice(idArray.lastIndexOf(from.line), 0, ...lineIds);
+            } else {
+                idArray.splice(idArray.lastIndexOf(from.line) + 1, idArray.lastIndexOf(to.line) - idArray.lastIndexOf(from.line) + 2);
             }
         } else {
-            const back: TextReplacedData = {pathName, from, to, content, userId: id, project};
+            const back: TextReplacedData = {pathName, from, to, content, lineIds, userId: id, project};
             receivedDocumentChanges$.next(back);
         }
         return Promise;

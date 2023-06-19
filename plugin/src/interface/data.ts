@@ -21,7 +21,8 @@ export interface TextReplacedData extends Data {
     pathName: string,
     from: Position
     to: Position
-    content: string
+    content: string,
+    lineIds:string[]
 }
 
 export interface ChatData extends Data {

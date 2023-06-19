@@ -86,7 +86,7 @@ export function cursorMoved(pathName: string, cursor: Position, selectionEnd: Po
     ws.send(buildCursorMovedMessage("cursorMoved", pathName, cursor, selectionEnd, userId, project));
 }
 
-export function sendTextReplaced(pathName: string, from: Position, to: Position, content: string, newLineIds:string[], userId: string, project: string) {
+export function sendTextReplaced(pathName: string, from: Position, to: Position, content: string, newLineIds: string[], userId: string, project: string) {
     ws.send(buildSendTextReplacedMessage("textReplaced", pathName, from, to, content, newLineIds, userId, project));
 }
 
