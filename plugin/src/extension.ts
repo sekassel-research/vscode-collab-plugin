@@ -361,9 +361,6 @@ export function sendCurrentCursor(id?: string) {
     if (!editor || userId === id) {
         return;
     }
-    if (idArray === undefined) {
-        getFile();
-    }
     let cursor = editor.selection.active;
     let pathName = pathString(editor.document.fileName);
     let selectionEnd = editor.selection.end;
@@ -398,25 +395,26 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
     edit.replace(editor.document.uri, range, content);
 
     vscode.workspace.applyEdit(edit).then((fulfilled) => {
-        console.log(lineIds);
         if (fulfilled) {
             let cursorPosition = new vscode.Position(fromPosition.line,from.character + content.length);
             if (content.includes("\n")) {
                 cursorPosition = new vscode.Position(toPosition.line + content.length,0);
             }
             markLine(pathName, cursorPosition, cursorPosition, id);
-            if (content !== "" && lineIds !== undefined) {
-                idArray.splice(fromPosition.line, 0, ...lineIds);
+            if (content !== "") {  // TODO check if this is really working
+                if(lineIds !== undefined){
+                    idArray.splice(fromPosition.line, 0, ...lineIds);
+                }
             } else {
                 idArray.splice(fromPosition.line + 1, toPosition.line - fromPosition.line + 2);
             }
-            
         } else {
             console.log("back");
             const back: TextReplacedData = {pathName, from, to, content, lineIds, userId: id, project};
             receivedDocumentChanges$.next(back);
         }
-        return Promise;
+        console.log(idArray.length);
+        return Promise.resolve();
     });
 }
 
@@ -490,6 +488,7 @@ export function updateIdArray(pathName: string, array: [string]) {
 }
 
 export function onActiveEditor() {
+    sendCurrentCursor();
     getCursors(userId, project);
     let editor = vscode.window.activeTextEditor;
     if (!editor) {
