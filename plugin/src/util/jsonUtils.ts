@@ -1,4 +1,4 @@
-import { Position } from '../interface/position';
+import {Position} from '../interface/position';
 
 export function buildUserMessage(operation: string, userId: string, project: string, userName?: string, userDisplayName?: string) {
     return JSON.stringify({operation, data: {userId, project, userName, userDisplayName}});
@@ -8,7 +8,7 @@ export function buildCursorMovedMessage(operation: string, pathName: string, cur
     return JSON.stringify({operation, data: {pathName, cursor, selectionEnd, userId, project}});
 }
 
-export function buildSendTextReplacedMessage(operation: string, pathName: string, from: Position, to: Position, content: string, newLineIds:string[], userId: string, project: string) {
+export function buildSendTextReplacedMessage(operation: string, pathName: string, from: Position, to: Position, content: string, newLineIds: string[], userId: string, project: string) {
     return JSON.stringify({operation, data: {pathName, from, to, content, newLineIds, userId, project}});
 }
 

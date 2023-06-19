@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import {stringToColor} from '../util/colourGen';
-import { Position } from '../interface/position';
+import {Position} from '../interface/position';
 
 export class User {
     id: string;

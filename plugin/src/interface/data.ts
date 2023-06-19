@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { Position } from './position';
+import {Position} from './position';
 
 export interface Data {
     userId: string
@@ -22,7 +22,7 @@ export interface TextReplacedData extends Data {
     from: Position
     to: Position
     content: string,
-    lineIds:string[]
+    lineIds: string[]
 }
 
 export interface ChatData extends Data {
@@ -33,8 +33,8 @@ export interface ChatData extends Data {
 export interface DelKeyData extends Data {
     pathName: string,
     from: {
-        line:string,
-        character:number
+        line: string,
+        character: number
     }
     delLinesCounter: number,
     delCharCounter: number

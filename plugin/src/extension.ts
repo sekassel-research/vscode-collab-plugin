@@ -333,8 +333,8 @@ export function markLine(pathName: string, cursor: Position, selectionEnd: Posit
     if (!editor || !user || userId === id) {
         return;
     }
-    const cursorVsPosition = new vscode.Position(idArray.lastIndexOf(cursor.line),cursor.character);
-    const selectionEndVsPosition = new vscode.Position(idArray.lastIndexOf(selectionEnd.line),selectionEnd.character);
+    const cursorVsPosition = new vscode.Position(idArray.lastIndexOf(cursor.line), cursor.character);
+    const selectionEndVsPosition = new vscode.Position(idArray.lastIndexOf(selectionEnd.line), selectionEnd.character);
     user.setPosition(pathName, cursor, selectionEnd);
 
     if (pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
@@ -394,15 +394,16 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
     const edit = new vscode.WorkspaceEdit();
     edit.replace(editor.document.uri, range, content);
 
-    vscode.workspace.applyEdit(edit).then((fulfilled) => {
+    return vscode.workspace.applyEdit(edit).then((fulfilled) => {
         if (fulfilled) {
-            let cursorPosition:Position = {line:from.line, character: from.character + content.length};
+            let cursorPosition: Position = {line: from.line, character: from.character + content.length};
             if (content.includes("\n")) {
-                cursorPosition = {line:to.line + content.length, character: 0};
+                cursorPosition = {line: to.line + content.length, character: 0};
             }
             markLine(pathName, cursorPosition, cursorPosition, id);
             if (content !== "") {
                 idArray.splice(idArray.lastIndexOf(from.line), 0, ...lineIds);
+                console.log(idArray);
             } else {
                 idArray.splice(idArray.lastIndexOf(from.line) + 1, idArray.lastIndexOf(to.line) - idArray.lastIndexOf(from.line) + 2);
             }
@@ -429,7 +430,7 @@ function jumpToUser(userId: string) {
     const user = users.get(userId);
     if (user && editor) {
         const position = user.getPosition();
-        const cursor = new vscode.Position(idArray.lastIndexOf(position.cursor.line),position.cursor.character);
+        const cursor = new vscode.Position(idArray.lastIndexOf(position.cursor.line), position.cursor.character);
         if (position.path.replace("\\", "/") !== editor.document.fileName.replace("\\", "/")) {
             const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri);
             if (workspaceFolder) {
