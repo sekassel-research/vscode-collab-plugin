@@ -13,8 +13,8 @@ export interface UserJoinedData extends Data {
 
 export interface CursorMovedData extends Data {
     pathName: string,
-    cursor: Position;
-    selectionEnd: Position;
+    cursor: vscode.Position;
+    selectionEnd: vscode.Position;
 }
 
 export interface TextReplacedData extends Data {

@@ -82,7 +82,7 @@ export function closeWS(userId: string, project: string) {
     ws.close(1000, "connection was closed by the user");
 }
 
-export function cursorMoved(pathName: string, cursor: Position, selectionEnd: Position, userId: string, project: string) {
+export function cursorMoved(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, userId: string, project: string) {
     ws.send(buildCursorMovedMessage("cursorMoved", pathName, cursor, selectionEnd, userId, project));
 }
 

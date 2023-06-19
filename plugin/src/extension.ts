@@ -329,32 +329,27 @@ function removeMarking(user: User | undefined) {
     }
 }
 
-export function markLine(pathName: string, cursor: Position, selectionEnd: Position, id: string) {
+export function markLine(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, id: string) {
     let editor = vscode.window.activeTextEditor;
     let user = users.get(id);
 
     if (!editor || !user || userId === id) {
         return;
     }
-    if(idArray.lastIndexOf(cursor.line) === -1 || idArray.lastIndexOf(selectionEnd.line)!== -1){
-        return;
-    }
-    const cursorVsPosition = new vscode.Position(idArray.lastIndexOf(cursor.line), cursor.character);
-    const selectionEndVsPosition = new vscode.Position(idArray.lastIndexOf(selectionEnd.line), selectionEnd.character);
     user.setPosition(pathName, cursor, selectionEnd);
 
     if (pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
         return; // remove old cursor if there is an old cursor
     }
-    let line = editor.document.lineAt(cursorVsPosition.line);
+    let line = editor.document.lineAt(cursor.line);
 
     editor.setDecorations(user.getColorIndicator(), [line.range]);
 
-    let selection = new vscode.Range(cursorVsPosition, selectionEndVsPosition);
+    let selection = new vscode.Range(cursor, selectionEnd);
     editor.setDecorations(user.getSelection(), [selection]);
 
     let markerPosition = {
-        range: new vscode.Range(cursorVsPosition, cursorVsPosition),
+        range: new vscode.Range(cursor, cursor),
     };
     editor.setDecorations(user.getCursor(), [markerPosition]);
 
@@ -369,18 +364,13 @@ export function sendCurrentCursor(id?: string) {
     if (idArray === undefined) {
         getFile();
     }
-    let cursorVsPosition = editor.selection.active;
+    let cursor = editor.selection.active;
     let pathName = pathString(editor.document.fileName);
-    let selectionEndVsPosition = editor.selection.end;
+    let selectionEnd = editor.selection.end;
 
-    if (cursorVsPosition === selectionEndVsPosition) { // flipps, if cursor is the end of the selection
-        selectionEndVsPosition = editor.selection.start;
+    if (cursor === selectionEnd) { // flipps, if cursor is the end of the selection
+        selectionEnd = editor.selection.start;
     }
-    const cursor: Position = {line: idArray[cursorVsPosition.line], character: cursorVsPosition.character};
-    const selectionEnd: Position = {
-        line: idArray[selectionEndVsPosition.line],
-        character: selectionEndVsPosition.character
-    };
     cursorMoved(pathName, cursor, selectionEnd, userId, project);
 }
 
@@ -410,9 +400,9 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
     vscode.workspace.applyEdit(edit).then((fulfilled) => {
         console.log(lineIds);
         if (fulfilled) {
-            let cursorPosition: Position = {line: from.line, character: from.character + content.length};
+            let cursorPosition = new vscode.Position(fromPosition.line,from.character + content.length);
             if (content.includes("\n")) {
-                cursorPosition = {line: to.line + content.length, character: 0};
+                cursorPosition = new vscode.Position(toPosition.line + content.length,0);
             }
             markLine(pathName, cursorPosition, cursorPosition, id);
             if (content !== "" && lineIds !== undefined) {
@@ -445,10 +435,6 @@ function jumpToUser(userId: string) { // needs work
     const user = users.get(userId);
     if (user && editor) {
         const position = user.getPosition();
-        if(idArray.lastIndexOf(position.cursor.line)===-1){
-            return;
-        }
-        const cursor = new vscode.Position(idArray.lastIndexOf(position.cursor.line), position.cursor.character);
         if (position.path.replace("\\", "/") !== editor.document.fileName.replace("\\", "/")) {
             const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri);
             if (workspaceFolder) {
@@ -456,13 +442,13 @@ function jumpToUser(userId: string) { // needs work
                 const filePath = path.join(rootPath, position.path);
                 vscode.workspace.openTextDocument(vscode.Uri.file(filePath)).then((document) => {
                     vscode.window.showTextDocument(document).then((textEditor) => {
-                        const range = new vscode.Range(cursor, cursor);
+                        const range = new vscode.Range(position.cursor, position.cursor);
                         textEditor.revealRange(range);
                     });
                 });
             }
         } else {
-            const range = new vscode.Range(cursor, cursor);
+            const range = new vscode.Range(position.cursor, position.cursor);
             editor.revealRange(range);
         }
     }

@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import {stringToColor} from '../util/colourGen';
-import {Position} from '../interface/position';
 
 export class User {
     id: string;
@@ -14,8 +13,8 @@ export class User {
     cursor: vscode.TextEditorDecorationType;
     position!: {
         path: string,
-        cursor: Position,
-        selectionEnd: Position
+        cursor: vscode.Position,
+        selectionEnd: vscode.Position,
     };
 
     constructor(userId: string, userName: string, userDisplayName: string) {
@@ -91,7 +90,7 @@ export class User {
         return this.position;
     }
 
-    public setPosition(path: string, cursor: Position, selectionEnd: Position) {
+    public setPosition(path: string, cursor: vscode.Position, selectionEnd: vscode.Position) {
         this.position = {path, cursor, selectionEnd};
     }
 }
