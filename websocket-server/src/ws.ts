@@ -5,7 +5,7 @@ import {User} from "./interface/user";
 import path from 'path';
 import {randomUUID} from "crypto";
 
-const crdsMap = new Map<string, []>
+const crdsMap = new Map<string, string[]>
 
 const wss = new WebSocketServer({
     port: +(process.env.PORT || 8080),
@@ -51,6 +51,7 @@ function handleMessage(msg: Message, ws: WebSocket) {
             return broadcastMessage(msg);
         case "textReplaced":
             checkForFile(msg, ws);
+            updateIdArray(msg);
             return broadcastMessage(msg);
         case "sendFile":
             createFileID(msg);
@@ -143,19 +144,23 @@ function createFileID(msg: Message) {
     const project = msg.data.project;
     const pathName = msg.data.pathName
     const key = path.join(project, pathName);
-    let idArray = msg.data.content.split("\n")
+    let idArray: string[] = []
     if (!crdsMap.get(key)) {
-        for (let i = 0; i < idArray.length; i++) {
+        for (let i = 0; i < msg.data.lineCount; i++) {
             idArray[i] = randomUUID();
         }
         crdsMap.set(key, idArray);
     } else {
-        idArray = crdsMap.get(key)
+        idArray = crdsMap.get(key) ?? []
     }
     sendIdArray(pathName, project, idArray);
 }
 
-function sendIdArray(pathName: string, project: string, idArray: []) {
+function sendIdArray(pathName: string, project: string, idArray: string[]) {
     const msg: Message = {operation: "idArray", data: {project, pathName, idArray}, time: new Date().getTime()}
     broadcastMessage(msg);
+}
+
+function updateIdArray(msg: Message) {
+    return
 }

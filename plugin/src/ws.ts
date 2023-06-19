@@ -102,8 +102,8 @@ export function sendTextDelKey(pathName: string, from: Position, delLinesCounter
     ws.send(buildSendTextDelKeyMessage("delKey", pathName, from, delLinesCounter, delCharCounter, userId, project));
 }
 
-export function sendFile(pathName: string, content: string, userId: string, project: string) {
-    ws.send(buildSendFileMessage("sendFile", pathName, content, userId, project));
+export function sendFile(pathName: string, lineCount: number, userId: string, project: string) {
+    ws.send(buildSendFileMessage("sendFile", pathName, lineCount, userId, project));
 }
 
 function handleMessage(msg: Message) {

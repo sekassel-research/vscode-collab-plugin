@@ -383,10 +383,17 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
     const user = users.get(id);
 
     if (!editor || !user || userId === id || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
-        return;
+        return Promise;
     }
-    const fromPosition = new vscode.Position(idArray.lastIndexOf(from.line), from.character);
-    const toPosition = new vscode.Position(idArray.lastIndexOf(to.line), to.character);
+    const fromLine = idArray.lastIndexOf(from.line);
+    const toLine = idArray.lastIndexOf(from.line);
+    if (fromLine === -1 || toLine === -1) {
+        const back: TextReplacedData = {pathName, from, to, content, lineIds, userId: id, project};
+        receivedDocumentChanges$.next(back);
+        return Promise;
+    }
+    const fromPosition = new vscode.Position(fromLine, from.character);
+    const toPosition = new vscode.Position(toLine, to.character);
 
     const range = new vscode.Range(fromPosition, toPosition);
     textEdits.push(JSON.stringify({uri: editor.document.uri, range, content}));
@@ -394,7 +401,7 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
     const edit = new vscode.WorkspaceEdit();
     edit.replace(editor.document.uri, range, content);
 
-    return vscode.workspace.applyEdit(edit).then((fulfilled) => {
+    vscode.workspace.applyEdit(edit).then((fulfilled) => {
         if (fulfilled) {
             let cursorPosition: Position = {line: from.line, character: from.character + content.length};
             if (content.includes("\n")) {
@@ -402,10 +409,10 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
             }
             markLine(pathName, cursorPosition, cursorPosition, id);
             if (content !== "") {
-                idArray.splice(idArray.lastIndexOf(from.line), 0, ...lineIds);
+                idArray.splice(fromPosition.line, 0, ...lineIds);
                 console.log(idArray);
             } else {
-                idArray.splice(idArray.lastIndexOf(from.line) + 1, idArray.lastIndexOf(to.line) - idArray.lastIndexOf(from.line) + 2);
+                idArray.splice(fromPosition.line + 1, toPosition.line - fromPosition.line + 2);
             }
         } else {
             const back: TextReplacedData = {pathName, from, to, content, lineIds, userId: id, project};
@@ -472,9 +479,9 @@ export function getFile() {
     if (!editor) {
         return;
     }
-    let pathName = pathString(editor.document.fileName);
-    let content = editor.document.getText();
-    sendFile(pathName, content, userId, project);
+    const pathName = pathString(editor.document.fileName);
+    const lineCount = editor.document.lineCount;
+    sendFile(pathName, lineCount, userId, project);
 }
 
 export function updateIdArray(pathName: string, array: [string]) {

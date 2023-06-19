@@ -20,6 +20,6 @@ export function buildSendTextDelKeyMessage(operation: string, pathName: string, 
     return JSON.stringify({operation, data: {pathName, from, delLinesCounter, delCharCounter, userId, project}});
 }
 
-export function buildSendFileMessage(operation: string, pathName: string, content: string, userId: string, project: string) {
-    return JSON.stringify({operation, data: {pathName, content, userId, project}});
+export function buildSendFileMessage(operation: string, pathName: string, lineCount: number, userId: string, project: string) {
+    return JSON.stringify({operation, data: {pathName, lineCount, userId, project}});
 }
