@@ -96,6 +96,18 @@ export async function activate(context: vscode.ExtensionContext) {
             }
             if (ownText) {
                 blockCursorUpdate = true;
+                const regex = /\n/g;
+                const enterCount = content.match(regex)?.length ?? 0;
+                let tmpIdArray:string[] = [];
+                for (let i = 0; i < enterCount; i++) {
+                    newLineIds.push(randomUUID());
+                    tmpIdArray.push(randomUUID());
+                }
+                if(enterCount > 0){
+                    idArray.splice(rangeStart.line +1, 0, ...tmpIdArray);
+                }
+                console.log("enterCount", enterCount);
+                console.log("idArray", idArray);
                 textDocumentChanges$.next(change);
             }
         }
@@ -190,14 +202,6 @@ function updateTextDocumentPipe() {
                 let content = change.text;
 
                 updateBufferedParams(range.start, range.end, content);
-            }
-            const regex = /\n/g;
-            const enterCount = bufferContent.match(regex)?.length ?? 0;
-            for (let i = 0; i < enterCount; i++) {
-                newLineIds.push(randomUUID());
-            }
-            if(newLineIds!== undefined){
-                idArray.splice(rangeStart.line +1, 0, ...newLineIds);
             }
 
             let pathName = pathString(editor.document.fileName);
