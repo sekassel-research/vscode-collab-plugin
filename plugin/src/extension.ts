@@ -61,6 +61,7 @@ export async function activate(context: vscode.ExtensionContext) {
         if (blockCursorUpdate) {
             return;
         }
+        console.log(idArray.length);
         sendCurrentCursor();
     });
 
@@ -96,18 +97,18 @@ export async function activate(context: vscode.ExtensionContext) {
             }
             if (ownText) {
                 blockCursorUpdate = true;
-                const regex = /\n/g;
-                const enterCount = content.match(regex)?.length ?? 0;
-                let tmpIdArray:string[] = [];
-                for (let i = 0; i < enterCount; i++) {
-                    newLineIds.push(randomUUID());
-                    tmpIdArray.push(randomUUID());
+                if(content!==""){
+                    const regex = /\n/g;
+                    const enterCount = content.match(regex)?.length ?? 0;
+                    let tmpIdArray:string[] = [];
+                    for (let i = 0; i < enterCount; i++) {
+                        newLineIds.push(randomUUID());
+                        tmpIdArray.push(randomUUID());
+                    }
+                    if(enterCount > 0){
+                        idArray.splice(rangeStart.line +1, 0, ...tmpIdArray);
+                    }
                 }
-                if(enterCount > 0){
-                    idArray.splice(rangeStart.line +1, 0, ...tmpIdArray);
-                }
-                console.log("enterCount", enterCount);
-                console.log("idArray", idArray);
                 textDocumentChanges$.next(change);
             }
         }
@@ -203,9 +204,8 @@ function updateTextDocumentPipe() {
 
                 updateBufferedParams(range.start, range.end, content);
             }
-
             let pathName = pathString(editor.document.fileName);
-
+            
             if ((!rangeStart.isEqual(new vscode.Position(0, 0)) || !rangeEnd.isEqual(new vscode.Position(0, 0)) || bufferContent !== "") && changes.length > 0) {
                 const start: Position = {line: idArray[rangeStart.line], character: rangeStart.character};
                 if (delKeyCounter > 1 && (rangeStart.isEqual(startRangeStart) && rangeEnd.isEqual(startRangeEnd))) {
@@ -213,6 +213,9 @@ function updateTextDocumentPipe() {
                     sendTextDelKey(pathName, start, delLinesCounter, delCharCounter, userId, project);
                 } else {
                     const end: Position = {line: idArray[rangeEnd.line], character: rangeEnd.character};
+                    if(bufferContent===""){
+                        idArray.splice(rangeStart.line + 1, rangeEnd.line - rangeStart.line);
+                    }
                     sendTextReplaced(
                         pathName,
                         start,
@@ -416,7 +419,7 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
                     console.log("done splicing");
                 }
             } else {
-                idArray.splice(fromPosition.line + 1, toPosition.line - fromPosition.line + 2);
+                idArray.splice(fromPosition.line + 1, toPosition.line - fromPosition.line);
             }
         } else {
             console.log("back");
