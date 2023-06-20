@@ -165,7 +165,7 @@ function updateReceivedDocumentPipe() {
         )
         .subscribe(async (changes) => {
             for (const change of changes) {
-                await replaceText(change.pathName, change.from, change.to, change.content, change.lineIds, change.userId);
+                await replaceText(change.pathName, change.from, change.to, change.content, change.newLineIds, change.userId);
             }
         });
 }
@@ -195,6 +195,9 @@ function updateTextDocumentPipe() {
             const enterCount = bufferContent.match(regex)?.length ?? 0;
             for (let i = 0; i < enterCount; i++) {
                 newLineIds.push(randomUUID());
+            }
+            if(newLineIds!== undefined){
+                idArray.splice(rangeStart.line +1, 0, ...newLineIds);
             }
 
             let pathName = pathString(editor.document.fileName);
@@ -376,18 +379,18 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
     const user = users.get(id);
 
     if (!editor || !user || userId === id || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
-        return Promise;
+        return;
     }
     const fromLine = idArray.lastIndexOf(from.line);
     const toLine = idArray.lastIndexOf(from.line);
     if (fromLine === -1 || toLine === -1) {
-        const back: TextReplacedData = {pathName, from, to, content, lineIds, userId: id, project};
+        console.log("invalid position");
+        const back: TextReplacedData = {pathName, from, to, content, newLineIds:lineIds, userId: id, project};
         receivedDocumentChanges$.next(back);
-        return Promise.resolve();
+        return;
     }
     const fromPosition = new vscode.Position(fromLine, from.character);
     const toPosition = new vscode.Position(toLine, to.character);
-
     const range = new vscode.Range(fromPosition, toPosition);
     textEdits.push(JSON.stringify({uri: editor.document.uri, range, content}));
 
@@ -401,20 +404,22 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
                 cursorPosition = new vscode.Position(toPosition.line + content.length,0);
             }
             markLine(pathName, cursorPosition, cursorPosition, id);
-            if (content !== "") {  // TODO check if this is really working
+            if (content !== "") {
+                console.log("lineIds",lineIds,lineIds !== undefined);
                 if(lineIds !== undefined){
-                    idArray.splice(fromPosition.line, 0, ...lineIds);
+                    console.log("splicing array");
+                    idArray.splice(fromPosition.line +1, 0, ...lineIds);
+                    console.log("done splicing");
                 }
             } else {
                 idArray.splice(fromPosition.line + 1, toPosition.line - fromPosition.line + 2);
             }
         } else {
             console.log("back");
-            const back: TextReplacedData = {pathName, from, to, content, lineIds, userId: id, project};
+            const back: TextReplacedData = {pathName, from, to, content, newLineIds:lineIds, userId: id, project};
             receivedDocumentChanges$.next(back);
         }
-        console.log(idArray.length);
-        return Promise.resolve();
+        return;
     });
 }
 

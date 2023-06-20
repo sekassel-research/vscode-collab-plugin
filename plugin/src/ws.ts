@@ -50,7 +50,7 @@ export function openWS(userId: string, userName: string, userDisplayName: string
     ws.on("open", function open() {
         ws.on("message", function incoming(data: any) {
             const msg: Message = JSON.parse(Buffer.from(data).toString());
-            console.log(msg);
+            //console.log(msg);
             handleMessage(msg);
         });
 

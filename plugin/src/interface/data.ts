@@ -22,7 +22,7 @@ export interface TextReplacedData extends Data {
     from: Position
     to: Position
     content: string,
-    lineIds: string[]
+    newLineIds: string[]
 }
 
 export interface ChatData extends Data {
