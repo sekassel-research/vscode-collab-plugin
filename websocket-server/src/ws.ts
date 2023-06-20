@@ -131,7 +131,6 @@ function checkForFile(msg: Message, ws: WebSocket) {
     if (crdsMap.get(key)) {
         return;
     }
-    crdsMap.set(key, [])
     sendFileRequest(ws)
 }
 
