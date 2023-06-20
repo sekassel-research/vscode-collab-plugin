@@ -382,7 +382,7 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
         return;
     }
     const fromLine = idArray.lastIndexOf(from.line);
-    const toLine = idArray.lastIndexOf(from.line);
+    const toLine = idArray.lastIndexOf(to.line);
     if (fromLine === -1 || toLine === -1) {
         console.log("invalid position");
         const back: TextReplacedData = {pathName, from, to, content, newLineIds:lineIds, userId: id, project};
