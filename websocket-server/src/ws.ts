@@ -121,7 +121,11 @@ function removeUser(room: Set<User> | undefined, projectName: string, ws: WebSoc
     }
     if (room.size == 0) {
         rooms.delete(projectName);
-        // TODO Clear Array | Iterate over array and remove all Index which start with projectName
+        for (const key of crdsMap.keys()){
+            if(key.startsWith(projectName)){
+                crdsMap.delete(key);
+            }
+        }
     }
 }
 
@@ -164,10 +168,10 @@ function updateIdArray(msg: Message) {
     const pathName = msg.data.pathName
     const key = path.join(project, pathName);
     const idArray = crdsMap.get(key);
-    if(!idArray){
+    if (!idArray) {
         return
     }
-    const fromIndex= idArray.lastIndexOf(msg.data.from.line);
+    const fromIndex = idArray.lastIndexOf(msg.data.from.line);
     const toIndex = idArray.lastIndexOf(msg.data.to.line);
     if (msg.data.content !== "") {
         if (msg.data.newLineIds !== undefined) {
@@ -176,6 +180,6 @@ function updateIdArray(msg: Message) {
     } else {
         idArray.splice(fromIndex + 1, toIndex - fromIndex);
     }
-    crdsMap.set(key,idArray);
+    crdsMap.set(key, idArray);
     console.log(idArray.length);
 }
