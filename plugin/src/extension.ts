@@ -22,12 +22,12 @@ let userDisplayMode = vscode.workspace.getConfiguration("vscode-collab").get<str
 
 let chatViewProvider: ChatViewProvider;
 let activeUsersProvider: ActiveUsersProvider;
-let uuid = randomUUID();
-let userId = process.env.USER_ID || process.env.USER || 'userId_' + uuid;
-let userName = process.env.USER_NAME || "userName_" + uuid;
-let userDisplayName = process.env.USER_DISPLAY_NAME || "userDisplayName_" + uuid;
-let project = process.env.PROJECT_ID || process.env.PROJECT || 'default_project';
-let textEdits: string[] = [];
+const uuid = randomUUID();
+const userId = process.env.USER_ID || process.env.USER || 'userId_' + uuid;
+const userName = process.env.USER_NAME || "userName_" + uuid;
+const userDisplayName = process.env.USER_DISPLAY_NAME || "userDisplayName_" + uuid;
+const project = process.env.PROJECT_ID || process.env.PROJECT || 'default_project';
+const textEdits: string[] = [];
 let blockCursorUpdate = false;
 let delKeyCounter = 0;
 let lineCount = 0;
@@ -69,14 +69,14 @@ export async function activate(context: vscode.ExtensionContext) {
     updateTextDocumentPipe();
 
     vscode.workspace.onDidChangeTextDocument(changes => { // split this function to make it easier to read
-        let editor = vscode.window.activeTextEditor;
+        const editor = vscode.window.activeTextEditor;
         if (!editor) {
             return;
         }
-        for (let change of changes.contentChanges) {
-            let range = change.range;
-            let content = change.text;
-            let uri = editor.document.uri;
+        for (const change of changes.contentChanges) {
+            const range = change.range;
+            const content = change.text;
+            const uri = editor.document.uri;
             let ownText = true;
 
             textEdits.filter((edit, index) => {
@@ -192,21 +192,21 @@ function updateTextDocumentPipe() {
             filter(changes => changes.length > 0),
         )
         .subscribe((changes) => {
-            let editor = vscode.window.activeTextEditor;
+            const editor = vscode.window.activeTextEditor;
             const delLinesCounter = lineCount - getLineCount();
             if (!editor) {
                 return;
             }
-            for (let change of changes) {
-                let range = change.range;
-                let content = change.text;
+            for (const change of changes) {
+                const range = change.range;
+                const content = change.text;
 
                 updateBufferedParams(range.start, range.end, content);
             }
             if (changes.length > 1 && bufferContent !== "") {
                 rangeEnd = rangeStart;
             }
-            let pathName = pathString(editor.document.fileName);
+            const pathName = pathString(editor.document.fileName);
 
             if ((!rangeStart.isEqual(new vscode.Position(0, 0)) || !rangeEnd.isEqual(new vscode.Position(0, 0)) || bufferContent !== "") && changes.length > 0) {
                 const start: Position = {line: idArray[rangeStart.line], character: rangeStart.character};
@@ -317,7 +317,7 @@ export function addActiveUsers(data: []) { //update the activeUsers logic to sup
 }
 
 function removeMarking(user: User | undefined) {
-    let editor = vscode.window.activeTextEditor;
+    const editor = vscode.window.activeTextEditor;
     if (user && editor) {
         editor.setDecorations(user.getColorIndicator(), []);
         editor.setDecorations(user.getNameTag(userDisplayMode), []);
@@ -328,8 +328,8 @@ function removeMarking(user: User | undefined) {
 
 export function markLine(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, id: string) {
     try {
-        let editor = vscode.window.activeTextEditor;
-        let user = users.get(id);
+        const editor = vscode.window.activeTextEditor;
+        const user = users.get(id);
 
         if (!editor || !user || userId === id) {
             return;
@@ -339,14 +339,14 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
         if (pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
             return; // remove old cursor if there is an old cursor
         }
-        let line = editor.document.lineAt(cursor.line);
+        const line = editor.document.lineAt(cursor.line);
 
         editor.setDecorations(user.getColorIndicator(), [line.range]);
 
-        let selection = new vscode.Range(cursor, selectionEnd);
+        const selection = new vscode.Range(cursor, selectionEnd);
         editor.setDecorations(user.getSelection(), [selection]);
 
-        let markerPosition = {
+        const markerPosition = {
             range: new vscode.Range(cursor, cursor),
         };
         editor.setDecorations(user.getCursor(), [markerPosition]);
@@ -358,15 +358,15 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
 }
 
 export function sendCurrentCursor(id?: string) {
-    let editor = vscode.window.activeTextEditor;
+    const editor = vscode.window.activeTextEditor;
     if (!editor || userId === id) {
         return;
     }
-    let cursor = editor.selection.active;
-    let pathName = pathString(editor.document.fileName);
+    const cursor = editor.selection.active;
+    const pathName = pathString(editor.document.fileName);
     let selectionEnd = editor.selection.end;
 
-    if (cursor === selectionEnd) { // flipps, if cursor is the end of the selection
+    if (cursor === selectionEnd) { // flips, if cursor is the end of the selection
         selectionEnd = editor.selection.start;
     }
     cursorMoved(pathName, cursor, selectionEnd, userId, project);
@@ -492,10 +492,6 @@ export function updateIdArray(pathName: string, array: [string]) {
 export function onActiveEditor() {
     sendCurrentCursor();
     getCursors(userId, project);
-    let editor = vscode.window.activeTextEditor;
-    if (!editor) {
-        return;
-    }
     getFile();
     lineCount = getLineCount();
 }

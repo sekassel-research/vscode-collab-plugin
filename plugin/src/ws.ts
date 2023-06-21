@@ -102,37 +102,37 @@ export function sendFile(pathName: string, lineCount: number, userId: string, pr
 function handleMessage(msg: Message) {
     switch (msg.operation) {
         case "userJoined":
-            let userJoinedData: UserJoinedData = msg.data;
+            const userJoinedData: UserJoinedData = msg.data;
             userJoined(userJoinedData.userId, userJoinedData.userName, userJoinedData.userDisplayName);
             break;
         case "userLeft":
-            let userLeftData: Data = msg.data;
+            const userLeftData: Data = msg.data;
             userLeft(userLeftData.userId);
             break;
         case "activeUsers":
             addActiveUsers(msg.data);
             break;
         case "cursorMoved":
-            let cursorMovedData: CursorMovedData = msg.data;
+            const cursorMovedData: CursorMovedData = msg.data;
             markLine(cursorMovedData.pathName, cursorMovedData.cursor, cursorMovedData.selectionEnd, cursorMovedData.userId);
             break;
         case "textReplaced":
-            let textReplacedData: TextReplacedData = msg.data;
+            const textReplacedData: TextReplacedData = msg.data;
             getReceivedDocumentChanges().next(textReplacedData);
             break;
         case "getCursors":
-            let getCursorData: Data = msg.data;
+            const getCursorData: Data = msg.data;
             sendCurrentCursor(getCursorData.userId);
             break;
         case "chatMsg":
-            let chatData: ChatData = msg.data;
+            const chatData: ChatData = msg.data;
             getChatViewProvider().receivedMsg(chatData);
             break;
         case "sendFile":
             getFile();
             break;
         case "idArray":
-            let idArrayData: IdArrayData = msg.data;
+            const idArrayData: IdArrayData = msg.data;
             console.log("msg.data:", msg.data);
             updateIdArray(idArrayData.pathName, idArrayData.idArray);
             break;
