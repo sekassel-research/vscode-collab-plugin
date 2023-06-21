@@ -2,14 +2,17 @@ import WebSocket, {WebSocketServer} from 'ws';
 import {Message} from "./interface/message";
 import {Data} from "./interface/data";
 import {User} from "./interface/user";
+import path from 'path';
+import {randomUUID} from "crypto";
+
+const crdsMap = new Map<string, string[]>
 
 const wss = new WebSocketServer({
     port: +(process.env.PORT || 8080),
     path: process.env.WS_PATH,
 });
-const rooms = new Map<string, Set<User>>();
 
-const msgOperations = ["userLeft", "cursorMoved", "chatMsg", "textReplaced", "getCursors", "delKey"]
+const rooms = new Map<string, Set<User>>();
 
 wss.on('listening', () => {
     console.log(`WebSocket server running on ws://localhost:${wss.options.port}.`);
@@ -32,18 +35,31 @@ wss.on('error', (error) => {
     console.log(`Error: ${error}`);
 });
 
-
 function handleMessage(msg: Message, ws: WebSocket) {
-    if (msg.operation == "userJoined") {
-        userJoined(msg, ws);
-        broadcastMessage(msg, ws);
-        return sendUserList(msg, ws);
+    switch (msg.operation) {
+        case "userJoined":
+            userJoined(msg, ws);
+            broadcastMessage(msg);
+            return sendUserList(msg, ws);
+        case "userLeft":
+        case "chatMsg":
+        case "getCursors":
+            return broadcastMessage(msg);
+        case "cursorMoved":
+            checkForFile(msg, ws);
+            return broadcastMessage(msg);
+        case "textReplaced":
+            checkForFile(msg, ws);
+            updateIdArray(msg);
+            return broadcastMessage(msg);
+        case "sendFile":
+            createFileID(msg);
+            break;
+        default:
+            console.error('unhandled message: %s', msg);
     }
-    if (msgOperations.includes(msg.operation)) {
-        return broadcastMessage(msg, ws);
-    }
-    console.error('unhandled message: %s', msg)
 }
+
 
 function userJoined(msg: Message, ws: WebSocket) {
     let data: Data = msg.data;
@@ -68,7 +84,7 @@ function sendUserList(msg: Message, ws: WebSocket) {
     ws.send(JSON.stringify({operation: "activeUsers", data: userNames}))
 }
 
-function broadcastMessage(msg: Message, ws: WebSocket) {
+function broadcastMessage(msg: Message) {
     msg.time = new Date().getTime();
 
     wss.clients.forEach(client => {
@@ -90,16 +106,79 @@ function checkForRoom(project: string, userId: string, userName: string, userDis
 function removeWs(ws: WebSocket) {
     for (const key of rooms.keys()) {
         const room = rooms.get(key)
-        if (room) {
-            for (const user of room) {
-                if (user.ws === ws) {
-                    room.delete(user);
-                }
-            }
+        removeUser(room, key, ws)
+    }
+}
 
-            if (room.size == 0) {
-                rooms.delete(key);
+function removeUser(room: Set<User> | undefined, projectName: string, ws: WebSocket) {
+    if (!room) {
+        return
+    }
+    for (const user of room) {
+        if (user.ws === ws) {
+            room.delete(user);
+        }
+    }
+    if (room.size == 0) {
+        rooms.delete(projectName);
+        for (const key of crdsMap.keys()){
+            if(key.startsWith(projectName)){
+                crdsMap.delete(key);
             }
         }
     }
+}
+
+function checkForFile(msg: Message, ws: WebSocket) {
+    const key = path.join(msg.data.project, msg.data.pathName);
+    if (crdsMap.get(key)) {
+        return;
+    }
+    sendFileRequest(ws)
+}
+
+function sendFileRequest(ws: WebSocket) {
+    const msg = JSON.stringify({operation: "sendFile"});
+    ws.send(msg);
+}
+
+function createFileID(msg: Message) {
+    const project = msg.data.project;
+    const pathName = msg.data.pathName
+    const key = path.join(project, pathName);
+    let idArray: string[] = []
+    if (!crdsMap.get(key)) {
+        for (let i = 0; i < msg.data.lineCount; i++) {
+            idArray[i] = randomUUID();
+        }
+        crdsMap.set(key, idArray);
+    } else {
+        idArray = crdsMap.get(key) ?? []
+    }
+    sendIdArray(pathName, project, idArray);
+}
+
+function sendIdArray(pathName: string, project: string, idArray: string[]) {
+    const msg: Message = {operation: "idArray", data: {project, pathName, idArray}, time: new Date().getTime()}
+    broadcastMessage(msg);
+}
+
+function updateIdArray(msg: Message) {
+    const project = msg.data.project;
+    const pathName = msg.data.pathName
+    const key = path.join(project, pathName);
+    const idArray = crdsMap.get(key);
+    if (!idArray) {
+        return
+    }
+    const fromIndex = idArray.lastIndexOf(msg.data.from.line);
+    const toIndex = idArray.lastIndexOf(msg.data.to.line);
+    if (msg.data.content !== "") {
+        if (msg.data.newLineIds !== undefined) {
+            idArray.splice(fromIndex + 1, 0, ...msg.data.newLineIds);
+        }
+    } else {
+        idArray.splice(fromIndex + 1, toIndex - fromIndex);
+    }
+    crdsMap.set(key, idArray);
 }

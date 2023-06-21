@@ -2,27 +2,38 @@ import * as vscode from "vscode";
 import {
     addActiveUsers,
     clearUsers,
-    delKeyDelete,
     getChatViewProvider,
+    getFile,
     getProjectId,
     getReceivedDocumentChanges,
     getUserDisplayName,
     getUserId,
     getUserName,
     markLine,
+    onActiveEditor,
     sendCurrentCursor,
+    updateIdArray,
     userJoined,
     userLeft,
 } from "./extension";
-import {ChatData, CursorMovedData, Data, DelKeyData, TextReplacedData, UserJoinedData} from "./interface/data";
+import {
+    ChatData,
+    CursorMovedData,
+    Data,
+    IdArrayData,
+    TextReplacedData,
+    UserJoinedData
+} from "./interface/data";
 import {Message} from "./interface/message";
 import {
     buildChatMessage,
     buildCursorMovedMessage,
+    buildSendFileMessage,
     buildSendTextDelKeyMessage,
     buildSendTextReplacedMessage,
     buildUserMessage
 } from "./util/jsonUtils";
+import {Position} from "./interface/position";
 
 const webSocket = require("ws");
 
@@ -42,7 +53,7 @@ export function openWS(userId: string, userName: string, userDisplayName: string
         });
 
         ws.send(buildUserMessage("userJoined", userId, project, userName, userDisplayName));
-        getCursors(userId, project);
+        onActiveEditor();
     });
 
     ws.on("close", function close() {
@@ -73,8 +84,8 @@ export function cursorMoved(pathName: string, cursor: vscode.Position, selection
     ws.send(buildCursorMovedMessage("cursorMoved", pathName, cursor, selectionEnd, userId, project));
 }
 
-export function sendTextReplaced(pathName: string, from: vscode.Position, to: vscode.Position, content: string, userId: string, project: string) {
-    ws.send(buildSendTextReplacedMessage("textReplaced", pathName, from, to, content, userId, project));
+export function sendTextReplaced(pathName: string, from: Position, to: Position, content: string, newLineIds: string[], userId: string, project: string) {
+    ws.send(buildSendTextReplacedMessage("textReplaced", pathName, from, to, content, newLineIds, userId, project));
 }
 
 export function sendChatMessage(msg: string, userId: string, project: string) {
@@ -85,8 +96,12 @@ export function getCursors(userId: string, project: string) {
     ws.send(buildUserMessage("getCursors", userId, project));
 }
 
-export function sendTextDelKey(pathName: string, from: vscode.Position, delLinesCounter: number, delCharCounter: number, userId: string, project: string) {
+export function sendTextDelKey(pathName: string, from: Position, delLinesCounter: number, delCharCounter: number, userId: string, project: string) {
     ws.send(buildSendTextDelKeyMessage("delKey", pathName, from, delLinesCounter, delCharCounter, userId, project));
+}
+
+export function sendFile(pathName: string, lineCount: number, userId: string, project: string) {
+    ws.send(buildSendFileMessage("sendFile", pathName, lineCount, userId, project));
 }
 
 function handleMessage(msg: Message) {
@@ -118,9 +133,13 @@ function handleMessage(msg: Message) {
             let chatData: ChatData = msg.data;
             getChatViewProvider().receivedMsg(chatData);
             break;
-        case "delKey":
-            let delKeyData: DelKeyData = msg.data;
-            delKeyDelete(delKeyData.pathName, delKeyData.from, delKeyData.delLinesCounter, delKeyData.delCharCounter, delKeyData.userId);
+        case "sendFile":
+            getFile();
+            break;
+        case "idArray":
+            let idArrayData: IdArrayData = msg.data;
+            console.log("msg.data:", msg.data);
+            updateIdArray(idArrayData.pathName, idArrayData.idArray);
             break;
         default:
             console.error("Unknown operation: " + msg.operation);
@@ -136,3 +155,4 @@ export function updateWS(newWsAddress: string) {
     closeWS(userId, projectId);
     openWS(userId, userName, userDisplayName, projectId);
 }
+

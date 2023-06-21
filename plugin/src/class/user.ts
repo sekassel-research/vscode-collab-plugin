@@ -14,7 +14,7 @@ export class User {
     position!: {
         path: string,
         cursor: vscode.Position,
-        selectionEnd: vscode.Position
+        selectionEnd: vscode.Position,
     };
 
     constructor(userId: string, userName: string, userDisplayName: string) {
