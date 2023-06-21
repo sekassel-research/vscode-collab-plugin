@@ -61,8 +61,6 @@ export async function activate(context: vscode.ExtensionContext) {
         if (blockCursorUpdate) {
             return;
         }
-        console.log(idArray);
-        console.log(idArray.length);
         sendCurrentCursor();
     });
 
@@ -101,13 +99,14 @@ export async function activate(context: vscode.ExtensionContext) {
                 if (content !== "") {
                     const regex = /\n/g;
                     const enterCount = content.match(regex)?.length ?? 0;
-                    let tmpIdArray: string[] = [];
+                    const tmpIds: string[] = [];
                     for (let i = 0; i < enterCount; i++) {
-                        newLineIds.push(randomUUID());
-                        tmpIdArray.push(randomUUID());
+                        const newUUID = randomUUID();
+                        newLineIds.push(newUUID);
+                        tmpIds.push(newUUID);
                     }
                     if (enterCount > 0) {
-                        idArray.splice(rangeStart.line + 1, 0, ...tmpIdArray);
+                        idArray.splice(range.end.line + 1, 0, ...tmpIds);
                     }
                 }
                 textDocumentChanges$.next(change);
@@ -204,6 +203,9 @@ function updateTextDocumentPipe() {
                 let content = change.text;
 
                 updateBufferedParams(range.start, range.end, content);
+            }
+            if (changes.length > 1 && bufferContent !== "") {
+                rangeEnd = rangeStart;
             }
             let pathName = pathString(editor.document.fileName);
 
@@ -377,7 +379,6 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
     const fromLine = idArray.lastIndexOf(from.line);
     const toLine = idArray.lastIndexOf(to.line);
     if (fromLine === -1 || toLine === -1) {
-        console.log("invalid position");
         const back: TextReplacedData = {pathName, from, to, content, newLineIds: lineIds, userId: id, project};
         receivedDocumentChanges$.next(back);
         return;
@@ -398,17 +399,13 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
             }
             markLine(pathName, cursorPosition, cursorPosition, id);
             if (content !== "") {
-                console.log("lineIds", lineIds, lineIds !== undefined);
                 if (lineIds !== undefined) {
-                    console.log("splicing array");
                     idArray.splice(fromPosition.line + 1, 0, ...lineIds);
-                    console.log("done splicing");
                 }
             } else {
                 idArray.splice(fromPosition.line + 1, toPosition.line - fromPosition.line);
             }
         } else {
-            console.log("back");
             const back: TextReplacedData = {pathName, from, to, content, newLineIds: lineIds, userId: id, project};
             receivedDocumentChanges$.next(back);
         }
