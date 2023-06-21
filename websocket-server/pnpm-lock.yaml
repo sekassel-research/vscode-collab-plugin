@@ -1,9 +1,16 @@
-lockfileVersion: '6.0'
+lockfileVersion: '6.1'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
 
 dependencies:
   bufferutil:
     specifier: ^4.0.1
     version: 4.0.1
+  path:
+    specifier: ^0.12.7
+    version: 0.12.7
   tslib:
     specifier: ^2.5.2
     version: 2.5.2
@@ -12,7 +19,7 @@ dependencies:
     version: 5.0.2
   ws:
     specifier: ^8.11.0
-    version: 8.11.0
+    version: 8.11.0(bufferutil@4.0.1)(utf-8-validate@5.0.2)
 
 devDependencies:
   '@types/node':
@@ -44,9 +51,25 @@ packages:
       node-gyp-build: 3.7.0
     dev: false
 
+  /inherits@2.0.3:
+    resolution: {integrity: sha512-x00IRNXNy63jwGkJmzPigoySHbaqpNuzKbBOmzK+g2OdZpQ9w+sxCN+VSB3ja7IAge2OP2qpfxTjeNcyjmW1uw==}
+    dev: false
+
   /node-gyp-build@3.7.0:
     resolution: {integrity: sha512-L/Eg02Epx6Si2NXmedx+Okg+4UHqmaf3TNcxd50SF9NQGcJaON3AtU++kax69XV7YWz4tUspqZSAsVofhFKG2w==}
     hasBin: true
+    dev: false
+
+  /path@0.12.7:
+    resolution: {integrity: sha512-aXXC6s+1w7otVF9UletFkFcDsJeO7lSZBPUQhtb5O0xJe8LtYhj/GxldoL09bBj9+ZmE2hNoHqQSFMN5fikh4Q==}
+    dependencies:
+      process: 0.11.10
+      util: 0.10.4
+    dev: false
+
+  /process@0.11.10:
+    resolution: {integrity: sha512-cdGef/drWFoydD1JsMzuFf8100nZl+GT+yacc2bEced5f9Rjk4z+WtFUTBu9PhOi9j/jfmBPu0mMEY4wIdAF8A==}
+    engines: {node: '>= 0.6.0'}
     dev: false
 
   /tslib@2.5.2:
@@ -66,7 +89,13 @@ packages:
       node-gyp-build: 3.7.0
     dev: false
 
-  /ws@8.11.0:
+  /util@0.10.4:
+    resolution: {integrity: sha512-0Pm9hTQ3se5ll1XihRic3FDIku70C+iHUdT/W926rSgHV5QgXsYbKZN8MSC3tJtSkhuROzvsQjAaFENRXr+19A==}
+    dependencies:
+      inherits: 2.0.3
+    dev: false
+
+  /ws@8.11.0(bufferutil@4.0.1)(utf-8-validate@5.0.2):
     resolution: {integrity: sha512-HPG3wQd9sNQoT9xHyNCXoDUa+Xw/VevmY9FoHyQ+g+rrMn4j6FB4np7Z0OhdTgjx6MgQLK7jwSy1YecU1+4Asg==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
@@ -77,4 +106,7 @@ packages:
         optional: true
       utf-8-validate:
         optional: true
+    dependencies:
+      bufferutil: 4.0.1
+      utf-8-validate: 5.0.2
     dev: false
