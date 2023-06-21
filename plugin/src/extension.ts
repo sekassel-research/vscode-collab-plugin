@@ -8,7 +8,6 @@ import {randomUUID} from "crypto";
 import {Subject} from "rxjs";
 import {bufferTime, filter} from "rxjs/operators";
 import {TextReplacedData} from "./interface/data";
-import {buildSendTextReplacedMessage} from "./util/jsonUtils";
 import {Position} from "./interface/position";
 
 const users = new Map<string, User>();
@@ -328,7 +327,8 @@ function removeMarking(user: User | undefined) {
 }
 
 export function markLine(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, id: string) {
-    let editor = vscode.window.activeTextEditor;
+    try{
+        let editor = vscode.window.activeTextEditor;
     let user = users.get(id);
 
     if (!editor || !user || userId === id) {
@@ -352,6 +352,9 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
     editor.setDecorations(user.getCursor(), [markerPosition]);
 
     editor.setDecorations(user.getNameTag(userDisplayMode), [line.range]);
+    } catch(e){
+        console.log(e);
+    }
 }
 
 export function sendCurrentCursor(id?: string) {
@@ -370,7 +373,8 @@ export function sendCurrentCursor(id?: string) {
 }
 
 async function replaceText(pathName: string, from: Position, to: Position, content: string, lineIds: string[], id: string) {
-    const editor = vscode.window.activeTextEditor;
+    try{
+        const editor = vscode.window.activeTextEditor;
     const user = users.get(id);
 
     if (!editor || !user || userId === id || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
@@ -411,6 +415,9 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
         }
         return;
     });
+    } catch(e){
+        console.log(e);
+    }
 }
 
 function pathString(path: string) {
