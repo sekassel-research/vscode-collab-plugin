@@ -61,6 +61,7 @@ export async function activate(context: vscode.ExtensionContext) {
         if (blockCursorUpdate) {
             return;
         }
+        console.log(idArray);
         console.log(idArray.length);
         sendCurrentCursor();
     });
@@ -97,16 +98,16 @@ export async function activate(context: vscode.ExtensionContext) {
             }
             if (ownText) {
                 blockCursorUpdate = true;
-                if(content!==""){
+                if (content !== "") {
                     const regex = /\n/g;
                     const enterCount = content.match(regex)?.length ?? 0;
-                    let tmpIdArray:string[] = [];
+                    let tmpIdArray: string[] = [];
                     for (let i = 0; i < enterCount; i++) {
                         newLineIds.push(randomUUID());
                         tmpIdArray.push(randomUUID());
                     }
-                    if(enterCount > 0){
-                        idArray.splice(rangeStart.line +1, 0, ...tmpIdArray);
+                    if (enterCount > 0) {
+                        idArray.splice(rangeStart.line + 1, 0, ...tmpIdArray);
                     }
                 }
                 textDocumentChanges$.next(change);
@@ -205,27 +206,28 @@ function updateTextDocumentPipe() {
                 updateBufferedParams(range.start, range.end, content);
             }
             let pathName = pathString(editor.document.fileName);
-            
+
             if ((!rangeStart.isEqual(new vscode.Position(0, 0)) || !rangeEnd.isEqual(new vscode.Position(0, 0)) || bufferContent !== "") && changes.length > 0) {
                 const start: Position = {line: idArray[rangeStart.line], character: rangeStart.character};
                 if (delKeyCounter > 1 && (rangeStart.isEqual(startRangeStart) && rangeEnd.isEqual(startRangeEnd))) {
                     const delCharCounter = delKeyCounter - delLinesCounter;
-                    sendTextDelKey(pathName, start, delLinesCounter, delCharCounter, userId, project);
-                } else {
-                    const end: Position = {line: idArray[rangeEnd.line], character: rangeEnd.character};
-                    if(bufferContent===""){
-                        idArray.splice(rangeStart.line + 1, rangeEnd.line - rangeStart.line);
-                    }
-                    sendTextReplaced(
-                        pathName,
-                        start,
-                        end,
-                        bufferContent,
-                        newLineIds,
-                        userId,
-                        project
-                    );
+                    rangeEnd = rangeStart.translate(delLinesCounter, delCharCounter);
+                    //sendTextDelKey(pathName, start, delLinesCounter, delCharCounter, userId, project);
                 }
+                const end: Position = {line: idArray[rangeEnd.line], character: rangeEnd.character};
+                if (bufferContent === "") {
+                    idArray.splice(rangeStart.line + 1, rangeEnd.line - rangeStart.line);
+                }
+                sendTextReplaced(
+                    pathName,
+                    start,
+                    end,
+                    bufferContent,
+                    newLineIds,
+                    userId,
+                    project
+                );
+
             }
             clearBufferedParams();
             blockCursorUpdate = false;
@@ -275,7 +277,7 @@ export function delKeyDelete(pathName: string, from: Position, delLinesCounter: 
     if (!editor || !user || userId === id || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
         return;
     }
-    if(idArray.lastIndexOf(from.line) === -1){
+    if (idArray.lastIndexOf(from.line) === -1) {
         return;
     }
     let toVsPosition = new vscode.Position(idArray.lastIndexOf(from.line), from.character).translate(delLinesCounter, delCharCounter);
@@ -392,7 +394,7 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
     const toLine = idArray.lastIndexOf(to.line);
     if (fromLine === -1 || toLine === -1) {
         console.log("invalid position");
-        const back: TextReplacedData = {pathName, from, to, content, newLineIds:lineIds, userId: id, project};
+        const back: TextReplacedData = {pathName, from, to, content, newLineIds: lineIds, userId: id, project};
         receivedDocumentChanges$.next(back);
         return;
     }
@@ -406,16 +408,16 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
 
     vscode.workspace.applyEdit(edit).then((fulfilled) => {
         if (fulfilled) {
-            let cursorPosition = new vscode.Position(fromPosition.line,from.character + content.length);
+            let cursorPosition = new vscode.Position(fromPosition.line, from.character + content.length);
             if (content.includes("\n")) {
-                cursorPosition = new vscode.Position(toPosition.line + content.length,0);
+                cursorPosition = new vscode.Position(toPosition.line + content.length, 0);
             }
             markLine(pathName, cursorPosition, cursorPosition, id);
             if (content !== "") {
-                console.log("lineIds",lineIds,lineIds !== undefined);
-                if(lineIds !== undefined){
+                console.log("lineIds", lineIds, lineIds !== undefined);
+                if (lineIds !== undefined) {
                     console.log("splicing array");
-                    idArray.splice(fromPosition.line +1, 0, ...lineIds);
+                    idArray.splice(fromPosition.line + 1, 0, ...lineIds);
                     console.log("done splicing");
                 }
             } else {
@@ -423,7 +425,7 @@ async function replaceText(pathName: string, from: Position, to: Position, conte
             }
         } else {
             console.log("back");
-            const back: TextReplacedData = {pathName, from, to, content, newLineIds:lineIds, userId: id, project};
+            const back: TextReplacedData = {pathName, from, to, content, newLineIds: lineIds, userId: id, project};
             receivedDocumentChanges$.next(back);
         }
         return;
@@ -440,7 +442,7 @@ function pathString(path: string) {
 }
 
 
-function jumpToUser(userId: string) { // needs work 
+function jumpToUser(userId: string) { // needs work
     const editor = vscode.window.activeTextEditor;
     const user = users.get(userId);
     if (user && editor) {
