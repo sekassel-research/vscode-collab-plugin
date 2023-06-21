@@ -46,7 +46,6 @@ function handleMessage(msg: Message, ws: WebSocket) {
         case "getCursors":
             return broadcastMessage(msg);
         case "cursorMoved":
-        case "delKey":
             checkForFile(msg, ws);
             return broadcastMessage(msg);
         case "textReplaced":
@@ -161,5 +160,22 @@ function sendIdArray(pathName: string, project: string, idArray: string[]) {
 }
 
 function updateIdArray(msg: Message) {
-    return
+    const project = msg.data.project;
+    const pathName = msg.data.pathName
+    const key = path.join(project, pathName);
+    const idArray = crdsMap.get(key);
+    if(!idArray){
+        return
+    }
+    const fromIndex= idArray.lastIndexOf(msg.data.from.line);
+    const toIndex = idArray.lastIndexOf(msg.data.to.line);
+    if (msg.data.content !== "") {
+        if (msg.data.newLineIds !== undefined) {
+            idArray.splice(fromIndex + 1, 0, ...msg.data.newLineIds);
+        }
+    } else {
+        idArray.splice(fromIndex + 1, toIndex - fromIndex);
+    }
+    crdsMap.set(key,idArray);
+    console.log(idArray.length);
 }
