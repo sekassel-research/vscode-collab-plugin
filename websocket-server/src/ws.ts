@@ -181,5 +181,4 @@ function updateIdArray(msg: Message) {
         idArray.splice(fromIndex + 1, toIndex - fromIndex);
     }
     crdsMap.set(key, idArray);
-    console.log(idArray.length);
 }
