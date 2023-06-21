@@ -337,10 +337,7 @@ export function markLine(pathName: string, cursor: vscode.Position, selectionEnd
         user.setPosition(pathName, cursor, selectionEnd);
 
         if (pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
-            editor.setDecorations(user.getColorIndicator(), []);
-            editor.setDecorations(user.getSelection(), []);
-            editor.setDecorations(user.getCursor(), []);
-            editor.setDecorations(user.getNameTag(userDisplayMode), []);
+            removeMarking(user);
             return;
         }
         const line = editor.document.lineAt(cursor.line);
