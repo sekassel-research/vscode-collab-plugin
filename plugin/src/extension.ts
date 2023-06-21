@@ -309,7 +309,7 @@ export function userLeft(id: string) {
     }
 }
 
-export function addActiveUsers(data: []) { //update the activeUsers logic to support id,name and displayName
+export function addActiveUsers(data: []) {
     for (const {userId, userName, userDisplayName} of data) {
         users.set(userId, new User(userId, userName, userDisplayName));
     }
