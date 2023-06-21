@@ -1,37 +1,38 @@
 # Websocket documentation
 
-The examples for asynchronous communication only consist of example JSON messages. The various operations are listed below:
-
+This is the documentation of the websocket communication. Each msg has a brief description when the operation will be
+sent by a user and an example msg. All websocket-messages are in json-format. The example wss also adds an time field,
+but it is not used currently in the extension.
 
 ### userJoined
 
-This operation is send by a user who connects to the ws.
+This operation is sent by a user who connects to the ws.
 
 Example:
 
 ```json
 {
-    "operation": "userJoined",
-    "data": {
-        "name": "John Doe",
-        "project" : "Default Project"
-    }
+  "operation": "userJoined",
+  "data": {
+    "name": "John Doe",
+    "project": "Default Project"
+  }
 }
 ```
 
 ### userLeft
 
-This operation is send by a user who disconnects to the ws.
+This operation is sent by a user who disconnects to the ws.
 
 Example:
 
 ```json
 {
-    "operation": "userLeft",
-    "data": {
-        "name": "John Doe",
-        "project" : "Default Project"
-    }
+  "operation": "userLeft",
+  "data": {
+    "name": "John Doe",
+    "project": "Default Project"
+  }
 }
 ```
 
@@ -43,117 +44,121 @@ Example:
 
 ```json
 {
-    "operation": "activeUsers",
-    "data": [
-		    "John Doe",
-		    "Alice",
-		    "Bob"
-    ]
+  "operation": "activeUsers",
+  "data": [
+    "John Doe",
+    "Alice",
+    "Bob"
+  ]
 }
 ```
 
 ### cursorMoved
 
-This operation is send by a user who moved his cursor. If the cursor position is not equal to the selectionEnd position, the user's selection is also displayed for the other users.
+This operation is sent by a user who moved his cursor. If the cursor position is not equal to the selectionEnd position,
+the user's selection is also displayed for the other users.
 
 Example:
 
 ```json
 {
-    "operation": "cursorMoved",
-    "data": {
-        "pathName": "example/file.txt",
-        "cursor": {
-            "line": 3,
-            "character": 10
-        },
-        "selectionEnd": {
-            "line": 3,
-            "character": 20
-        },
-        "name": "John Doe",
-        "project" : "Default Project"
-    }
+  "operation": "cursorMoved",
+  "data": {
+    "pathName": "example/file.txt",
+    "cursor": {
+      "line": 3,
+      "character": 10
+    },
+    "selectionEnd": {
+      "line": 3,
+      "character": 20
+    },
+    "name": "John Doe",
+    "project": "Default Project"
+  }
 }
 ```
 
 ### textReplaced
 
-This operation is send by a user who makes changes in the texteditor.
+This operation is sent by a user who makes changes in their texteditor. If the content is empty, the user deleted the
+content between the positions.
 
 Example:
 
 ```json
 {
-    "operation": "textReplaced",
-    "data": {
-        "pathName": "file.txt",
-        "from": {
-            "line": 3,
-            "character": 10
-        },
-        "to": {
-            "line": 3,
-            "character": 15
-        },
-        "content": "Example Text",
-        "name": "John Doe",
-        "project" : "Default Project"
-    }
+  "operation": "textReplaced",
+  "data": {
+    "pathName": "file.txt",
+    "from": {
+      "line": 3,
+      "character": 10
+    },
+    "to": {
+      "line": 3,
+      "character": 15
+    },
+    "content": "Example Text",
+    "name": "John Doe",
+    "project": "Default Project"
+  }
 }
 ```
 
 ### getCursors
 
-This msg is send from the just joined user after conntecting to the ws or if the user is changing the file.
+This msg is sent from the just joined user after connecting to the ws or if the user is changing the file. This msg will
+trigger all other users to send their current cursor position.
 
 Example:
 
 ```json
 {
-    "operation": "getCursors",
-    "data": {
-        "name": "John Doe",
-        "project" : "Default Project"
-    }
+  "operation": "getCursors",
+  "data": {
+    "name": "John Doe",
+    "project": "Default Project"
+  }
 }
 ```
 
 ### chatMsg
 
-This operation is send by a user who wrote a chat message.
+This operation is sent by a user who wrote a chat message.
 
 Example:
 
 ```json
 {
-    "operation": "chatMsg",
-    "data": {
-        "msg": "Hello, World!",
-        "name": "John Doe",
-        "time": "2023-05-11T12:00:00Z"
-    }
+  "operation": "chatMsg",
+  "data": {
+    "msg": "Hello, World!",
+    "name": "John Doe",
+    "time": "2023-05-11T12:00:00Z"
+  }
 }
 ```
 
-### delKey
+### delKey (removed in commit be88826 | Replaced with "textReplaced")
 
-This operation is send by a user who makes changes with the delete key in the texteditor.
+This operation was sent by a user who made changes with the delete key in the texteditor.
+It was removed, because the message was translated back to the "textReplaced" operation at the receiving users.
 
 Example:
 
 ```json
 {
-    "operation": "delKey",
-    "data": {
-        "pathName": "file.txt",
-        "from": {
-            "line": 3,
-            "character": 10
-        },
-        "delLinesCounter": 1,
-        "delCharCounter": 5,
-        "name": "John Doe"
-    }
+  "operation": "delKey",
+  "data": {
+    "pathName": "file.txt",
+    "from": {
+      "line": 3,
+      "character": 10
+    },
+    "delLinesCounter": 1,
+    "delCharCounter": 5,
+    "name": "John Doe"
+  }
 }
 ```
