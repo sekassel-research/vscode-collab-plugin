@@ -6,13 +6,13 @@
 
  With the extension installed, users can enjoy real-time display of cursors and user selection, making it effortless to collaborate on shared files. A name tag and color are displayed behind the code for each user's cursor, allowing for easy identification. The extension supports a range of functions, including writing, deleting, cutting, copying, pasting, and replacing text. To ensure data accuracy, changes are only applied to the correct file, preventing any unintended modifications.
  
-  ![](https://github.com/sekassel-research/vscode-collab-plugin/blob/master/plugin/media/ReadMe/Hello%20World.gif)
+  ![](https://github.com/sekassel-research/vscode-collab-plugin/blob/master/ReadMe/Hello%20World.gif)
   
-  ![](https://github.com/sekassel-research/vscode-collab-plugin/blob/master/plugin/media/ReadMe/Mark.gif)
+  ![](https://github.com/sekassel-research/vscode-collab-plugin/blob/master/ReadMe/Mark.gif)
 
  In addition to real-time cursor display and user selection, the tool also provides an overview of all active users in the project. When a new user joins, a small notification is displayed at the bottom, and their name is added to the list of active users. With the integrated chat feature, users can communicate with each other without having to switch to a separate window. When hovering over a chat message, users can easily see when it was sent. We've also added a new feature that allows users to jump to a specific line in the shared file by typing "line X" in their chat message. Clicking on the "line X" hyperlink will automatically take the user to that line in the active window.
  
-  ![](https://github.com/sekassel-research/vscode-collab-plugin/blob/master/plugin/media/ReadMe/Chat.gif)
+  ![](https://github.com/sekassel-research/vscode-collab-plugin/blob/master/ReadMe/Chat.gif)
 
 ## Development
 
