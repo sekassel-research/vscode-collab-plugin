@@ -17,10 +17,6 @@ export function buildChatMessage(operation: string, msg: string, userId: string,
     return JSON.stringify({operation, data: {msg, userId, time: new Date(), project}});
 }
 
-export function buildSendTextDelKeyMessage(operation: string, pathName: string, from: Position, delLinesCounter: number, delCharCounter: number, userId: string, project: string) {
-    return JSON.stringify({operation, data: {pathName, from, delLinesCounter, delCharCounter, userId, project}});
-}
-
 export function buildSendFileMessage(operation: string, pathName: string, lineCount: number, userId: string, project: string) {
     return JSON.stringify({operation, data: {pathName, lineCount, userId, project}});
 }

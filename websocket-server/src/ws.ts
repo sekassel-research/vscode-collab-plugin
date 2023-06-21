@@ -121,8 +121,8 @@ function removeUser(room: Set<User> | undefined, projectName: string, ws: WebSoc
     }
     if (room.size == 0) {
         rooms.delete(projectName);
-        for (const key of crdsMap.keys()){
-            if(key.startsWith(projectName)){
+        for (const key of crdsMap.keys()) {
+            if (key.startsWith(projectName)) {
                 crdsMap.delete(key);
             }
         }

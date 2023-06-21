@@ -117,7 +117,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         }
     }
 
-    public chatUpdateDisplayMode(displayMode:string) {
+    public chatUpdateDisplayMode(displayMode: string) {
         this.displayMode = displayMode;
         if (this._view) {
             //this._view.show?.(true); // `show` is not implemented in 1.49 but is for 1.50 insiders
