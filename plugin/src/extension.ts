@@ -327,32 +327,32 @@ function removeMarking(user: User | undefined) {
 }
 
 export function markLine(pathName: string, cursor: vscode.Position, selectionEnd: vscode.Position, id: string) {
-    try{
+    try {
         let editor = vscode.window.activeTextEditor;
-    let user = users.get(id);
+        let user = users.get(id);
 
-    if (!editor || !user || userId === id) {
-        return;
-    }
-    user.setPosition(pathName, cursor, selectionEnd);
+        if (!editor || !user || userId === id) {
+            return;
+        }
+        user.setPosition(pathName, cursor, selectionEnd);
 
-    if (pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
-        return; // remove old cursor if there is an old cursor
-    }
-    let line = editor.document.lineAt(cursor.line);
+        if (pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
+            return; // remove old cursor if there is an old cursor
+        }
+        let line = editor.document.lineAt(cursor.line);
 
-    editor.setDecorations(user.getColorIndicator(), [line.range]);
+        editor.setDecorations(user.getColorIndicator(), [line.range]);
 
-    let selection = new vscode.Range(cursor, selectionEnd);
-    editor.setDecorations(user.getSelection(), [selection]);
+        let selection = new vscode.Range(cursor, selectionEnd);
+        editor.setDecorations(user.getSelection(), [selection]);
 
-    let markerPosition = {
-        range: new vscode.Range(cursor, cursor),
-    };
-    editor.setDecorations(user.getCursor(), [markerPosition]);
+        let markerPosition = {
+            range: new vscode.Range(cursor, cursor),
+        };
+        editor.setDecorations(user.getCursor(), [markerPosition]);
 
-    editor.setDecorations(user.getNameTag(userDisplayMode), [line.range]);
-    } catch(e){
+        editor.setDecorations(user.getNameTag(userDisplayMode), [line.range]);
+    } catch (e) {
         console.log(e);
     }
 }
@@ -373,49 +373,49 @@ export function sendCurrentCursor(id?: string) {
 }
 
 async function replaceText(pathName: string, from: Position, to: Position, content: string, lineIds: string[], id: string) {
-    try{
+    try {
         const editor = vscode.window.activeTextEditor;
-    const user = users.get(id);
+        const user = users.get(id);
 
-    if (!editor || !user || userId === id || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
-        return;
-    }
-    const fromLine = idArray.lastIndexOf(from.line);
-    const toLine = idArray.lastIndexOf(to.line);
-    if (fromLine === -1 || toLine === -1) {
-        const back: TextReplacedData = {pathName, from, to, content, newLineIds: lineIds, userId: id, project};
-        receivedDocumentChanges$.next(back);
-        return;
-    }
-    const fromPosition = new vscode.Position(fromLine, from.character);
-    const toPosition = new vscode.Position(toLine, to.character);
-    const range = new vscode.Range(fromPosition, toPosition);
-    textEdits.push(JSON.stringify({uri: editor.document.uri, range, content}));
-
-    const edit = new vscode.WorkspaceEdit();
-    edit.replace(editor.document.uri, range, content);
-
-    vscode.workspace.applyEdit(edit).then((fulfilled) => {
-        if (fulfilled) {
-            let cursorPosition = new vscode.Position(fromPosition.line, from.character + content.length);
-            if (content.includes("\n")) {
-                cursorPosition = new vscode.Position(toPosition.line + content.length, 0);
-            }
-            markLine(pathName, cursorPosition, cursorPosition, id);
-            if (content !== "") {
-                if (lineIds !== undefined) {
-                    idArray.splice(fromPosition.line + 1, 0, ...lineIds);
-                }
-            } else {
-                idArray.splice(fromPosition.line + 1, toPosition.line - fromPosition.line);
-            }
-        } else {
+        if (!editor || !user || userId === id || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
+            return;
+        }
+        const fromLine = idArray.lastIndexOf(from.line);
+        const toLine = idArray.lastIndexOf(to.line);
+        if (fromLine === -1 || toLine === -1) {
             const back: TextReplacedData = {pathName, from, to, content, newLineIds: lineIds, userId: id, project};
             receivedDocumentChanges$.next(back);
+            return;
         }
-        return;
-    });
-    } catch(e){
+        const fromPosition = new vscode.Position(fromLine, from.character);
+        const toPosition = new vscode.Position(toLine, to.character);
+        const range = new vscode.Range(fromPosition, toPosition);
+        textEdits.push(JSON.stringify({uri: editor.document.uri, range, content}));
+
+        const edit = new vscode.WorkspaceEdit();
+        edit.replace(editor.document.uri, range, content);
+
+        vscode.workspace.applyEdit(edit).then((fulfilled) => {
+            if (fulfilled) {
+                let cursorPosition = new vscode.Position(fromPosition.line, from.character + content.length);
+                if (content.includes("\n")) {
+                    cursorPosition = new vscode.Position(toPosition.line + content.length, 0);
+                }
+                markLine(pathName, cursorPosition, cursorPosition, id);
+                if (content !== "") {
+                    if (lineIds !== undefined) {
+                        idArray.splice(fromPosition.line + 1, 0, ...lineIds);
+                    }
+                } else {
+                    idArray.splice(fromPosition.line + 1, toPosition.line - fromPosition.line);
+                }
+            } else {
+                const back: TextReplacedData = {pathName, from, to, content, newLineIds: lineIds, userId: id, project};
+                receivedDocumentChanges$.next(back);
+            }
+            return;
+        });
+    } catch (e) {
         console.log(e);
     }
 }

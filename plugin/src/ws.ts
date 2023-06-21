@@ -29,7 +29,6 @@ import {
     buildChatMessage,
     buildCursorMovedMessage,
     buildSendFileMessage,
-    buildSendTextDelKeyMessage,
     buildSendTextReplacedMessage,
     buildUserMessage
 } from "./util/jsonUtils";
@@ -94,10 +93,6 @@ export function sendChatMessage(msg: string, userId: string, project: string) {
 
 export function getCursors(userId: string, project: string) {
     ws.send(buildUserMessage("getCursors", userId, project));
-}
-
-export function sendTextDelKey(pathName: string, from: Position, delLinesCounter: number, delCharCounter: number, userId: string, project: string) {
-    ws.send(buildSendTextDelKeyMessage("delKey", pathName, from, delLinesCounter, delCharCounter, userId, project));
 }
 
 export function sendFile(pathName: string, lineCount: number, userId: string, project: string) {
