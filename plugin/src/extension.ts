@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as path from 'path';
 import {User} from "./class/user";
-import {closeWS, cursorMoved, getCursors, openWS, sendFile, sendTextDelKey, sendTextReplaced, updateWS} from "./ws";
+import {closeWS, cursorMoved, getCursors, openWS, sendFile, sendTextReplaced, updateWS} from "./ws";
 import {ChatViewProvider} from "./class/chatViewProvider";
 import {ActiveUsersProvider, UserMapItem} from "./class/activeUsersProvider";
 import {randomUUID} from "crypto";
@@ -212,7 +212,6 @@ function updateTextDocumentPipe() {
                 if (delKeyCounter > 1 && (rangeStart.isEqual(startRangeStart) && rangeEnd.isEqual(startRangeEnd))) {
                     const delCharCounter = delKeyCounter - delLinesCounter;
                     rangeEnd = rangeStart.translate(delLinesCounter, delCharCounter);
-                    //sendTextDelKey(pathName, start, delLinesCounter, delCharCounter, userId, project);
                 }
                 const end: Position = {line: idArray[rangeEnd.line], character: rangeEnd.character};
                 if (bufferContent === "") {
@@ -269,21 +268,6 @@ function clearBufferedParams() {
     lineCount = getLineCount();
     bufferContent = "";
     newLineIds = [];
-}
-
-export function delKeyDelete(pathName: string, from: Position, delLinesCounter: number, delCharCounter: number, id: string) {
-    const editor = vscode.window.activeTextEditor;
-    let user = users.get(id);
-    if (!editor || !user || userId === id || pathName.replace("\\", "/") !== pathString(editor.document.fileName).replace("\\", "/")) {
-        return;
-    }
-    if (idArray.lastIndexOf(from.line) === -1) {
-        return;
-    }
-    let toVsPosition = new vscode.Position(idArray.lastIndexOf(from.line), from.character).translate(delLinesCounter, delCharCounter);
-    let to: Position = {line: idArray[toVsPosition.line], character: toVsPosition.character};
-    let test: TextReplacedData = JSON.parse(buildSendTextReplacedMessage("textReplaced", pathName, from, to, "", [], id, project)); // rework
-    receivedDocumentChanges$.next(test);
 }
 
 function getLineCount() {

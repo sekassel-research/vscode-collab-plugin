@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 import {
     addActiveUsers,
     clearUsers,
-    delKeyDelete,
     getChatViewProvider,
     getFile,
     getProjectId,
@@ -21,7 +20,6 @@ import {
     ChatData,
     CursorMovedData,
     Data,
-    DelKeyData,
     IdArrayData,
     TextReplacedData,
     UserJoinedData
@@ -134,10 +132,6 @@ function handleMessage(msg: Message) {
         case "chatMsg":
             let chatData: ChatData = msg.data;
             getChatViewProvider().receivedMsg(chatData);
-            break;
-        case "delKey":
-            let delKeyData: DelKeyData = msg.data;
-            delKeyDelete(delKeyData.pathName, delKeyData.from, delKeyData.delLinesCounter, delKeyData.delCharCounter, delKeyData.userId);
             break;
         case "sendFile":
             getFile();

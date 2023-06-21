@@ -30,16 +30,6 @@ export interface ChatData extends Data {
     time: Date
 }
 
-export interface DelKeyData extends Data {
-    pathName: string,
-    from: {
-        line: string,
-        character: number
-    }
-    delLinesCounter: number,
-    delCharCounter: number
-}
-
 export interface IdArrayData extends Data {
     pathName: string,
     idArray: [string],
