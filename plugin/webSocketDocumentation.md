@@ -139,26 +139,3 @@ Example:
   }
 }
 ```
-
-### delKey (removed in commit be88826 | Replaced with "textReplaced")
-
-This operation was sent by a user who made changes with the delete key in the texteditor.
-It was removed, because the message was translated back to the "textReplaced" operation at the receiving users.
-
-Example:
-
-```json
-{
-  "operation": "delKey",
-  "data": {
-    "pathName": "file.txt",
-    "from": {
-      "line": 3,
-      "character": 10
-    },
-    "delLinesCounter": 1,
-    "delCharCounter": 5,
-    "name": "John Doe"
-  }
-}
-```

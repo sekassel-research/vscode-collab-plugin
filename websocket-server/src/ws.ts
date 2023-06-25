@@ -173,6 +173,9 @@ function updateIdArray(msg: Message) {
     }
     const fromIndex = idArray.lastIndexOf(msg.data.from.line);
     const toIndex = idArray.lastIndexOf(msg.data.to.line);
+    if (fromIndex === -1 || toIndex === -1) {
+        return
+    }
     if (msg.data.content !== "") {
         if (msg.data.newLineIds !== undefined) {
             idArray.splice(fromIndex + 1, 0, ...msg.data.newLineIds);
